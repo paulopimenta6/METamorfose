@@ -166,7 +166,7 @@ def build_manifest():
     pytest_counts, xfail_tests = parse_pytest(pytest_text)
 
     tags = {}
-    for tag in ("fase-0-snapshot", "fase-0-inicio", "fase-0-concluida"):
+    for tag in ("fase-0-snapshot", "fase-0-inicio"):
         try:
             tags[tag] = {
                 "object": git("rev-parse", tag),
@@ -261,8 +261,8 @@ def build_manifest():
             "O código de produção não foi alterado; o goGribV2.sh está congelado.",
             "O backup contém o snapshot do código e dos dados METAR versionados; "
             "não havia produtos GFS históricos disponíveis em /media/MET.",
-            "A tag fase-0-concluida é criada no commit dos artefatos; se ela ainda "
-            "não aparecer em repository.tags, consulte git tag no repositório.",
+            "A tag fase-0-concluida é criada depois deste manifesto, no commit "
+            "que contém a suíte de aceitação; consulte git tag no repositório.",
         ],
     }
     return manifest

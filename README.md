@@ -43,6 +43,7 @@ Resumo das fases:
 
 ## Status
 
-Aguardando aprovação do plano para iniciar a Fase 0.
+Fase 0 concluída: snapshot, backup, amostra GFS, baseline, harness e suíte de
+aceitação automatizada. A Fase 1 (correções de cálculo) ainda não foi iniciada.
 
 > Repositório privado. Não publique dados, credenciais ou produtos operacionais sem revisão.

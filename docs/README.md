@@ -62,6 +62,8 @@ A Fase 0 foi concluída antes de qualquer alteração de cálculo:
 - amostra real de GFS 0.25° com 20 mensagens e ponto de São Paulo validado;
 - harness com **42 casos**: `22 passed, 20 xfailed(strict)`, sem `skip` quando a
   amostra está presente;
+- suíte de aceitação com **18 testes**; suíte completa com `40 passed`,
+  `20 xfailed(strict)` e 0 `skip`;
 - baseline em `baseline/reports/20261022-00/`;
 - `goGribV2.sh` congelado e nenhum código de produção alterado.
 

@@ -1,6 +1,6 @@
 {
   "phase": "Fase 0",
-  "generated_at": "2026-10-23T11:00:52.242279+00:00",
+  "generated_at": "2026-10-23T11:21:51.723483+00:00",
   "purpose": "Registrar backup, snapshot Git, amostra GFS, baseline, harness e contratos antes das correções de cálculo.",
   "repository": {
     "original": {
@@ -12,7 +12,7 @@
       "remote": "https://github.com/paulopimenta6/METamorfose",
       "branch": "execucao",
       "phase_start_commit": "3bf74a12e190c79c67f7117d6c1d81dcaf3124ac",
-      "head_at_manifest_generation": "3bf74a12e190c79c67f7117d6c1d81dcaf3124ac"
+      "head_at_manifest_generation": "4f45a9086445cab2226a712f6ade8d16fded7af2"
     },
     "tags": {
       "fase-0-snapshot": {
@@ -548,8 +548,8 @@
     },
     {
       "path": "baseline/build_manifest.py",
-      "bytes": 10224,
-      "sha256": "b847005cfd8d2ab6806003d81f51f79f27a8a301bbd5a813f878465af18a9597"
+      "bytes": 10203,
+      "sha256": "aae5dd19b37295f0e8ca8c7fbb5ffc17c68c3eae979e27124a400833c12a2ce1"
     },
     {
       "path": "baseline/freeze.json",
@@ -718,8 +718,8 @@
     },
     {
       "path": "docs/07-fase-0-baseline.md",
-      "bytes": 13779,
-      "sha256": "b894d375216a83061651b4ef3b3c7e8d2cafa7dbe7b60b20e1f1f5d340db11fc"
+      "bytes": 15330,
+      "sha256": "12c14644b3b9f85f9c0a911ec4f0e2e491a72b64cf7ff05ac437773c836319eb"
     },
     {
       "path": "docs/08-contratos-e-consumidores.md",
@@ -728,8 +728,8 @@
     },
     {
       "path": "docs/README.md",
-      "bytes": 9943,
-      "sha256": "6a78fd0741098e49ce053e3aa50b32ec3fe549c7703329837b46fa11e48789bc"
+      "bytes": 10054,
+      "sha256": "18a88689454a375bb4450758ca0501089dfe0047780714dcc5242c73664f2f9d"
     },
     {
       "path": "environment/path.conf",
@@ -743,8 +743,8 @@
     },
     {
       "path": "pytest.ini",
-      "bytes": 41,
-      "sha256": "6a96ba0e2d5a8296fb90f474da9d2f0173d3e41eba18965513f711104155f913"
+      "bytes": 155,
+      "sha256": "1a55f02b2def129adbc28c4d6a898c91abc2507ff674a22f02706838320871fb"
     },
     {
       "path": "remove_GRIBS_antigos.sh",
@@ -753,8 +753,8 @@
     },
     {
       "path": "tests/README.md",
-      "bytes": 5834,
-      "sha256": "bcb41e04acb451ef40c42face4253d1ac7aa6575ce0853e0aff8e3cafef2690d"
+      "bytes": 7225,
+      "sha256": "4511bb967bae3a4903f42268963f0fa03f3d9cfb874ce293071bd74fb959534c"
     },
     {
       "path": "tests/conftest.py",
@@ -770,6 +770,11 @@
       "path": "tests/phase0_harness.py",
       "bytes": 12329,
       "sha256": "8a28fe2d16597419ddc1ac0b4b4d969fa01826bb6e3091582f07bf3f09694b98"
+    },
+    {
+      "path": "tests/test_phase0_acceptance.py",
+      "bytes": 15166,
+      "sha256": "2f3f61d37db615850a4c9c8eee46c593d4c412e0973a803218230e61c4b926a3"
     },
     {
       "path": "tests/test_phase0_calculations.py",
@@ -803,6 +808,6 @@
     "A coluna lat dos CSVs do baseline é ascendente (-28 a -18), mas os dados ainda estão na ordem norte-sul do GFS (D-01).",
     "O código de produção não foi alterado; o goGribV2.sh está congelado.",
     "O backup contém o snapshot do código e dos dados METAR versionados; não havia produtos GFS históricos disponíveis em /media/MET.",
-    "A tag fase-0-concluida é criada no commit dos artefatos; se ela ainda não aparecer em repository.tags, consulte git tag no repositório."
+    "A tag fase-0-concluida é criada depois deste manifesto, no commit que contém a suíte de aceitação; consulte git tag no repositório."
   ]
 }

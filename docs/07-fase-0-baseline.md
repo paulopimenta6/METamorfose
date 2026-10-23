@@ -17,6 +17,7 @@ produção **antes** das correções.
 | Repositório de melhorias | `METamorfose`, branch `execucao`, início em `3bf74a1` |
 | Amostra GFS | 20 mensagens, 14.852.876 bytes, ponto de São Paulo validado |
 | Harness | 22 testes verdes, 20 `xfail` estritos, 0 `skip` com a amostra |
+| Aceitação | 18 testes de aceitação; suíte completa com 40 `passed`, 20 `xfailed` e 0 `skip` |
 | Baseline | 20 produtos + `summary.json` + `pytest.txt` em `baseline/reports/20261022-00/` |
 | Código de produção | Nenhuma alteração; `goGribV2.sh` congelado |
 | `/media/MET` | Não foi escrito nem alterado |
@@ -49,7 +50,7 @@ partir da amostra real descrita na seção 3.
 As tags são anotadas; o commit apontado por `fase-0-snapshot` é
 `3bf69eebf2322df6cb10ac176ca05ed342ef68df` e o apontado por `fase-0-inicio` é
 `3bf74a12e190c79c67f7117d6c1d81dcaf3124ac`. A tag `fase-0-concluida` é criada
-no commit que contém os artefatos desta fase.
+no commit que contém o baseline, o harness e a suíte de aceitação desta fase.
 
 ## 3. Amostra real de GFS
 
@@ -118,10 +119,16 @@ funções reais sem executar os efeitos colaterais dos scripts de produção:
 - `FakeDirSave` redireciona as saídas para `tmp_path`.
 
 Os testes sintéticos usam arrays pequenos e valores conhecidos. Os testes reais
-usam a amostra de 20 mensagens. A suíte completa tem 42 casos:
+usam a amostra de 20 mensagens. O harness tem 42 casos:
 
 ```text
 22 passed, 20 xfailed
+```
+
+Com a suíte de aceitação, a suíte completa tem 60 casos:
+
+```text
+40 passed, 20 xfailed, 0 skipped
 ```
 
 Os 20 `xfail` são contratos do comportamento **desejado** que o código atual
@@ -138,17 +145,42 @@ marcador seja removido. Isso evita que uma correção passe despercebida.
 | `tests/test_phase0_orientation.py` | Headers, orientação, U/V, altitude e ângulo nos fluxos AUT e MAN |
 | `tests/test_phase0_cycle.py` | Seleção de ciclo/data |
 | `tests/test_phase0_real_grib.py` | Amostra real, nomes `pygrib`, grade e ponto de São Paulo |
+| `tests/test_phase0_acceptance.py` | Aceitação dos entregáveis, contratos e remotos da Fase 0 |
 
 ### 4.2 Como executar
 
 ```bash
 python3 -m pytest -q
 python3 -m pytest -q -rx
+python3 -m pytest -q -m acceptance
+python3 -m pytest -q -m "acceptance and not network"
 python3 tests/fetch_gfs_sample.py   # se a amostra não existir
 ```
 
 Sem a amostra, os quatro testes reais são `skip`; os demais continuam
-executando. Instruções detalhadas estão em `tests/README.md`.
+executando. A suíte de aceitação é diferente: ela **falha** se o backup, a
+amostra ou um remoto obrigatório estiverem ausentes. Instruções detalhadas
+estão em `tests/README.md`.
+
+### 4.3 Aceitação automatizada
+
+`tests/test_phase0_acceptance.py` verifica os entregáveis da fase sem alterar o
+código de produção:
+
+- hashes e tamanhos do backup, da amostra, do sidecar e do `goGribV2.sh`;
+- inventário de 20 produtos, 13 CSVs e 7 PNGs, com os hashes do `summary.json`;
+- headers, 2.337 linhas, ordem `lat`/`lon` e CRLF de todos os CSVs;
+- reprodução congelada de D-01, D-02, D-03 e D-12;
+- documentação, manifesto e `summary.json`;
+- ausência de alteração no código de produção desde `fase-0-snapshot`;
+- amostra binária e `baseline/run/` fora do Git;
+- tag `fase-0-concluida` no remoto `melhorias`;
+- `main` do `servidor_MET` ainda em `3bf69ee`;
+- branch `execucao` remota igual ao `HEAD` local.
+
+Os três últimos testes usam o marker `network`. Uma execução completa da
+aceitação exige rede e os 18 testes verdes; não há `skip` para esconder
+artefato ausente.
 
 ## 5. Baseline
 
@@ -312,6 +344,7 @@ os valores numéricos não, desde que a amostra e a hora sejam as mesmas.
 | Snapshot Git e tag do original | Concluído |
 | Baseline em diretório separado | Concluído |
 | Harness com arrays sintéticos | Concluído |
+| Suíte de aceitação automatizada | Concluído: 18 testes; 40 `passed`, 20 `xfailed`, 0 `skip` |
 | Amostra real de GFS 0.25° | Concluído |
 | Comparação de ponto conhecido | Concluído |
 | Inventário de consumidores e contratos | Concluído em `docs/08-contratos-e-consumidores.md` |

@@ -9,6 +9,8 @@ executáveis, sem alterar o código de produção.
 - Python 3.11 ou compatível.
 - `pytest`, `numpy`, `matplotlib`, `pygrib` e `basemap`.
 - A amostra GFS de `baseline/samples/` para os testes marcados como reais.
+- Para a aceitação da Fase 0: o backup local, a amostra binária e acesso aos
+  remotes `melhorias` e `origin`.
 
 No ambiente usado na Fase 0:
 
@@ -36,10 +38,36 @@ python3 -m pytest -q tests/test_phase0_freeze.py tests/test_phase0_calculations.
 
 # apenas a validação com GRIB real
 python3 -m pytest -q tests/test_phase0_real_grib.py
+
+# apenas a aceitação da Fase 0 (inclui verificação dos remotos)
+python3 -m pytest -q -m acceptance
+
+# aceitação sem rede
+python3 -m pytest -q -m "acceptance and not network"
 ```
 
-A configuração `pytest.ini` limita a descoberta a `tests/` e adiciona `-ra` ao
-relatório final.
+A configuração `pytest.ini` limita a descoberta a `tests/`, adiciona `-ra` ao
+relatório final e registra os markers `acceptance` e `network`.
+
+## Aceitação da Fase 0
+
+`tests/test_phase0_acceptance.py` valida os entregáveis da fase, não as
+correções futuras. Ele cobre:
+
+- backup, amostra binária, sidecar e `goGribV2.sh` por tamanho e SHA-256;
+- os 20 produtos, 13 CSVs e 7 PNGs do baseline, com hashes do `summary.json`;
+- headers, quantidade de linhas, ordem `lat`/`lon` e CRLF dos CSVs;
+- as evidências congeladas de D-01, D-02, D-03 e D-12;
+- documentação, manifesto e ausência de alteração no código de produção;
+- presença da amostra binária apenas fora do Git;
+- tags e branches nos remotes `melhorias` e `origin`.
+
+A suíte é intencionalmente estrita: se o backup, a amostra ou um remoto
+obrigatório estiverem ausentes, o teste **falha** com uma mensagem explícita.
+Os testes que consultam a rede usam o marker `network` e podem ser excluídos
+com `-m "not network"`; nesse caso eles aparecem como `deselected`, não como
+`skip`. A aceitação só é considerada concluída quando a suíte completa termina
+com zero falhas, zero `skip` e os 20 `xfail` esperados.
 
 ## Amostra real
 
