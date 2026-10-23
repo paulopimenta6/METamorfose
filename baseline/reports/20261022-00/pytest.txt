@@ -1,0 +1,23 @@
+......xxxx.xxxxx.xx....x...xxx..x.xxxx....                               [100%]
+=========================== short test summary info ============================
+XFAIL tests/test_phase0_calculations.py::test_angmet_quadrantes_negativos_devem_ser_normalizados[10.0-0.0-270.0] - D-12: angMET não é normalizado para [0, 360); oeste e noroeste saem negativos.
+XFAIL tests/test_phase0_calculations.py::test_angmet_quadrantes_negativos_devem_ser_normalizados[10.0-10.0-225.0] - D-12: angMET não é normalizado para [0, 360); oeste e noroeste saem negativos.
+XFAIL tests/test_phase0_calculations.py::test_angmet_quadrantes_negativos_devem_ser_normalizados[10.0--10.0-315.0] - D-12: angMET não é normalizado para [0, 360); oeste e noroeste saem negativos.
+XFAIL tests/test_phase0_calculations.py::test_angmet_quadrantes_negativos_devem_ser_normalizados[0.0-10.0-180.0] - D-12: angMET não é normalizado para [0, 360); oeste e noroeste saem negativos.
+XFAIL tests/test_phase0_calculations.py::test_altura_em_metros_deveria_ser_convertida_por_3_28084[20-65.6168] - D-03: níveis em metros (20/30/40/50/80 m) passam pela fórmula de pressão.
+XFAIL tests/test_phase0_calculations.py::test_altura_em_metros_deveria_ser_convertida_por_3_28084[30-98.4252] - D-03: níveis em metros (20/30/40/50/80 m) passam pela fórmula de pressão.
+XFAIL tests/test_phase0_calculations.py::test_altura_em_metros_deveria_ser_convertida_por_3_28084[40-131.2336] - D-03: níveis em metros (20/30/40/50/80 m) passam pela fórmula de pressão.
+XFAIL tests/test_phase0_calculations.py::test_altura_em_metros_deveria_ser_convertida_por_3_28084[50-164.042] - D-03: níveis em metros (20/30/40/50/80 m) passam pela fórmula de pressão.
+XFAIL tests/test_phase0_calculations.py::test_altura_em_metros_deveria_ser_convertida_por_3_28084[80-262.4672] - D-03: níveis em metros (20/30/40/50/80 m) passam pela fórmula de pressão.
+XFAIL tests/test_phase0_cycle.py::test_ciclo_0630_deve_escolher_o_ciclo_06 - D-04: durante toda a hora 06 a comparação inclusiva escolhe o ciclo 00, não o 06.
+XFAIL tests/test_phase0_cycle.py::test_ciclo_0030_deve_usar_o_18_do_dia_anterior - D-04: às 00:30 o ciclo 00 do dia corrente ainda não existe; o leitor deveria usar o 18 do dia anterior.
+XFAIL tests/test_phase0_orientation.py::test_matriz_escalar_primeira_linha_deve_ser_o_sul - D-01: a latitude é invertida, mas os dados não; a primeira linha do CSV não corresponde ao sul.
+XFAIL tests/test_phase0_orientation.py::test_bluesky_altitude_de_20_metros - D-03: hMET de 20 m usa a fórmula de pressão (76.487 ft) em vez de 65,6 ft.
+XFAIL tests/test_phase0_orientation.py::test_bluesky_angulo_de_vento_de_oeste - D-12: angMET de vento de oeste sai -90 em vez de 270.
+XFAIL tests/test_phase0_orientation.py::test_bluesky_primeira_linha_deve_ser_o_sul - D-01: a primeira linha tem lat=-10, mas o valor ainda é o da linha de lat=10.
+XFAIL tests/test_phase0_orientation.py::test_preditor_primeira_linha_deve_ser_o_sul - D-01: a primeira linha tem lat=-10, mas o U ainda é o da linha de lat=10.
+XFAIL tests/test_phase0_orientation.py::test_man_bluesky_altitude_de_20_metros - D-03: hMET do MAN para 20 m também usa a fórmula de pressão.
+XFAIL tests/test_phase0_orientation.py::test_man_bluesky_angulo_de_vento_de_oeste - D-12: angMET do MAN também não é normalizado.
+XFAIL tests/test_phase0_orientation.py::test_aut_preditor_deve_receber_v_comp_supe - D-02: geraMatrizVentoSup passa u_comp_supe também como componente V do preditor.
+XFAIL tests/test_phase0_orientation.py::test_mapa_vento_superficial_deve_ler_v_supe - D-02: o mapa de vento superficial lê uSupe para a componente V.
+22 passed, 20 xfailed in 7.89s

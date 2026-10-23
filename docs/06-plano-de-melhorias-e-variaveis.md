@@ -216,7 +216,7 @@ Regras:
 2. No `flag 3` (cruzamento do dateline), normalizar `data_ini` e `data_fim` **antes** de concatenar.
 3. Para vento, aplicar a mesma normalização a `data_U` e `data_V`, com a mesma máscara.
 4. Não basta remover `lat[::-1]`: os CSVs também estão errados e são consumidos diretamente.
-5. A ordem das linhas dos CSVs passará a ser latitude crescente. Consumidores devem ser avisados.
+5. A coluna `lat` já é crescente no baseline; a correção deve alinhar `data` à `lat`, preservando a ordem das linhas. Só comunicar mudança de ordem se ela realmente ocorrer.
 
 ### 4.4 Teste de aceitação
 
@@ -327,7 +327,7 @@ Aplicar `eh_vento_superficie=True` no fluxo `winds` e `False` no fluxo `wind`. N
 
 ### C-03 — Orientação norte-sul (D-01)
 
-Correção descrita na seção 4. Afeta mapas e matrizes; a ordem das linhas dos CSVs passa a ser latitude crescente.
+Correção descrita na seção 4. Afeta mapas e matrizes. No baseline, a coluna `lat` já é crescente; o que está errado é o desalinhamento dos dados. A correção deve preservar a ordem das linhas e alinhar `data` à `lat`.
 
 **Teste:** ver seção 4.4.
 
@@ -504,7 +504,7 @@ Itens:
 - Comparar com leitura independente do GRIB e com observações/METAR.
 - Validar consumidores BlueSky, preditor e planilhas.
 - Comunicar mudanças de contrato:
-  - ordem das linhas dos CSVs agora é latitude crescente;
+  - dados alinhados à latitude crescente (a coluna `lat` já era crescente);
   - `hMET`/`halt` de `winds` mudou;
   - `vento V` foi corrigido;
   - `angMET` agora está em `[0, 360)`;
@@ -571,7 +571,7 @@ Itens:
 | T-14 | Atomicidade | Falha no meio da escrita não deixa CSV/JSON parcial; lock evita execução concorrente |
 | T-15 | Recursos | Figuras e GRIBs fechados; memória estável em lote |
 
-**Verificação transversal de contrato:** antes/depois, comparar headers e nomes de variáveis/produtos. Nenhum nome deve mudar. A ordem das linhas dos CSVs pode mudar (latitude crescente) e deve ser comunicada.
+**Verificação transversal de contrato:** antes/depois, comparar headers e nomes de variáveis/produtos. Nenhum nome deve mudar. A coluna `lat` já é crescente; a correção deve preservar a ordem das linhas e alinhar os dados à latitude.
 
 ---
 
@@ -615,7 +615,7 @@ Itens:
 | `temps` | Consumidores esperarem temperatura do ar a 2 m | Manter nome; documentar que é temperatura de pele; não alterar seletor |
 | `winds` | Ativar produto antes das correções de U/V e `hMET` | Ativar somente após Fase 1 |
 | Header `nivel<hPa>` | Valor em metros para `winds` | Manter header; documentar; schema v2 se necessário |
-| Ordem dos CSVs | Consumidores podem assumir latitude decrescente | Comunicar mudança para latitude crescente; testar |
+| Ordem dos CSVs | Consumidores podem assumir que a coluna `lat` é crescente, mas os dados atuais estão desalinhados | Preservar a ordem crescente e alinhar os dados; comunicar somente se a ordem mudar |
 | METAR | Chaves com espaço final e JSON concatenado | Preservar chaves; corrigir escrita; versionar se necessário |
 | `goGribV2.sh` | Alteração acidental da aquisição | Congelado; nenhuma mudança |
 | Falta de Git | Perda de histórico/rollback | Backup obrigatório antes da Fase 1 |

@@ -49,6 +49,24 @@ O sistema **não é** um serviço HTTP/API, não usa banco de dados, fila, cache
 | [04-operacao.md](04-operacao.md) | Pré-requisitos, ordem de execução, comandos, cron, validação e troubleshooting |
 | [05-diagnostico.md](05-diagnostico.md) | Bugs encontrados, evidências `arquivo:linha`, impacto, prioridade e plano de correção |
 | [06-plano-de-melhorias-e-variaveis.md](06-plano-de-melhorias-e-variaveis.md) | Conclusões sobre nomenclatura/semântica das variáveis e plano de melhorias priorizado |
+| [07-fase-0-baseline.md](07-fase-0-baseline.md) | Backup, snapshot Git, amostra real de GFS, harness e baseline da Fase 0 |
+| [08-contratos-e-consumidores.md](08-contratos-e-consumidores.md) | Contratos de CSV/JSON, headers, unidades, ordem das linhas e consumidores |
+
+## Fase 0 — preparação
+
+A Fase 0 foi concluída antes de qualquer alteração de cálculo:
+
+- backup em `/home/paulo/Documentos/meus_codigos/backups/servidor_MET-fase-0-20261023.tar.gz`;
+- snapshot `servidor_MET` em `main` (`3bf69ee`) e início da branch `execucao`
+  em `METamorfose` (`3bf74a1`);
+- amostra real de GFS 0.25° com 20 mensagens e ponto de São Paulo validado;
+- harness com **42 casos**: `22 passed, 20 xfailed(strict)`, sem `skip` quando a
+  amostra está presente;
+- baseline em `baseline/reports/20261022-00/`;
+- `goGribV2.sh` congelado e nenhum código de produção alterado.
+
+Instruções de teste: [tests/README.md](../tests/README.md). Resultado detalhado:
+[07-fase-0-baseline.md](07-fase-0-baseline.md).
 
 ## Diagrama de contexto
 
@@ -164,8 +182,8 @@ cd /media/MET/servidor_MET
 
 ## Limitações da auditoria
 
-- Não há logs de produção, testes automatizados, histórico Git ou documentação anterior.
-- Não há arquivos GRIB nem produtos gerados neste checkout para comparar com os mapas/CSV históricos.
+- No momento da auditoria original não havia logs de produção, testes automatizados, histórico Git ou documentação anterior. A Fase 0 adicionou harness, baseline e histórico Git; ver [07-fase-0-baseline.md](07-fase-0-baseline.md).
+- Não havia arquivos GRIB nem produtos gerados neste checkout para comparar com os mapas/CSV históricos. A Fase 0 gerou uma amostra e um baseline próprios; ver [07-fase-0-baseline.md](07-fase-0-baseline.md).
 - `PythonMETAR` não está instalado no ambiente auditado; `METARpy/python-metar-master` é um vendor alternativo, mas `GoMETAR.py` importa o pacote `PythonMETAR`.
 - Não foi possível confirmar o agendador real, o fuso horário do servidor nem as premissas dos consumidores BlueSky/preditor.
 - As conclusões sobre orientação de grade foram verificadas com uma amostra real de GFS 0.25° do NOMADS e com a API `pygrib` (ver D-01 em [05-diagnostico.md](05-diagnostico.md)).

@@ -1,0 +1,808 @@
+{
+  "phase": "Fase 0",
+  "generated_at": "2026-10-23T11:00:52.242279+00:00",
+  "purpose": "Registrar backup, snapshot Git, amostra GFS, baseline, harness e contratos antes das correções de cálculo.",
+  "repository": {
+    "original": {
+      "remote": "https://github.com/paulopimenta6/servidor_MET",
+      "branch": "main",
+      "snapshot_commit": "3bf69eebf2322df6cb10ac176ca05ed342ef68df"
+    },
+    "improvements": {
+      "remote": "https://github.com/paulopimenta6/METamorfose",
+      "branch": "execucao",
+      "phase_start_commit": "3bf74a12e190c79c67f7117d6c1d81dcaf3124ac",
+      "head_at_manifest_generation": "3bf74a12e190c79c67f7117d6c1d81dcaf3124ac"
+    },
+    "tags": {
+      "fase-0-snapshot": {
+        "object": "8999b6d685ea1383f478c164a5004bddf7eff624",
+        "commit": "3bf69eebf2322df6cb10ac176ca05ed342ef68df"
+      },
+      "fase-0-inicio": {
+        "object": "0e719fe2c4a67ff133adedb545251d7a8533e2ac",
+        "commit": "3bf74a12e190c79c67f7117d6c1d81dcaf3124ac"
+      }
+    }
+  },
+  "backup": {
+    "path": "/home/paulo/Documentos/meus_codigos/backups/servidor_MET-fase-0-20261023.tar.gz",
+    "bytes": 5300650,
+    "sha256": "15d9710edbba23d760953436b7e1463177a3d9785da35329b0dedad87cdba3fe"
+  },
+  "freeze": {
+    "frozen_at": "2026-10-23T07:27:09-03:00",
+    "reason": "Fase 0: a aquisição GRIB não pode ser alterada durante as correções de cálculo.",
+    "files": {
+      "goGribV2.sh": {
+        "sha256": "994ce16c1480b17a62b78e72761307af2000dc47819abbaf48ce042c72023ce0",
+        "bytes": 4291
+      }
+    },
+    "invariants": {
+      "cycles": [
+        "00",
+        "06",
+        "12",
+        "18"
+      ],
+      "forecasts": [
+        "f000",
+        "f006",
+        "f012",
+        "f018"
+      ],
+      "resolutions": [
+        "0p25",
+        "1p00"
+      ],
+      "source": "https://nomads.ncep.noaa.gov/pub/data/nccf/com/gfs/prod/",
+      "note": "Nenhuma alteração de URL, ciclos, previsões, resoluções ou escopo."
+    }
+  },
+  "sample": {
+    "path": "baseline/samples/gfs.20261022.00.0p25.subset.grb2",
+    "bytes": 14852876,
+    "sha256": "7adc84c35743c9fe4884756b938f38c8a18a5278d3b30bb945a300adde908a90",
+    "source": {
+      "url": "https://nomads.ncep.noaa.gov/pub/data/nccf/com/gfs/prod/gfs.20261022/00/atmos/gfs.t00z.pgrb2.0p25.f000",
+      "index_url": "https://nomads.ncep.noaa.gov/pub/data/nccf/com/gfs/prod/gfs.20261022/00/atmos/gfs.t00z.pgrb2.0p25.f000.idx",
+      "date": "20261022",
+      "cycle": "00",
+      "resolution": "0p25",
+      "forecast_hour": "000",
+      "full_bytes": 489780434
+    },
+    "sidecar": "baseline/samples/gfs.20261022.00.0p25.subset.grb2.json",
+    "sidecar_sha256": "fc7b1f607b5b91512325591a0d99bda76e70848be9bfd1d1730c4ea9df69e31d",
+    "reference_point": {
+      "lat": -23.55,
+      "lon_0_360": 313.37,
+      "lon_180": -46.63,
+      "values": {
+        "Temperature_850": 286.3202734375,
+        "U_850": -4.85838623046875,
+        "V_850": 1.6511474609375,
+        "Temperature_surface": 290.1187255859375,
+        "U_20m": -2.184248046875,
+        "V_20m": 1.82025390625,
+        "Pressure_MSL": 102170.475
+      }
+    }
+  },
+  "environment": {
+    "python": "3.11.14 (main, Oct 21 2025, 18:31:21) [GCC 11.2.0]",
+    "platform": "Linux-6.8.0-138-generic-x86_64-with-glibc2.35",
+    "numpy": "2.3.5",
+    "matplotlib": "3.10.0",
+    "pygrib": "2.1.8",
+    "basemap": "2.0.0"
+  },
+  "baseline": {
+    "report_dir": "baseline/reports/20261022-00",
+    "fixed_local_time": "2026-10-22T01:00",
+    "summary": {
+      "path": "baseline/reports/20261022-00/summary.json",
+      "bytes": 16030,
+      "sha256": "89f6d52448f954f4fb3ec5ffb32305023024b0b2cac8baec9321f8fd0a1b6db0"
+    },
+    "pytest": {
+      "path": "baseline/reports/20261022-00/pytest.txt",
+      "bytes": 3677,
+      "sha256": "2df2106fbad3a3cabaf7891e3b34f50b2434009008e8bce6bb6088d8804e4d54"
+    },
+    "runs": [
+      {
+        "label": "matriz_temp_850",
+        "script": "gera_matriz_MET.py",
+        "args": [
+          "-v",
+          "temp",
+          "-n",
+          "850",
+          "-r",
+          "SP"
+        ],
+        "returncode": 0,
+        "log": "baseline/run/logs/matriz_temp_850.log"
+      },
+      {
+        "label": "mapa_temp_850",
+        "script": "gera_mapas_MET.py",
+        "args": [
+          "-v",
+          "temp",
+          "-n",
+          "850",
+          "-r",
+          "SP"
+        ],
+        "returncode": 0,
+        "log": "baseline/run/logs/mapa_temp_850.log"
+      },
+      {
+        "label": "matriz_wind_850",
+        "script": "gera_matriz_vento_MET.py",
+        "args": [
+          "-v",
+          "wind",
+          "-n",
+          "850",
+          "-r",
+          "SP"
+        ],
+        "returncode": 0,
+        "log": "baseline/run/logs/matriz_wind_850.log"
+      },
+      {
+        "label": "mapa_wind_850",
+        "script": "gera_mapas_vento_MET.py",
+        "args": [
+          "-v",
+          "wind",
+          "-n",
+          "850",
+          "-r",
+          "SP"
+        ],
+        "returncode": 0,
+        "log": "baseline/run/logs/mapa_wind_850.log"
+      },
+      {
+        "label": "matriz_winds_20",
+        "script": "gera_matriz_vento_MET.py",
+        "args": [
+          "-v",
+          "winds",
+          "-ns",
+          "-r",
+          "SP"
+        ],
+        "returncode": 0,
+        "log": "baseline/run/logs/matriz_winds_20.log"
+      },
+      {
+        "label": "mapa_winds_20",
+        "script": "gera_mapas_vento_MET.py",
+        "args": [
+          "-v",
+          "winds",
+          "-ns",
+          "-r",
+          "SP"
+        ],
+        "returncode": 0,
+        "log": "baseline/run/logs/mapa_winds_20.log"
+      }
+    ],
+    "csv_count": 13,
+    "product_count": 20,
+    "product_hashes": [
+      {
+        "path": "bluesky/GFS_0.25_matriz_lat_lon_alt_angMET_VentoResult_SP_N20_00_20261022_00.csv",
+        "bytes": 158204,
+        "sha256": "bc8e5c5796280255a3c814609ec9ec6ace741e5d8b5514d8a25e1a77c45f7d36"
+      },
+      {
+        "path": "bluesky/GFS_0.25_matriz_lat_lon_alt_angMET_VentoResult_SP_N30_00_20261022_00.csv",
+        "bytes": 160561,
+        "sha256": "70d57fe2c01f73f1edfea9127a160a25a2186bbfb229dd5cd069671e7b85eeac"
+      },
+      {
+        "path": "bluesky/GFS_0.25_matriz_lat_lon_alt_angMET_VentoResult_SP_N40_00_20261022_00.csv",
+        "bytes": 160650,
+        "sha256": "1ba56de69413a32b3577ceaea97439337474b1e7688c4e57ff9be18bbefe5d33"
+      },
+      {
+        "path": "bluesky/GFS_0.25_matriz_lat_lon_alt_angMET_VentoResult_SP_N50_00_20261022_00.csv",
+        "bytes": 160694,
+        "sha256": "8e073fb3ce57255ba99daaa6b8b290d1f848876ea9268cc9a6b0d627397d296b"
+      },
+      {
+        "path": "bluesky/GFS_0.25_matriz_lat_lon_alt_angMET_VentoResult_SP_N80_00_20261022_00.csv",
+        "bytes": 163146,
+        "sha256": "db6421ba89ee2806207b73cb6261f480da4ae45560cc68eee68ff6e8a030be0a"
+      },
+      {
+        "path": "bluesky/GFS_0.25_matriz_lat_lon_alt_angMET_VentoResult_SP_N850_00_20261022_00.csv",
+        "bytes": 163488,
+        "sha256": "f6435eef9705c54cc708094e5ddb68e2bfbc281c7c871a929aab5693693b7b10"
+      },
+      {
+        "path": "mapas/GFS_0.25_SP_N20_CampoVento_00_20261022_00.png",
+        "bytes": 725881,
+        "sha256": "0683aaca5df2abb65c3daca380f0c0171e2134f1b5eadf3993aeeb666eed641c"
+      },
+      {
+        "path": "mapas/GFS_0.25_SP_N30_CampoVento_00_20261022_00.png",
+        "bytes": 719972,
+        "sha256": "a0019e783e1eeedd83155767b8b5d1aa519ea5feacc8e51ad2a6bf560f4fdc88"
+      },
+      {
+        "path": "mapas/GFS_0.25_SP_N40_CampoVento_00_20261022_00.png",
+        "bytes": 715148,
+        "sha256": "8f76fcd4c0e97bf76765532af0dd5b2ac537cfc36dde01699202874bb2a6a3c6"
+      },
+      {
+        "path": "mapas/GFS_0.25_SP_N50_CampoVento_00_20261022_00.png",
+        "bytes": 712380,
+        "sha256": "863586b4ac284f39356640f7e26abc5e7db36eb0f6e13f7e53e506a6588ae930"
+      },
+      {
+        "path": "mapas/GFS_0.25_SP_N80_CampoVento_00_20261022_00.png",
+        "bytes": 703841,
+        "sha256": "7b87ab5b31f910104db85e9c55ab94a6858d8093604f19faa8a5545883b0b634"
+      },
+      {
+        "path": "mapas/GFS_0.25_SP_N850_CampoVento_00_20261022_00.png",
+        "bytes": 1154925,
+        "sha256": "73f1c01f4512ae358a8ad492e902ae7d4232283858e5a20185b6e4ebbf071473"
+      },
+      {
+        "path": "mapas/GFS_0.25_SP_N850_temp_00_20261022_00.png",
+        "bytes": 442865,
+        "sha256": "397d2b69b2cd56bc49771ba5ba131b02ba91cdf828aa7c4350e074c23d280028"
+      },
+      {
+        "path": "matrizes/GFS_0.25_SP_N850_temp_00_20261022_00.csv",
+        "bytes": 76318,
+        "sha256": "9756f53547d8a17577b77ff81cb03694d455453aba673fef351bbe8b58154b8d"
+      },
+      {
+        "path": "predi/GFS_0.25_matriz_lat_lon_Vento_UVT_Predi_SP_N20_00_20261022_00.csv",
+        "bytes": 152497,
+        "sha256": "d334f81398f7a71be4333806a3481012ff4a28824a683124b4c7588d4fa227d2"
+      },
+      {
+        "path": "predi/GFS_0.25_matriz_lat_lon_Vento_UVT_Predi_SP_N30_00_20261022_00.csv",
+        "bytes": 152515,
+        "sha256": "e621111940c249be6ea43a9c95ca30617e1b84973a39266dca30a3a7e7f949b3"
+      },
+      {
+        "path": "predi/GFS_0.25_matriz_lat_lon_Vento_UVT_Predi_SP_N40_00_20261022_00.csv",
+        "bytes": 166741,
+        "sha256": "d6136d5f371a03514d7754cc5b6f4c7645de15a060de3033067ea46db4dcdc4f"
+      },
+      {
+        "path": "predi/GFS_0.25_matriz_lat_lon_Vento_UVT_Predi_SP_N50_00_20261022_00.csv",
+        "bytes": 165403,
+        "sha256": "acf50f03e7d2f2af2d2eff9ab75e7c8fb0bbcffa1556bd3e07de5d3c4a37e455"
+      },
+      {
+        "path": "predi/GFS_0.25_matriz_lat_lon_Vento_UVT_Predi_SP_N80_00_20261022_00.csv",
+        "bytes": 153249,
+        "sha256": "421bdb156a3deb60e38a8079d8f8fdb63cff1f5922a7b544a5095bc25c6b7421"
+      },
+      {
+        "path": "predi/GFS_0.25_matriz_lat_lon_Vento_UVT_Predi_SP_N850_00_20261022_00.csv",
+        "bytes": 153403,
+        "sha256": "227a64dc6e05796f084bcd36af33cdb23e8977d377efc89fae797c5c94d317e8"
+      }
+    ],
+    "report_file_count": 22,
+    "report_file_hashes": [
+      {
+        "path": "bluesky/GFS_0.25_matriz_lat_lon_alt_angMET_VentoResult_SP_N20_00_20261022_00.csv",
+        "bytes": 158204,
+        "sha256": "bc8e5c5796280255a3c814609ec9ec6ace741e5d8b5514d8a25e1a77c45f7d36"
+      },
+      {
+        "path": "bluesky/GFS_0.25_matriz_lat_lon_alt_angMET_VentoResult_SP_N30_00_20261022_00.csv",
+        "bytes": 160561,
+        "sha256": "70d57fe2c01f73f1edfea9127a160a25a2186bbfb229dd5cd069671e7b85eeac"
+      },
+      {
+        "path": "bluesky/GFS_0.25_matriz_lat_lon_alt_angMET_VentoResult_SP_N40_00_20261022_00.csv",
+        "bytes": 160650,
+        "sha256": "1ba56de69413a32b3577ceaea97439337474b1e7688c4e57ff9be18bbefe5d33"
+      },
+      {
+        "path": "bluesky/GFS_0.25_matriz_lat_lon_alt_angMET_VentoResult_SP_N50_00_20261022_00.csv",
+        "bytes": 160694,
+        "sha256": "8e073fb3ce57255ba99daaa6b8b290d1f848876ea9268cc9a6b0d627397d296b"
+      },
+      {
+        "path": "bluesky/GFS_0.25_matriz_lat_lon_alt_angMET_VentoResult_SP_N80_00_20261022_00.csv",
+        "bytes": 163146,
+        "sha256": "db6421ba89ee2806207b73cb6261f480da4ae45560cc68eee68ff6e8a030be0a"
+      },
+      {
+        "path": "bluesky/GFS_0.25_matriz_lat_lon_alt_angMET_VentoResult_SP_N850_00_20261022_00.csv",
+        "bytes": 163488,
+        "sha256": "f6435eef9705c54cc708094e5ddb68e2bfbc281c7c871a929aab5693693b7b10"
+      },
+      {
+        "path": "mapas/GFS_0.25_SP_N20_CampoVento_00_20261022_00.png",
+        "bytes": 725881,
+        "sha256": "0683aaca5df2abb65c3daca380f0c0171e2134f1b5eadf3993aeeb666eed641c"
+      },
+      {
+        "path": "mapas/GFS_0.25_SP_N30_CampoVento_00_20261022_00.png",
+        "bytes": 719972,
+        "sha256": "a0019e783e1eeedd83155767b8b5d1aa519ea5feacc8e51ad2a6bf560f4fdc88"
+      },
+      {
+        "path": "mapas/GFS_0.25_SP_N40_CampoVento_00_20261022_00.png",
+        "bytes": 715148,
+        "sha256": "8f76fcd4c0e97bf76765532af0dd5b2ac537cfc36dde01699202874bb2a6a3c6"
+      },
+      {
+        "path": "mapas/GFS_0.25_SP_N50_CampoVento_00_20261022_00.png",
+        "bytes": 712380,
+        "sha256": "863586b4ac284f39356640f7e26abc5e7db36eb0f6e13f7e53e506a6588ae930"
+      },
+      {
+        "path": "mapas/GFS_0.25_SP_N80_CampoVento_00_20261022_00.png",
+        "bytes": 703841,
+        "sha256": "7b87ab5b31f910104db85e9c55ab94a6858d8093604f19faa8a5545883b0b634"
+      },
+      {
+        "path": "mapas/GFS_0.25_SP_N850_CampoVento_00_20261022_00.png",
+        "bytes": 1154925,
+        "sha256": "73f1c01f4512ae358a8ad492e902ae7d4232283858e5a20185b6e4ebbf071473"
+      },
+      {
+        "path": "mapas/GFS_0.25_SP_N850_temp_00_20261022_00.png",
+        "bytes": 442865,
+        "sha256": "397d2b69b2cd56bc49771ba5ba131b02ba91cdf828aa7c4350e074c23d280028"
+      },
+      {
+        "path": "matrizes/GFS_0.25_SP_N850_temp_00_20261022_00.csv",
+        "bytes": 76318,
+        "sha256": "9756f53547d8a17577b77ff81cb03694d455453aba673fef351bbe8b58154b8d"
+      },
+      {
+        "path": "predi/GFS_0.25_matriz_lat_lon_Vento_UVT_Predi_SP_N20_00_20261022_00.csv",
+        "bytes": 152497,
+        "sha256": "d334f81398f7a71be4333806a3481012ff4a28824a683124b4c7588d4fa227d2"
+      },
+      {
+        "path": "predi/GFS_0.25_matriz_lat_lon_Vento_UVT_Predi_SP_N30_00_20261022_00.csv",
+        "bytes": 152515,
+        "sha256": "e621111940c249be6ea43a9c95ca30617e1b84973a39266dca30a3a7e7f949b3"
+      },
+      {
+        "path": "predi/GFS_0.25_matriz_lat_lon_Vento_UVT_Predi_SP_N40_00_20261022_00.csv",
+        "bytes": 166741,
+        "sha256": "d6136d5f371a03514d7754cc5b6f4c7645de15a060de3033067ea46db4dcdc4f"
+      },
+      {
+        "path": "predi/GFS_0.25_matriz_lat_lon_Vento_UVT_Predi_SP_N50_00_20261022_00.csv",
+        "bytes": 165403,
+        "sha256": "acf50f03e7d2f2af2d2eff9ab75e7c8fb0bbcffa1556bd3e07de5d3c4a37e455"
+      },
+      {
+        "path": "predi/GFS_0.25_matriz_lat_lon_Vento_UVT_Predi_SP_N80_00_20261022_00.csv",
+        "bytes": 153249,
+        "sha256": "421bdb156a3deb60e38a8079d8f8fdb63cff1f5922a7b544a5095bc25c6b7421"
+      },
+      {
+        "path": "predi/GFS_0.25_matriz_lat_lon_Vento_UVT_Predi_SP_N850_00_20261022_00.csv",
+        "bytes": 153403,
+        "sha256": "227a64dc6e05796f084bcd36af33cdb23e8977d377efc89fae797c5c94d317e8"
+      },
+      {
+        "path": "pytest.txt",
+        "bytes": 3677,
+        "sha256": "2df2106fbad3a3cabaf7891e3b34f50b2434009008e8bce6bb6088d8804e4d54"
+      },
+      {
+        "path": "summary.json",
+        "bytes": 16030,
+        "sha256": "89f6d52448f954f4fb3ec5ffb32305023024b0b2cac8baec9321f8fd0a1b6db0"
+      }
+    ],
+    "evidence": {
+      "temperature_850_csv": {
+        "path": "matrizes/GFS_0.25_SP_N850_temp_00_20261022_00.csv",
+        "lat_first": -28.0,
+        "lat_last": -18.0,
+        "temp_range_c": {
+          "min": 6.753398437500039,
+          "max": 26.423398437500055
+        }
+      },
+      "bluesky_20m_csv": {
+        "path": "bluesky/GFS_0.25_matriz_lat_lon_alt_angMET_VentoResult_SP_N20_00_20261022_00.csv",
+        "hmet_range_ft": {
+          "min": 76487.0117634869,
+          "max": 76487.0117634869
+        },
+        "angmet_range_deg": {
+          "min": -179.27465110422273,
+          "max": 179.54094324345422
+        }
+      },
+      "bluesky_850_csv": {
+        "path": "bluesky/GFS_0.25_matriz_lat_lon_alt_angMET_VentoResult_SP_N850_00_20261022_00.csv",
+        "hmet_range_ft": {
+          "min": 4779.1936018229135,
+          "max": 4779.1936018229135
+        },
+        "angmet_range_deg": {
+          "min": -179.38247298479556,
+          "max": 174.7259806416825
+        }
+      },
+      "preditor_20m_csv": {
+        "path": "predi/GFS_0.25_matriz_lat_lon_Vento_UVT_Predi_SP_N20_00_20261022_00.csv",
+        "vento_u_range": {
+          "min": -11.180498046875,
+          "max": 1.439501953125
+        },
+        "vento_v_range": {
+          "min": -11.180498046875,
+          "max": 1.439501953125
+        },
+        "u_equals_v": true
+      },
+      "preditor_850_csv": {
+        "path": "predi/GFS_0.25_matriz_lat_lon_Vento_UVT_Predi_SP_N850_00_20261022_00.csv",
+        "vento_u_range": {
+          "min": -10.87088623046875,
+          "max": 5.829113769531251
+        },
+        "vento_v_range": {
+          "min": -14.0988525390625,
+          "max": 7.7011474609375
+        },
+        "u_equals_v": false
+      },
+      "reference_point": {
+        "lat": -23.55,
+        "lon_0_360": 313.37,
+        "lon_180": -46.63,
+        "values": {
+          "Temperature_850": 286.3202734375,
+          "U_850": -4.85838623046875,
+          "V_850": 1.6511474609375,
+          "Temperature_surface": 290.1187255859375,
+          "U_20m": -2.184248046875,
+          "V_20m": 1.82025390625,
+          "Pressure_MSL": 102170.475
+        }
+      }
+    }
+  },
+  "tests": {
+    "passed": 22,
+    "failed": 0,
+    "skipped": 0,
+    "xfailed": 20,
+    "xpassed": 0,
+    "error": 0,
+    "total_cases": 42,
+    "xfail_tests": [
+      "tests/test_phase0_calculations.py::test_angmet_quadrantes_negativos_devem_ser_normalizados[10.0-0.0-270.0]",
+      "tests/test_phase0_calculations.py::test_angmet_quadrantes_negativos_devem_ser_normalizados[10.0-10.0-225.0]",
+      "tests/test_phase0_calculations.py::test_angmet_quadrantes_negativos_devem_ser_normalizados[10.0--10.0-315.0]",
+      "tests/test_phase0_calculations.py::test_angmet_quadrantes_negativos_devem_ser_normalizados[0.0-10.0-180.0]",
+      "tests/test_phase0_calculations.py::test_altura_em_metros_deveria_ser_convertida_por_3_28084[20-65.6168]",
+      "tests/test_phase0_calculations.py::test_altura_em_metros_deveria_ser_convertida_por_3_28084[30-98.4252]",
+      "tests/test_phase0_calculations.py::test_altura_em_metros_deveria_ser_convertida_por_3_28084[40-131.2336]",
+      "tests/test_phase0_calculations.py::test_altura_em_metros_deveria_ser_convertida_por_3_28084[50-164.042]",
+      "tests/test_phase0_calculations.py::test_altura_em_metros_deveria_ser_convertida_por_3_28084[80-262.4672]",
+      "tests/test_phase0_cycle.py::test_ciclo_0630_deve_escolher_o_ciclo_06",
+      "tests/test_phase0_cycle.py::test_ciclo_0030_deve_usar_o_18_do_dia_anterior",
+      "tests/test_phase0_orientation.py::test_matriz_escalar_primeira_linha_deve_ser_o_sul",
+      "tests/test_phase0_orientation.py::test_bluesky_altitude_de_20_metros",
+      "tests/test_phase0_orientation.py::test_bluesky_angulo_de_vento_de_oeste",
+      "tests/test_phase0_orientation.py::test_bluesky_primeira_linha_deve_ser_o_sul",
+      "tests/test_phase0_orientation.py::test_preditor_primeira_linha_deve_ser_o_sul",
+      "tests/test_phase0_orientation.py::test_man_bluesky_altitude_de_20_metros",
+      "tests/test_phase0_orientation.py::test_man_bluesky_angulo_de_vento_de_oeste",
+      "tests/test_phase0_orientation.py::test_aut_preditor_deve_receber_v_comp_supe",
+      "tests/test_phase0_orientation.py::test_mapa_vento_superficial_deve_ler_v_supe"
+    ]
+  },
+  "source_files": [
+    {
+      "path": ".gitignore",
+      "bytes": 128,
+      "sha256": "b7d0302945f2de245eb82a45930915f6f61c1f660a81d9176979b3b3348e4422"
+    },
+    {
+      "path": "METARpy/GoMETAR.py",
+      "bytes": 5533,
+      "sha256": "f24755e6c651143effa51246c3fa39e9c029f56c277d367b0dbce4b0f5f89ef6"
+    },
+    {
+      "path": "METARpy/METARpy.py",
+      "bytes": 1452,
+      "sha256": "f8e2beed065077a151bc9b99a252645edf4b3386b274cf20d5c6626966a31346"
+    },
+    {
+      "path": "METARpy/METARpy_traduzido.py",
+      "bytes": 3312,
+      "sha256": "749904e0cb4452112aef335c81bc53cdb16775a73d40c2d42fa314e6aa819c33"
+    },
+    {
+      "path": "METARpy/automatizaMetar.sh",
+      "bytes": 567,
+      "sha256": "681881b5dd488457400a3f7d2256efc7b1f1509502fc108da63fd31b2f79f84e"
+    },
+    {
+      "path": "baseline/README.md",
+      "bytes": 1354,
+      "sha256": "cd346746d7491d96acfab97604a348b01a5b85cf28435cb8c1be2762e2416c9f"
+    },
+    {
+      "path": "baseline/build_manifest.py",
+      "bytes": 10224,
+      "sha256": "b847005cfd8d2ab6806003d81f51f79f27a8a301bbd5a813f878465af18a9597"
+    },
+    {
+      "path": "baseline/freeze.json",
+      "bytes": 608,
+      "sha256": "b099393e6a0282bf92d1f5d584d17ad57a27a37da1a8ae19c7d1b3331db5f3c2"
+    },
+    {
+      "path": "baseline/reports/20261022-00/pytest.txt",
+      "bytes": 3677,
+      "sha256": "2df2106fbad3a3cabaf7891e3b34f50b2434009008e8bce6bb6088d8804e4d54"
+    },
+    {
+      "path": "baseline/reports/20261022-00/summary.json",
+      "bytes": 16030,
+      "sha256": "89f6d52448f954f4fb3ec5ffb32305023024b0b2cac8baec9321f8fd0a1b6db0"
+    },
+    {
+      "path": "baseline/run_baseline.py",
+      "bytes": 9239,
+      "sha256": "780977bb88a487a7602ba47c5d3ed6e52849f780042eb8b2015f3e70026eae96"
+    },
+    {
+      "path": "baseline/run_with_time.py",
+      "bytes": 1172,
+      "sha256": "8c5b592232db938f44248d55cddb4510c5718fa0bf1fa3f0a96f04592e6503ee"
+    },
+    {
+      "path": "baseline/samples/gfs.20261022.00.0p25.subset.grb2.json",
+      "bytes": 10159,
+      "sha256": "fc7b1f607b5b91512325591a0d99bda76e70848be9bfd1d1730c4ea9df69e31d"
+    },
+    {
+      "path": "bash/automatiza_MET.sh",
+      "bytes": 2356,
+      "sha256": "730f7b1e33e5d9202a7905504eaac7fc21ea4a90d358c122b93477a5f213455e"
+    },
+    {
+      "path": "bash/automatiza_vento_MET.sh",
+      "bytes": 2282,
+      "sha256": "57375920bc5e9352ecf5347e6306fa3f141f49c8aeacf798ff8f679853e7e42d"
+    },
+    {
+      "path": "bash/automatizacao_controle_MET.sh",
+      "bytes": 2601,
+      "sha256": "93039492307ba4d2a296b5967c2019b7cdc0f3adb9cf11ed1b8143951b2f693a"
+    },
+    {
+      "path": "bash/reqs_MAN_MET.sh",
+      "bytes": 9163,
+      "sha256": "045474c4c42e5f1b55f3ad6d9cf7822b0cc99b6ba283aebb6223af1e3250f4cb"
+    },
+    {
+      "path": "bash/tstbash.sh",
+      "bytes": 179,
+      "sha256": "8a25a7706248ec5bcc98106333ae31bbafac2cc27977a2f59b55bbd117d79183"
+    },
+    {
+      "path": "classes_MET/controla_env.py",
+      "bytes": 5955,
+      "sha256": "bfbbfe162269c51913614f3b75b445b40b3bdc8f0ba104633a59352b9e995d04"
+    },
+    {
+      "path": "classes_MET/executa_reqs_param.py",
+      "bytes": 7801,
+      "sha256": "dd044d77554f761b37c25a3b22f5e2832e9cb84283cd5743117f504e738017ef"
+    },
+    {
+      "path": "classes_MET/gera_mapas_MAN_MET.py",
+      "bytes": 7527,
+      "sha256": "07b947c95b13980d3086d90599641d18234f1f4de641ac3e75035ee15b6e5cb9"
+    },
+    {
+      "path": "classes_MET/gera_mapas_MET.py",
+      "bytes": 8568,
+      "sha256": "6044fe2f5665fca359fa415197ecfb2c8a18995e929e8ee30b6a73a05bb23756"
+    },
+    {
+      "path": "classes_MET/gera_mapas_vento_MAN_MET.py",
+      "bytes": 19855,
+      "sha256": "2bf7cb3c282fc10616e152afb4e146d5dbb92ab3dc563cdb2c575d96d293052c"
+    },
+    {
+      "path": "classes_MET/gera_mapas_vento_MET.py",
+      "bytes": 8393,
+      "sha256": "4e54103b86d6191bb845dc0c7f3072aa01702604e921f4d9c554d0fb6089779a"
+    },
+    {
+      "path": "classes_MET/gera_matriz_MAN_MET.py",
+      "bytes": 4642,
+      "sha256": "9f4a2d674e3d538e0fce86656b0e5d81e73acac495c766dd59f878421708409a"
+    },
+    {
+      "path": "classes_MET/gera_matriz_MET.py",
+      "bytes": 6402,
+      "sha256": "9c4125e6d4c22382d4bc521c6a2f9755b85ea8a75d45d41142529f0c1e1a2aa8"
+    },
+    {
+      "path": "classes_MET/gera_matriz_vento_MAN_MET.py",
+      "bytes": 19700,
+      "sha256": "e4877264a7a6fcc21643933530483a328ce3b7e108f312310ed467166fc62263"
+    },
+    {
+      "path": "classes_MET/gera_matriz_vento_MET.py",
+      "bytes": 14549,
+      "sha256": "deb2dc5feb803a5d114ca80940022dc4ef43f522565f50851dcb3299fd2b0e07"
+    },
+    {
+      "path": "classes_MET/leitura_dados_grib_MET.py",
+      "bytes": 15271,
+      "sha256": "23a83f0be3ac545984f9506a1f4f68e8c43bd641b7ded7705cf21da4d9e4fb43"
+    },
+    {
+      "path": "classes_MET/parse_param_MET.py",
+      "bytes": 10890,
+      "sha256": "5df6ec1767d1a3ca2042b041c581b01c07ed9dac6f0be3272e61ea973fcad91e"
+    },
+    {
+      "path": "classes_MET/poligono_regiao_MET.py",
+      "bytes": 1046,
+      "sha256": "7797a097f2c0ad6a62a81bdd52ed19575d9611a9dc5fe9da18f29006df5cc35d"
+    },
+    {
+      "path": "classes_MET/ponto_regiao_MET.py",
+      "bytes": 1872,
+      "sha256": "7416d169f3ecb7cb383e55ab3cb280e904e3f2729721054a29f5b616ceb81d55"
+    },
+    {
+      "path": "classes_MET/processamento_dados_MET.py",
+      "bytes": 11988,
+      "sha256": "6395b3cea05473a2647afbbc6c36819fc759fe6d473686f06be2f6e6f7e9c1ec"
+    },
+    {
+      "path": "classes_MET/regioes_predefinidas_MET.py",
+      "bytes": 3355,
+      "sha256": "06d92eb85d48caf3a7a8a464185d582b8bca1c0e93c6524d121c2b89db09d3fb"
+    },
+    {
+      "path": "docs/01-arquitetura.md",
+      "bytes": 13170,
+      "sha256": "c47fc52b8b5f724e486791a29270f1265a5c255283b8403c2e0cf4edc4e3f717"
+    },
+    {
+      "path": "docs/02-fluxos.md",
+      "bytes": 20448,
+      "sha256": "37bd527333709dca82445dce409396786973836707002ef1ec482cbf04869a11"
+    },
+    {
+      "path": "docs/03-dados-e-saidas.md",
+      "bytes": 19948,
+      "sha256": "a4d88cb934bf15c2a842684b3791cbd375078ca31f79d34ba51eee17e7da54d1"
+    },
+    {
+      "path": "docs/04-operacao.md",
+      "bytes": 13976,
+      "sha256": "5646bb10d0cc5e92016b8a2c6af794b6d843380687483d43477e6d85e5c43363"
+    },
+    {
+      "path": "docs/05-diagnostico.md",
+      "bytes": 44336,
+      "sha256": "95d233a947d01206a6deeaa8482ac8d097c79d3af0575434977d91521deb2559"
+    },
+    {
+      "path": "docs/06-plano-de-melhorias-e-variaveis.md",
+      "bytes": 32790,
+      "sha256": "04d1abf577270da7b2606dcdb294e9f6561ce716f83da541a1a2959e4a0223ac"
+    },
+    {
+      "path": "docs/07-fase-0-baseline.md",
+      "bytes": 13779,
+      "sha256": "b894d375216a83061651b4ef3b3c7e8d2cafa7dbe7b60b20e1f1f5d340db11fc"
+    },
+    {
+      "path": "docs/08-contratos-e-consumidores.md",
+      "bytes": 13468,
+      "sha256": "a5394d803cf261b82449d34c6934d5dafd50cc8ea170419019ca8e38ecf36e43"
+    },
+    {
+      "path": "docs/README.md",
+      "bytes": 9943,
+      "sha256": "6a78fd0741098e49ce053e3aa50b32ec3fe549c7703329837b46fa11e48789bc"
+    },
+    {
+      "path": "environment/path.conf",
+      "bytes": 256,
+      "sha256": "ad62914abceeb9bbc689f3a559aefef22ce5c60fa36898c39f1ee2cea4a709c4"
+    },
+    {
+      "path": "goGribV2.sh",
+      "bytes": 4291,
+      "sha256": "994ce16c1480b17a62b78e72761307af2000dc47819abbaf48ce042c72023ce0"
+    },
+    {
+      "path": "pytest.ini",
+      "bytes": 41,
+      "sha256": "6a96ba0e2d5a8296fb90f474da9d2f0173d3e41eba18965513f711104155f913"
+    },
+    {
+      "path": "remove_GRIBS_antigos.sh",
+      "bytes": 4131,
+      "sha256": "be7f58e073960f738974b99d4f405acbcb87d968e221d2ef7cb456b01cdf9aa7"
+    },
+    {
+      "path": "tests/README.md",
+      "bytes": 5834,
+      "sha256": "bcb41e04acb451ef40c42face4253d1ac7aa6575ce0853e0aff8e3cafef2690d"
+    },
+    {
+      "path": "tests/conftest.py",
+      "bytes": 152,
+      "sha256": "cfbd8c024cde593e7bea802f273c70575cf9fa50e4a28f4a4a025c5e9e403738"
+    },
+    {
+      "path": "tests/fetch_gfs_sample.py",
+      "bytes": 11642,
+      "sha256": "7b40d16ccda9b6a0e97da386d497e717bc3e00c865be934dfe8772986af57b08"
+    },
+    {
+      "path": "tests/phase0_harness.py",
+      "bytes": 12329,
+      "sha256": "8a28fe2d16597419ddc1ac0b4b4d969fa01826bb6e3091582f07bf3f09694b98"
+    },
+    {
+      "path": "tests/test_phase0_calculations.py",
+      "bytes": 2420,
+      "sha256": "83f6e370f9c1706a7868e3c9eab9a4292f078c1c59266446323cb6b2dc7c69ee"
+    },
+    {
+      "path": "tests/test_phase0_cycle.py",
+      "bytes": 1585,
+      "sha256": "f42f4f36941946bb73e782ac8c379d8db54203ed0baf4b07465d161eb988c397"
+    },
+    {
+      "path": "tests/test_phase0_freeze.py",
+      "bytes": 1287,
+      "sha256": "6499ec2eb371cc2f341c4ab2b3c56610ea693221230345922035ef9f740b0421"
+    },
+    {
+      "path": "tests/test_phase0_orientation.py",
+      "bytes": 7480,
+      "sha256": "c4f1038f1e105ae0bd1df4db876ee1197ace12a703004a786a07092269ce1f72"
+    },
+    {
+      "path": "tests/test_phase0_real_grib.py",
+      "bytes": 4636,
+      "sha256": "789304d86fcee7567d54ca8c6edeef7467075232395ee43e3e2e5d3ab9f8773d"
+    }
+  ],
+  "notes": [
+    "O baseline é intencionalmente incorreto e não deve ser usado como referência operacional.",
+    "As previsões f006/f012/f018 do baseline são cópias da amostra f000; todas têm forecastTime=0 e o baseline representa apenas f000.",
+    "A coluna lat dos CSVs do baseline é ascendente (-28 a -18), mas os dados ainda estão na ordem norte-sul do GFS (D-01).",
+    "O código de produção não foi alterado; o goGribV2.sh está congelado.",
+    "O backup contém o snapshot do código e dos dados METAR versionados; não havia produtos GFS históricos disponíveis em /media/MET.",
+    "A tag fase-0-concluida é criada no commit dos artefatos; se ela ainda não aparecer em repository.tags, consulte git tag no repositório."
+  ]
+}
