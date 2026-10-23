@@ -1,4 +1,4 @@
-......xxxx.xxxxx.xx....x...xxx..x.xxxx....                               [100%]
+........................xxxx.xxxxx.xx....x...xxx..x.xxxx....             [100%]
 =========================== short test summary info ============================
 XFAIL tests/test_phase0_calculations.py::test_angmet_quadrantes_negativos_devem_ser_normalizados[10.0-0.0-270.0] - D-12: angMET não é normalizado para [0, 360); oeste e noroeste saem negativos.
 XFAIL tests/test_phase0_calculations.py::test_angmet_quadrantes_negativos_devem_ser_normalizados[10.0-10.0-225.0] - D-12: angMET não é normalizado para [0, 360); oeste e noroeste saem negativos.
@@ -20,4 +20,4 @@ XFAIL tests/test_phase0_orientation.py::test_man_bluesky_altitude_de_20_metros -
 XFAIL tests/test_phase0_orientation.py::test_man_bluesky_angulo_de_vento_de_oeste - D-12: angMET do MAN também não é normalizado.
 XFAIL tests/test_phase0_orientation.py::test_aut_preditor_deve_receber_v_comp_supe - D-02: geraMatrizVentoSup passa u_comp_supe também como componente V do preditor.
 XFAIL tests/test_phase0_orientation.py::test_mapa_vento_superficial_deve_ler_v_supe - D-02: o mapa de vento superficial lê uSupe para a componente V.
-22 passed, 20 xfailed in 7.89s
+40 passed, 20 xfailed in 12.83s

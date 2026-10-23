@@ -1,6 +1,6 @@
 {
   "phase": "Fase 0",
-  "generated_at": "2026-10-23T11:21:51.723483+00:00",
+  "generated_at": "2026-10-23T11:22:46.676654+00:00",
   "purpose": "Registrar backup, snapshot Git, amostra GFS, baseline, harness e contratos antes das correções de cálculo.",
   "repository": {
     "original": {
@@ -12,7 +12,7 @@
       "remote": "https://github.com/paulopimenta6/METamorfose",
       "branch": "execucao",
       "phase_start_commit": "3bf74a12e190c79c67f7117d6c1d81dcaf3124ac",
-      "head_at_manifest_generation": "4f45a9086445cab2226a712f6ade8d16fded7af2"
+      "head_at_manifest_generation": "984f8979493476f5c7f08d57a053760f3fd10c22"
     },
     "tags": {
       "fase-0-snapshot": {
@@ -108,8 +108,8 @@
     },
     "pytest": {
       "path": "baseline/reports/20261022-00/pytest.txt",
-      "bytes": 3677,
-      "sha256": "2df2106fbad3a3cabaf7891e3b34f50b2434009008e8bce6bb6088d8804e4d54"
+      "bytes": 3678,
+      "sha256": "555bb275111e16b5da726ca9b1d135d211e910d764fb81d7c2a2b73b8f958dc7"
     },
     "runs": [
       {
@@ -403,8 +403,8 @@
       },
       {
         "path": "pytest.txt",
-        "bytes": 3677,
-        "sha256": "2df2106fbad3a3cabaf7891e3b34f50b2434009008e8bce6bb6088d8804e4d54"
+        "bytes": 3678,
+        "sha256": "555bb275111e16b5da726ca9b1d135d211e910d764fb81d7c2a2b73b8f958dc7"
       },
       {
         "path": "summary.json",
@@ -485,13 +485,13 @@
     }
   },
   "tests": {
-    "passed": 22,
+    "passed": 40,
     "failed": 0,
     "skipped": 0,
     "xfailed": 20,
     "xpassed": 0,
     "error": 0,
-    "total_cases": 42,
+    "total_cases": 60,
     "xfail_tests": [
       "tests/test_phase0_calculations.py::test_angmet_quadrantes_negativos_devem_ser_normalizados[10.0-0.0-270.0]",
       "tests/test_phase0_calculations.py::test_angmet_quadrantes_negativos_devem_ser_normalizados[10.0-10.0-225.0]",
@@ -558,8 +558,8 @@
     },
     {
       "path": "baseline/reports/20261022-00/pytest.txt",
-      "bytes": 3677,
-      "sha256": "2df2106fbad3a3cabaf7891e3b34f50b2434009008e8bce6bb6088d8804e4d54"
+      "bytes": 3678,
+      "sha256": "555bb275111e16b5da726ca9b1d135d211e910d764fb81d7c2a2b73b8f958dc7"
     },
     {
       "path": "baseline/reports/20261022-00/summary.json",
