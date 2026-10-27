@@ -1,6 +1,6 @@
 {
   "phase": "Fase 0",
-  "generated_at": "2026-10-27T21:02:53.413939+00:00",
+  "generated_at": "2026-10-27T21:04:12.687790+00:00",
   "purpose": "Registrar backup, snapshot Git, amostra GFS, baseline, harness e contratos antes das correções de cálculo.",
   "repository": {
     "original": {
@@ -12,7 +12,7 @@
       "remote": "https://github.com/paulopimenta6/METamorfose",
       "branch": "execucao",
       "phase_start_commit": "3bf74a12e190c79c67f7117d6c1d81dcaf3124ac",
-      "head_at_manifest_generation": "79543574c69cc857cc2c530da31d623dcf78d452"
+      "head_at_manifest_generation": "706e5af41cc9903b2c69645451a5f60c6b20a43d"
     },
     "tags": {
       "fase-0-snapshot": {
@@ -963,8 +963,8 @@
     },
     {
       "path": "docs/09-fase-1-resultados.md",
-      "bytes": 18919,
-      "sha256": "152906ec63e3c5df4f0012008f690649ba3192d4b3a174c80e92baa4e5bb8a3d"
+      "bytes": 18963,
+      "sha256": "fd2ffdb28f874d318220f2131c9c3c246a2e1110001ed79e0009a360b23c7da4"
     },
     {
       "path": "docs/README.md",
@@ -1008,8 +1008,8 @@
     },
     {
       "path": "reprocessamento/run_reprocessamento.py",
-      "bytes": 10727,
-      "sha256": "de9937963970c312370f095e86daae943ce434c9037ded1f614d54a6eaa36792"
+      "bytes": 10780,
+      "sha256": "fcc89a8917487aa0104fe123052d7fc396a6a9f36ef08578743f5a2f3ad0f9bb"
     },
     {
       "path": "reprocessamento/validar_fase1.py",
