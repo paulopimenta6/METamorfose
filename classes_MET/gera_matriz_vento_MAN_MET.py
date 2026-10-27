@@ -50,16 +50,23 @@ class met_gera_matriz_vento_man:
     
     def criaAngMET(self, data_u, data_v):
         angResult=np.empty(data_u.shape)
-        angResult=(((180/np.pi)*(np.arctan2((-data_u),(-data_v)))))
+        angResult=(((180/np.pi)*(np.arctan2((-data_u),(-data_v)))) + 360) % 360
         return angResult 
     
     def converte_altitude(self, pres):        
-        #retorna a altitude em feet        
+        #retorna a altitude em feet a partir da pressao em hPa
         p0=1013.25
         h_alt = (1 - (pres/p0)**0.190284) * 145366.45
         return h_alt
 
-    def gera_matriz_vento(self, varMET_AUX_u, varMET_AUX_v, lonmin, lonmax, latmin, latmax, ana, prev, regiao, nivel, saida):
+    def calcula_hmet(self, nivel, eh_vento_superficie):
+        #No fluxo "winds" o nivel e uma altura em metros acima do solo;
+        #no fluxo "wind" o nivel e uma pressao em hPa.
+        if eh_vento_superficie:
+            return float(nivel) * 3.28084
+        return self.converte_altitude(nivel)
+
+    def gera_matriz_vento(self, varMET_AUX_u, varMET_AUX_v, lonmin, lonmax, latmin, latmax, ana, prev, regiao, nivel, saida, eh_vento_superficie):
         
         lons1=lonmin
         lons2=lonmax
@@ -89,6 +96,8 @@ class met_gera_matriz_vento_man:
             if flag==2:
                 lon_u=lon_u-360
                 lon_v=lon_v-360                
+            data_U=data_U[::-1,:]
+            data_V=data_V[::-1,:]
             lon_u=lon_u[0,:]
             lat_u=lat_u[:,0]
             lat_u=lat_u[::-1]
@@ -105,6 +114,8 @@ class met_gera_matriz_vento_man:
             data_U_ini, lat_u_ini, lon_u_ini = varMET_AUX_u.data(lat1=lats1,lat2=lats2,lon1=lons1_ini,lon2=lons2_ini)
             data_V_ini, lat_v_ini, lon_v_ini = varMET_AUX_v.data(lat1=lats1,lat2=lats2,lon1=lons1_ini,lon2=lons2_ini)
 
+            data_U_ini=data_U_ini[::-1,:]
+            data_V_ini=data_V_ini[::-1,:]
             lon_u_ini=lon_u_ini[0,:]
             lon_u_ini=lon_u_ini-360
             lat_u_ini=lat_u_ini[:,0]
@@ -113,6 +124,8 @@ class met_gera_matriz_vento_man:
             data_U_fim, lat_u_fim, lon_u_fim = varMET_AUX_u.data(lat1=lats1,lat2=lats2,lon1=lons1_fim,lon2=lons2_fim)
             data_V_fim, lat_v_fim, lon_v_fim = varMET_AUX_v.data(lat1=lats1,lat2=lats2,lon1=lons1_fim,lon2=lons2_fim)
 
+            data_U_fim=data_U_fim[::-1,:]
+            data_V_fim=data_V_fim[::-1,:]
             lon_u_fim=lon_u_fim[0,:]            
             lat_u_fim=lat_u_fim[:,0]
             lat_u_fim=lat_u_fim[::-1]        
@@ -140,7 +153,7 @@ class met_gera_matriz_vento_man:
         coluna=data_U.shape[1]    
         vento_resultante=self.criaResultante(data_U, data_V)        
         angMET=self.criaAngMET(data_U, data_V)
-        hMET=self.converte_altitude(nivel)
+        hMET=self.calcula_hmet(nivel, eh_vento_superficie)
 
         w.writerow([ "lat", "lon", "nivel<hPa>", "halt<feet>", "angMET<grau>", "vento U<ms**-1>", "vento V<ms**-1>", "vento_resultante<ms**-1>" ])
 
@@ -151,7 +164,7 @@ class met_gera_matriz_vento_man:
                     
         f.close()
 
-    def gera_matriz_vento_bluesky(self, varMET_AUX_u, varMET_AUX_v, lonmin, lonmax, latmin, latmax, ana, prev, regiao, nivel, saida):
+    def gera_matriz_vento_bluesky(self, varMET_AUX_u, varMET_AUX_v, lonmin, lonmax, latmin, latmax, ana, prev, regiao, nivel, saida, eh_vento_superficie):
     
     #descricao breve do uso de vento no blueSky        
     # =============================================================================
@@ -197,6 +210,8 @@ class met_gera_matriz_vento_man:
             if flag==2:
                 lon_u=lon_u-360
                 lon_v=lon_v-360               
+            data_U=data_U[::-1,:]
+            data_V=data_V[::-1,:]
             lon_u=lon_u[0,:]
             lat_u=lat_u[:,0]
             lat_u=lat_u[::-1]
@@ -213,6 +228,8 @@ class met_gera_matriz_vento_man:
             data_U_ini, lat_u_ini, lon_u_ini = varMET_AUX_u.data(lat1=lats1,lat2=lats2,lon1=lons1_ini,lon2=lons2_ini)
             data_V_ini, lat_v_ini, lon_v_ini = varMET_AUX_v.data(lat1=lats1,lat2=lats2,lon1=lons1_ini,lon2=lons2_ini)
 
+            data_U_ini=data_U_ini[::-1,:]
+            data_V_ini=data_V_ini[::-1,:]
             lon_u_ini=lon_u_ini[0,:]
             lon_u_ini=lon_u_ini-360
             lat_u_ini=lat_u_ini[:,0]
@@ -221,6 +238,8 @@ class met_gera_matriz_vento_man:
             data_U_fim, lat_u_fim, lon_u_fim = varMET_AUX_u.data(lat1=lats1,lat2=lats2,lon1=lons1_fim,lon2=lons2_fim)
             data_V_fim, lat_v_fim, lon_v_fim = varMET_AUX_v.data(lat1=lats1,lat2=lats2,lon1=lons1_fim,lon2=lons2_fim)
 
+            data_U_fim=data_U_fim[::-1,:]
+            data_V_fim=data_V_fim[::-1,:]
             lon_u_fim=lon_u_fim[0,:]            
             lat_u_fim=lat_u_fim[:,0]
             lat_u_fim=lat_u_fim[::-1]        
@@ -248,7 +267,7 @@ class met_gera_matriz_vento_man:
         coluna=data_U.shape[1]    
         vento_resultante=self.criaResultanteKnot(data_U, data_V)        
         angMET=self.criaAngMET(data_U, data_V)
-        hMET=self.converte_altitude(nivel)
+        hMET=self.calcula_hmet(nivel, eh_vento_superficie)
 
         w.writerow([ "lat", "lon", "hMET<feet>", "angMET<grau>", "vento_resultante<knot>" ])
 
@@ -286,10 +305,13 @@ class met_gera_matriz_vento_man:
             data_U, lat_u, lon_u = varMET_AUX_u.data(lat1=lats1,lat2=lats2,lon1=lons1,lon2=lons2)
             data_V, lat_v, lon_v = varMET_AUX_v.data(lat1=lats1,lat2=lats2,lon1=lons1,lon2=lons2)
             data_T, lat_t, lon_t = varMET_AUX_temp.data(lat1=lats1,lat2=lats2,lon1=lons1,lon2=lons2)
+            data_T=data_T[::-1,:]
             
             if flag==2:
                 lon_u=lon_u-360
                 lon_v=lon_v-360                
+            data_U=data_U[::-1,:]
+            data_V=data_V[::-1,:]
             lon_u=lon_u[0,:]
             lat_u=lat_u[:,0]
             lat_u=lat_u[::-1]
@@ -304,7 +326,10 @@ class met_gera_matriz_vento_man:
             data_U_ini, lat_u_ini, lon_u_ini = varMET_AUX_u.data(lat1=lats1,lat2=lats2,lon1=lons1_ini,lon2=lons2_ini)
             data_V_ini, lat_v_ini, lon_v_ini = varMET_AUX_v.data(lat1=lats1,lat2=lats2,lon1=lons1_ini,lon2=lons2_ini)
             data_T_ini, lat_t_ini, lon_t_ini = varMET_AUX_temp.data(lat1=lats1,lat2=lats2,lon1=lons1_ini,lon2=lons2_ini) 
+            data_T_ini=data_T_ini[::-1,:]
 
+            data_U_ini=data_U_ini[::-1,:]
+            data_V_ini=data_V_ini[::-1,:]
             lon_u_ini=lon_u_ini[0,:]
             lon_u_ini=lon_u_ini-360
             lat_u_ini=lat_u_ini[:,0]
@@ -313,7 +338,10 @@ class met_gera_matriz_vento_man:
             data_U_fim, lat_u_fim, lon_u_fim = varMET_AUX_u.data(lat1=lats1,lat2=lats2,lon1=lons1_fim,lon2=lons2_fim)
             data_V_fim, lat_v_fim, lon_v_fim = varMET_AUX_v.data(lat1=lats1,lat2=lats2,lon1=lons1_fim,lon2=lons2_fim)
             data_T_fim, lat_t_fim, lon_t_fim = varMET_AUX_temp.data(lat1=lats1,lat2=lats2,lon1=lons1_fim,lon2=lons2_fim) 
+            data_T_fim=data_T_fim[::-1,:]
 
+            data_U_fim=data_U_fim[::-1,:]
+            data_V_fim=data_V_fim[::-1,:]
             lon_u_fim=lon_u_fim[0,:]            
             lat_u_fim=lat_u_fim[:,0]
             lat_u_fim=lat_u_fim[::-1]        
@@ -373,12 +401,12 @@ class met_gera_matriz_vento_man:
         # =============================================================================
         # gera uma matriz de vento simples        
         # =============================================================================
-            self.gera_matriz_vento(varMET_AUX_u, varMET_AUX_v, self.lonmin, self.lonmax, self.latmin, self.latmax, self.ana, self.prev, self.regiao, self.nivel, self.saida)
+            self.gera_matriz_vento(varMET_AUX_u, varMET_AUX_v, self.lonmin, self.lonmax, self.latmin, self.latmax, self.ana, self.prev, self.regiao, self.nivel, self.saida, False)
         # =============================================================================
         # ventos para BlueSky
         # var impressas: <lat[deg]> <lon[deg]> <alt[feet]> <angMET[deg]> <VResul[m**s-1]>
         #(objMET, self.lonmin, self.lonmax, self.latmin, self.latmax, self.ana, self.prev, self.varMET, self.regiao, self.nivel, self.saida)
-            self.gera_matriz_vento_bluesky(varMET_AUX_u, varMET_AUX_v, self.lonmin, self.lonmax, self.latmin, self.latmax, self.ana, self.prev, self.regiao, self.nivel, self.saida)
+            self.gera_matriz_vento_bluesky(varMET_AUX_u, varMET_AUX_v, self.lonmin, self.lonmax, self.latmin, self.latmax, self.ana, self.prev, self.regiao, self.nivel, self.saida, False)
         # =============================================================================
     
         # =============================================================================
@@ -396,12 +424,12 @@ class met_gera_matriz_vento_man:
         # =============================================================================
         # gera uma matriz de vento simples        
         # =============================================================================
-                self.gera_matriz_vento(varMET_AUX_u, varMET_AUX_v, self.lonmin, self.lonmax, self.latmin, self.latmax, self.ana, self.prev, self.regiao, nivelVento, self.saida)
+                self.gera_matriz_vento(varMET_AUX_u, varMET_AUX_v, self.lonmin, self.lonmax, self.latmin, self.latmax, self.ana, self.prev, self.regiao, nivelVento, self.saida, True)
         # =============================================================================
         # ventos para BlueSky
         # var impressas: <lat[deg]> <lon[deg]> <alt[feet]> <angMET[deg]> <VResul[m**s-1]>
         #(objMET, self.lonmin, self.lonmax, self.latmin, self.latmax, self.ana, self.prev, self.varMET, self.regiao, self.nivel, self.saida)
-                self.gera_matriz_vento_bluesky(varMET_AUX_u, varMET_AUX_v, self.lonmin, self.lonmax, self.latmin, self.latmax, self.ana, self.prev, self.regiao, nivelVento, self.saida)
+                self.gera_matriz_vento_bluesky(varMET_AUX_u, varMET_AUX_v, self.lonmin, self.lonmax, self.latmin, self.latmax, self.ana, self.prev, self.regiao, nivelVento, self.saida, True)
         # =============================================================================
     
         # =============================================================================

@@ -15,7 +15,9 @@ import csv
 import math
 import os
 import time
+from datetime import date, timedelta
 from pathlib import Path
+from types import SimpleNamespace
 
 import numpy as np
 
@@ -29,6 +31,101 @@ class DummyBasemap:
     def __init__(self, *args, **kwargs):
         self.args = args
         self.kwargs = kwargs
+
+
+class _FakeColorbar:
+    def __init__(self):
+        self.ax = SimpleNamespace(set_ylabel=lambda *args, **kwargs: None)
+
+    def set_label(self, *args, **kwargs):
+        pass
+
+
+class CaptureBasemap:
+    """Basemap mínimo que captura a matriz entregue ao contorno do mapa."""
+
+    instances = []
+
+    def __init__(self, *args, **kwargs):
+        self.args = args
+        self.kwargs = kwargs
+        self.contourf_calls = []
+        self.contour_calls = []
+        CaptureBasemap.instances.append(self)
+
+    def __call__(self, lon, lat):
+        return np.asarray(lon), np.asarray(lat)
+
+    def contourf(self, x, y, data, **kwargs):
+        self.contourf_calls.append(
+            (np.array(x), np.array(y), np.array(data), dict(kwargs))
+        )
+        return object()
+
+    def contour(self, x, y, data, **kwargs):
+        self.contour_calls.append(
+            (np.array(x), np.array(y), np.array(data), dict(kwargs))
+        )
+        return object()
+
+    def colorbar(self, *args, **kwargs):
+        return _FakeColorbar()
+
+    def transform_vector(self, u, v, lon, lat, *args, **kwargs):
+        return u, v, lon, lat
+
+    def drawparallels(self, *args, **kwargs):
+        pass
+
+    def drawmeridians(self, *args, **kwargs):
+        pass
+
+    def drawcoastlines(self, *args, **kwargs):
+        pass
+
+    def drawcountries(self, *args, **kwargs):
+        pass
+
+    def drawstates(self, *args, **kwargs):
+        pass
+
+    def drawlsmask(self, *args, **kwargs):
+        pass
+
+
+class CapturePlt:
+    """matplotlib.pyplot mínimo que captura os dados desenhados nos mapas."""
+
+    def __init__(self):
+        self.streamplot_calls = []
+        self.barbs_calls = []
+        self.cm = SimpleNamespace(inferno=object())
+
+    def figure(self, *args, **kwargs):
+        return SimpleNamespace(add_axes=lambda *a, **k: object())
+
+    def streamplot(self, x, y, u, v, **kwargs):
+        self.streamplot_calls.append(
+            (np.array(x), np.array(y), np.array(u), np.array(v))
+        )
+        return SimpleNamespace(lines=object())
+
+    def barbs(self, x, y, u, v, **kwargs):
+        self.barbs_calls.append(
+            (np.array(x), np.array(y), np.array(u), np.array(v))
+        )
+
+    def colorbar(self, *args, **kwargs):
+        return _FakeColorbar()
+
+    def clabel(self, *args, **kwargs):
+        pass
+
+    def title(self, *args, **kwargs):
+        pass
+
+    def savefig(self, *args, **kwargs):
+        pass
 
 
 class FakeDirSave:
@@ -83,6 +180,7 @@ class FakeGRIB:
         name: str = "Temperature",
         typeOfLevel: str = "isobaricInhPa",
         level: int = 850,
+        units: str = "K",
     ):
         self._data = np.asarray(data, dtype=float)
         self._lat = np.asarray(lat, dtype=float).reshape(-1)
@@ -93,6 +191,7 @@ class FakeGRIB:
         self.name = name
         self.typeOfLevel = typeOfLevel
         self.level = level
+        self.units = units
 
     def data(self, lat1=None, lat2=None, lon1=None, lon2=None):
         lat_mask = np.ones(self._lat.shape, dtype=bool)
@@ -132,9 +231,9 @@ class FakePygrib:
 
     def open(self, filename):
         path = Path(os.path.abspath(filename))
-        self.opened.append(path)
         if not path.exists():
             raise OSError(f"arquivo GRIB simulado ausente: {path}")
+        self.opened.append(path)
         return path
 
 
@@ -232,6 +331,7 @@ def run_bluesky_matrix(
     lon=None,
     u=None,
     v=None,
+    eh_vento_superficie=True,
     when=(2026, 10, 22, 1, 0),
 ):
     lat = np.array([10.0, 0.0, -10.0]) if lat is None else np.asarray(lat, dtype=float)
@@ -247,6 +347,7 @@ def run_bluesky_matrix(
             "criaAngAzMET",
             "criaAngMET",
             "converte_altitude",
+            "calcula_hmet",
             "geraMatriz_Vento_Resu",
         ],
         {
@@ -262,6 +363,7 @@ def run_bluesky_matrix(
         [[float(lon[0]), float(lon[-1])], [float(lat[0]), float(lat[-1])]],
         "SP",
         level,
+        eh_vento_superficie,
     )
     return find_one_csv(tmp_path / "matrizGrib" / "bluesky")
 
@@ -320,6 +422,7 @@ def run_man_bluesky(
     lon=None,
     u=None,
     v=None,
+    eh_vento_superficie=True,
 ):
     lat = np.array([10.0, 0.0, -10.0]) if lat is None else np.asarray(lat, dtype=float)
     lon = np.array([-60.0, -50.0, -40.0, -30.0]) if lon is None else np.asarray(lon, dtype=float)
@@ -358,19 +461,280 @@ def run_man_bluesky(
         "SP",
         level,
         str(tmp_path) + "/",
+        eh_vento_superficie,
     )
     return find_one_csv(tmp_path, "matriz_vento_bluesky_*.csv")
 
 
-def run_reader_at(tmp_path: Path, when):
+def run_man_predi(
+    tmp_path: Path,
+    *,
+    level=20,
+    lat=None,
+    lon=None,
+    u=None,
+    v=None,
+    t=None,
+):
+    lat = np.array([10.0, 0.0, -10.0]) if lat is None else np.asarray(lat, dtype=float)
+    lon = np.array([-60.0, -50.0, -40.0, -30.0]) if lon is None else np.asarray(lon, dtype=float)
+    u = np.full((lat.size, lon.size), 10.0) if u is None else np.asarray(u, dtype=float)
+    v = np.zeros((lat.size, lon.size)) if v is None else np.asarray(v, dtype=float)
+    t = np.full((lat.size, lon.size), 280.0) if t is None else np.asarray(t, dtype=float)
+
+    ns = load_definitions(
+        CLASSES / "gera_matriz_vento_MAN_MET.py",
+        ["met_gera_matriz_vento_man"],
+    )
+    obj = ns["met_gera_matriz_vento_man"](
+        "wind",
+        float(lon.min()),
+        float(lon.max()),
+        float(lat.min()),
+        float(lat.max()),
+        2026,
+        10,
+        22,
+        "00",
+        "00",
+        str(tmp_path) + "/",
+        level,
+    )
+    u_fake = FakeGRIB(u, lat, lon, name="U component of wind", typeOfLevel="heightAboveGround", level=level)
+    v_fake = FakeGRIB(v, lat, lon, name="V component of wind", typeOfLevel="heightAboveGround", level=level)
+    t_fake = FakeGRIB(t, lat, lon, name="Temperature", typeOfLevel="surface", level=0)
+    obj.gera_matriz_vento_predi(
+        u_fake,
+        v_fake,
+        t_fake,
+        float(lon.min()),
+        float(lon.max()),
+        float(lat.min()),
+        float(lat.max()),
+        "00",
+        "00",
+        "SP",
+        level,
+        str(tmp_path) + "/",
+    )
+    return find_one_csv(tmp_path, "matriz_vento_predi_*.csv")
+
+
+def _map_namespace(tmp_path: Path, when):
+    CaptureBasemap.instances.clear()
+    plt = CapturePlt()
+    namespace = {
+        "dir_save": FakeDirSave(tmp_path),
+        "time": FixedTime(*when),
+        "Basemap": CaptureBasemap,
+        "plt": plt,
+        "rc": lambda *args, **kwargs: None,
+    }
+    return namespace, plt
+
+
+def run_scalar_map(
+    tmp_path: Path,
+    *,
+    variable: str = "temp",
+    level=850,
+    lat=None,
+    lon=None,
+    data=None,
+    when=(2026, 10, 22, 1, 0),
+):
+    """Executa gera_mapas e devolve os dados entregues ao contorno."""
+
+    lat = np.array([10.0, 0.0, -10.0]) if lat is None else np.asarray(lat, dtype=float)
+    lon = np.array([-60.0, -50.0, -40.0, -30.0]) if lon is None else np.asarray(lon, dtype=float)
+    data = grid_values(lat, lon) if data is None else np.asarray(data, dtype=float)
+
+    namespace, plt = _map_namespace(tmp_path, when)
+    namespace["varMET"] = variable
+    ns = load_definitions(
+        CLASSES / "gera_mapas_MET.py",
+        ["O", "gera_mapas"],
+        namespace,
+    )
+    fake = FakeGRIB(data, lat, lon, name="Temperature", typeOfLevel="isobaricInhPa", level=level)
+    ns["gera_mapas"](
+        [fake],
+        [[float(lon[0]), float(lon[-1])], [float(lat[0]), float(lat[-1])]],
+        variable,
+        "SP",
+        level,
+    )
+    return CaptureBasemap.instances, plt
+
+
+def run_wind_map(
+    tmp_path: Path,
+    *,
+    level=20,
+    lat=None,
+    lon=None,
+    u=None,
+    v=None,
+    when=(2026, 10, 22, 1, 0),
+    replicas=1,
+):
+    """Executa gera_mapas_vento e devolve os dados entregues ao streamplot."""
+
+    lat = np.array([10.0, 0.0, -10.0]) if lat is None else np.asarray(lat, dtype=float)
+    lon = np.array([-60.0, -50.0, -40.0, -30.0]) if lon is None else np.asarray(lon, dtype=float)
+    u = np.full((lat.size, lon.size), 10.0) if u is None else np.asarray(u, dtype=float)
+    v = np.zeros((lat.size, lon.size)) if v is None else np.asarray(v, dtype=float)
+
+    namespace, plt = _map_namespace(tmp_path, when)
+    ns = load_definitions(
+        CLASSES / "gera_mapas_vento_MET.py",
+        ["gera_mapas_vento"],
+        namespace,
+    )
+    u_gribs = [
+        FakeGRIB(u, lat, lon, name="U component of wind", typeOfLevel="heightAboveGround", level=level)
+        for _ in range(replicas)
+    ]
+    v_gribs = [
+        FakeGRIB(v, lat, lon, name="V component of wind", typeOfLevel="heightAboveGround", level=level)
+        for _ in range(replicas)
+    ]
+    ns["gera_mapas_vento"](
+        u_gribs,
+        v_gribs,
+        [[float(lon[0]), float(lon[-1])], [float(lat[0]), float(lat[-1])]],
+        "SP",
+        level,
+    )
+    return CaptureBasemap.instances, plt
+
+
+def run_man_scalar_map(
+    tmp_path: Path,
+    *,
+    variable: str = "temp",
+    level=850,
+    lat=None,
+    lon=None,
+    data=None,
+):
+    lat = np.array([10.0, 0.0, -10.0]) if lat is None else np.asarray(lat, dtype=float)
+    lon = np.array([-60.0, -50.0, -40.0, -30.0]) if lon is None else np.asarray(lon, dtype=float)
+    data = grid_values(lat, lon) if data is None else np.asarray(data, dtype=float)
+
+    namespace, plt = _map_namespace(tmp_path, (2026, 10, 22, 1, 0))
+    ns = load_definitions(
+        CLASSES / "gera_mapas_MAN_MET.py",
+        ["met_gera_mapas_man"],
+        namespace,
+    )
+    obj = ns["met_gera_mapas_man"](
+        variable,
+        float(lon.min()),
+        float(lon.max()),
+        float(lat.min()),
+        float(lat.max()),
+        2026,
+        10,
+        22,
+        "00",
+        "00",
+        str(tmp_path) + "/",
+        level,
+    )
+    fake = FakeGRIB(data, lat, lon, name="Temperature", typeOfLevel="isobaricInhPa", level=level)
+    obj.gera_mapas(
+        fake,
+        float(lon.min()),
+        float(lon.max()),
+        float(lat.min()),
+        float(lat.max()),
+        "00",
+        "00",
+        variable,
+        "SP",
+        level,
+        str(tmp_path) + "/",
+    )
+    return CaptureBasemap.instances, plt
+
+
+def run_man_wind_map(
+    tmp_path: Path,
+    *,
+    level=20,
+    lat=None,
+    lon=None,
+    u=None,
+    v=None,
+):
+    lat = np.array([10.0, 0.0, -10.0]) if lat is None else np.asarray(lat, dtype=float)
+    lon = np.array([-60.0, -50.0, -40.0, -30.0]) if lon is None else np.asarray(lon, dtype=float)
+    u = np.full((lat.size, lon.size), 10.0) if u is None else np.asarray(u, dtype=float)
+    v = np.zeros((lat.size, lon.size)) if v is None else np.asarray(v, dtype=float)
+
+    namespace, plt = _map_namespace(tmp_path, (2026, 10, 22, 1, 0))
+    ns = load_definitions(
+        CLASSES / "gera_mapas_vento_MAN_MET.py",
+        ["met_gera_mapas_vento_man"],
+        namespace,
+    )
+    obj = ns["met_gera_mapas_vento_man"](
+        "wind",
+        float(lon.min()),
+        float(lon.max()),
+        float(lat.min()),
+        float(lat.max()),
+        2026,
+        10,
+        22,
+        "00",
+        "00",
+        str(tmp_path) + "/",
+        level,
+    )
+    u_fake = FakeGRIB(u, lat, lon, name="U component of wind", typeOfLevel="heightAboveGround", level=level)
+    v_fake = FakeGRIB(v, lat, lon, name="V component of wind", typeOfLevel="heightAboveGround", level=level)
+    obj.gera_mapas_vento_LC(
+        u_fake,
+        v_fake,
+        float(lon.min()),
+        float(lon.max()),
+        float(lat.min()),
+        float(lat.max()),
+        "00",
+        "00",
+        "SP",
+        level,
+        str(tmp_path) + "/",
+    )
+    return CaptureBasemap.instances, plt
+
+
+def run_reader_at(
+    tmp_path: Path,
+    when,
+    *,
+    cycles=("00", "06", "12", "18"),
+    forecasts=("00", "06", "12", "18"),
+    resolutions=("0p25",),
+):
     """Executa leitura_dados_gribs_AUT com uma hora fixa e GRIBs simulados."""
 
     gribs = tmp_path / "gribs"
-    for date, cycle in (("20261023", "00"), ("20261023", "06"), ("20261022", "18")):
-        directory = gribs / date / cycle
-        directory.mkdir(parents=True, exist_ok=True)
-        for forecast in ("00", "06", "12", "18"):
-            (directory / f"gfs.t{cycle}z.pgrb2.0p25.f0{forecast}").write_bytes(b"")
+    current = date(when[0], when[1], when[2])
+    dates = [
+        current.strftime("%Y%m%d"),
+        (current - timedelta(days=1)).strftime("%Y%m%d"),
+    ]
+    for day_key in dates:
+        for cycle in cycles:
+            directory = gribs / day_key / cycle
+            directory.mkdir(parents=True, exist_ok=True)
+            for resolution in resolutions:
+                for forecast in forecasts:
+                    name = f"gfs.t{cycle}z.pgrb2.{resolution}.f0{forecast}"
+                    (directory / name).write_bytes(b"")
 
     fake_pygrib = FakePygrib()
     ns = load_definitions(
@@ -383,11 +747,11 @@ def run_reader_at(tmp_path: Path, when):
         },
     )
 
-    previous = Path.cwd()
+    previous_cwd = Path.cwd()
     try:
         reader = ns["leitura_dados_gribs_AUT"]()
         reader.imprime_lista_obj_gribs_AUT()
     finally:
-        os.chdir(previous)
+        os.chdir(previous_cwd)
 
     return fake_pygrib.opened

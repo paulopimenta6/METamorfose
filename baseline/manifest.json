@@ -1,6 +1,6 @@
 {
   "phase": "Fase 0",
-  "generated_at": "2026-10-23T11:22:46.676654+00:00",
+  "generated_at": "2026-10-27T21:02:53.413939+00:00",
   "purpose": "Registrar backup, snapshot Git, amostra GFS, baseline, harness e contratos antes das correções de cálculo.",
   "repository": {
     "original": {
@@ -12,7 +12,7 @@
       "remote": "https://github.com/paulopimenta6/METamorfose",
       "branch": "execucao",
       "phase_start_commit": "3bf74a12e190c79c67f7117d6c1d81dcaf3124ac",
-      "head_at_manifest_generation": "984f8979493476f5c7f08d57a053760f3fd10c22"
+      "head_at_manifest_generation": "79543574c69cc857cc2c530da31d623dcf78d452"
     },
     "tags": {
       "fase-0-snapshot": {
@@ -491,6 +491,7 @@
     "xfailed": 20,
     "xpassed": 0,
     "error": 0,
+    "deselected": 0,
     "total_cases": 60,
     "xfail_tests": [
       "tests/test_phase0_calculations.py::test_angmet_quadrantes_negativos_devem_ser_normalizados[10.0-0.0-270.0]",
@@ -515,11 +516,245 @@
       "tests/test_phase0_orientation.py::test_mapa_vento_superficial_deve_ler_v_supe"
     ]
   },
+  "phase_1": {
+    "phase": "Fase 1",
+    "base_commit": "79543574c69cc857cc2c530da31d623dcf78d452",
+    "purpose": "Registrar as correções de cálculo D-01/D-02/D-03/D-04/D-12 e o reprocessamento da amostra em diretório separado.",
+    "fixes": [
+      "D-01",
+      "D-02",
+      "D-03",
+      "D-04",
+      "D-12"
+    ],
+    "report_dir": "reprocessamento/reports/20261022-00",
+    "fixed_local_time": "2026-10-22T01:00",
+    "summary": {
+      "path": "reprocessamento/reports/20261022-00/summary.json",
+      "bytes": 15877,
+      "sha256": "5a3cd3abe535fffd1a454374ba3094a197a682df558bb81353f71f58ee496a00"
+    },
+    "validation": {
+      "path": "reprocessamento/reports/20261022-00/validation.json",
+      "bytes": 24935,
+      "sha256": "5cca612379f1979684aac9c5ed1021a1ff5c567559de7ab45cd63d5b970f7132",
+      "status": "ok",
+      "checks": 158,
+      "failures": 0
+    },
+    "pytest": {
+      "path": "reprocessamento/reports/20261022-00/pytest.txt",
+      "bytes": 195,
+      "sha256": "15ee9cdd882b5b7dc361d28a4b8463c715ed9ba62cd41a5a9db6cf36e9f33abf",
+      "passed": 123,
+      "failed": 0,
+      "skipped": 0,
+      "xfailed": 0,
+      "xpassed": 0,
+      "error": 0,
+      "deselected": 3,
+      "total_cases": 123
+    },
+    "product_count": 20,
+    "csv_count": 13,
+    "product_hashes": [
+      {
+        "path": "bluesky/GFS_0.25_matriz_lat_lon_alt_angMET_VentoResult_SP_N20_00_20261022_00.csv",
+        "bytes": 137175,
+        "sha256": "19bebe572f5bf2e203bfd255b331076ae51ab904459edbef447afc216f028dde"
+      },
+      {
+        "path": "bluesky/GFS_0.25_matriz_lat_lon_alt_angMET_VentoResult_SP_N30_00_20261022_00.csv",
+        "bytes": 137174,
+        "sha256": "400bc0aa21a00c1d3758beabe33e98c4e0b709d3e045c7c0a22551afe5c1074e"
+      },
+      {
+        "path": "bluesky/GFS_0.25_matriz_lat_lon_alt_angMET_VentoResult_SP_N40_00_20261022_00.csv",
+        "bytes": 139596,
+        "sha256": "de620a1755fe8bbcd0dde477296192e634088d3bd9d377685dbea8bd44c22577"
+      },
+      {
+        "path": "bluesky/GFS_0.25_matriz_lat_lon_alt_angMET_VentoResult_SP_N50_00_20261022_00.csv",
+        "bytes": 137294,
+        "sha256": "f06a3da778eb6e0f7ef15102c051f04e906d16e0f3f43b78e8290b9c06fc4ad8"
+      },
+      {
+        "path": "bluesky/GFS_0.25_matriz_lat_lon_alt_angMET_VentoResult_SP_N80_00_20261022_00.csv",
+        "bytes": 139751,
+        "sha256": "86ff40828348020ee7e0e821aebe57e96cc3f5b5d74ef3a84d0878b62de9aaae"
+      },
+      {
+        "path": "bluesky/GFS_0.25_matriz_lat_lon_alt_angMET_VentoResult_SP_N850_00_20261022_00.csv",
+        "bytes": 162972,
+        "sha256": "9cfaf91edfcfe9774cae51aaf7080bdcdfd465b50742f3aa3cc3254d3be07e70"
+      },
+      {
+        "path": "mapas/GFS_0.25_SP_N20_CampoVento_00_20261022_00.png",
+        "bytes": 1088239,
+        "sha256": "23c89349a28a856783502746db6c84cd1366a67d6f14af429f73c63a7b71a6f1"
+      },
+      {
+        "path": "mapas/GFS_0.25_SP_N30_CampoVento_00_20261022_00.png",
+        "bytes": 1066938,
+        "sha256": "f3443f46c0b19a704d89e4810fbca87d273b60da8aa120dea492ef1c6bbaefd2"
+      },
+      {
+        "path": "mapas/GFS_0.25_SP_N40_CampoVento_00_20261022_00.png",
+        "bytes": 1084540,
+        "sha256": "a5213e6234b524cba3ff16c842e7c83a1aa4c9ac1ff1683be0f491ac975c8a85"
+      },
+      {
+        "path": "mapas/GFS_0.25_SP_N50_CampoVento_00_20261022_00.png",
+        "bytes": 1070342,
+        "sha256": "44484246a3ba264468b158335436e4183487950c60005fb27826f66fd998fa68"
+      },
+      {
+        "path": "mapas/GFS_0.25_SP_N80_CampoVento_00_20261022_00.png",
+        "bytes": 1064433,
+        "sha256": "7ccb4a155dae0c84d28aaf89b53c08acaa63446211c0efb672478ee12c131ef7"
+      },
+      {
+        "path": "mapas/GFS_0.25_SP_N850_CampoVento_00_20261022_00.png",
+        "bytes": 1152621,
+        "sha256": "ac664cc89a94d57fb48bea73205b11b5e9220994343c429f67f8b08e5c6482fe"
+      },
+      {
+        "path": "mapas/GFS_0.25_SP_N850_temp_00_20261022_00.png",
+        "bytes": 420133,
+        "sha256": "598451950f181bf7e386bca7cc1ecf02d5e6544b70caa76e6ab07bf187352351"
+      },
+      {
+        "path": "matrizes/GFS_0.25_SP_N850_temp_00_20261022_00.csv",
+        "bytes": 76318,
+        "sha256": "4b82f53aa3d27c52f54b98466ed57748dfb643103392cd4b686c661cbb8e6238"
+      },
+      {
+        "path": "predi/GFS_0.25_matriz_lat_lon_Vento_UVT_Predi_SP_N20_00_20261022_00.csv",
+        "bytes": 148934,
+        "sha256": "f011230a7af5e495bfb964d2c23a11f94690727e6be791f606883fe42c3c1ac7"
+      },
+      {
+        "path": "predi/GFS_0.25_matriz_lat_lon_Vento_UVT_Predi_SP_N30_00_20261022_00.csv",
+        "bytes": 151166,
+        "sha256": "d9269726d8348b2bb8deb42e809998576e719c56654b0e08af1ade8b88bc9c9a"
+      },
+      {
+        "path": "predi/GFS_0.25_matriz_lat_lon_Vento_UVT_Predi_SP_N40_00_20261022_00.csv",
+        "bytes": 156508,
+        "sha256": "4f927627d5bfd6a20d482739e76466db7996db38d9ebd22fd642d438d37c38cb"
+      },
+      {
+        "path": "predi/GFS_0.25_matriz_lat_lon_Vento_UVT_Predi_SP_N50_00_20261022_00.csv",
+        "bytes": 164213,
+        "sha256": "2658489c8b1edd8217278dbbcd5c3a1f21488a6dddb52282fcd70956d9627d44"
+      },
+      {
+        "path": "predi/GFS_0.25_matriz_lat_lon_Vento_UVT_Predi_SP_N80_00_20261022_00.csv",
+        "bytes": 156537,
+        "sha256": "b28d1bba7990d152f061f41128036756bb930f73b77dd619400b1e8dd063ebf9"
+      },
+      {
+        "path": "predi/GFS_0.25_matriz_lat_lon_Vento_UVT_Predi_SP_N850_00_20261022_00.csv",
+        "bytes": 153403,
+        "sha256": "c0ad34f8df850af9707ae12175bb7ca701b2f6432541da48994205017a45c9d0"
+      }
+    ],
+    "runs": [
+      {
+        "label": "matriz_temp_850",
+        "script": "gera_matriz_MET.py",
+        "args": [
+          "-v",
+          "temp",
+          "-n",
+          "850",
+          "-r",
+          "SP"
+        ],
+        "returncode": 0,
+        "log": "reprocessamento/run/logs/matriz_temp_850.log"
+      },
+      {
+        "label": "mapa_temp_850",
+        "script": "gera_mapas_MET.py",
+        "args": [
+          "-v",
+          "temp",
+          "-n",
+          "850",
+          "-r",
+          "SP"
+        ],
+        "returncode": 0,
+        "log": "reprocessamento/run/logs/mapa_temp_850.log"
+      },
+      {
+        "label": "matriz_wind_850",
+        "script": "gera_matriz_vento_MET.py",
+        "args": [
+          "-v",
+          "wind",
+          "-n",
+          "850",
+          "-r",
+          "SP"
+        ],
+        "returncode": 0,
+        "log": "reprocessamento/run/logs/matriz_wind_850.log"
+      },
+      {
+        "label": "mapa_wind_850",
+        "script": "gera_mapas_vento_MET.py",
+        "args": [
+          "-v",
+          "wind",
+          "-n",
+          "850",
+          "-r",
+          "SP"
+        ],
+        "returncode": 0,
+        "log": "reprocessamento/run/logs/mapa_wind_850.log"
+      },
+      {
+        "label": "matriz_winds_20",
+        "script": "gera_matriz_vento_MET.py",
+        "args": [
+          "-v",
+          "winds",
+          "-ns",
+          "-r",
+          "SP"
+        ],
+        "returncode": 0,
+        "log": "reprocessamento/run/logs/matriz_winds_20.log"
+      },
+      {
+        "label": "mapa_winds_20",
+        "script": "gera_mapas_vento_MET.py",
+        "args": [
+          "-v",
+          "winds",
+          "-ns",
+          "-r",
+          "SP"
+        ],
+        "returncode": 0,
+        "log": "reprocessamento/run/logs/mapa_winds_20.log"
+      }
+    ],
+    "notes": [
+      "O baseline da Fase 0 não foi sobrescrito e continua incorreto de propósito para comparação histórica.",
+      "O reprocessamento usa a mesma amostra f000 do baseline; f006/f012/f018 são cópias com forecastTime=0.",
+      "A validação independente com pygrib grava validation.json separado do summary.json e não é executada pelo runner.",
+      "goGribV2.sh, URLs, ciclos, previsões, resoluções, variáveis, headers e nomes de produtos foram preservados."
+    ]
+  },
   "source_files": [
     {
       "path": ".gitignore",
-      "bytes": 128,
-      "sha256": "b7d0302945f2de245eb82a45930915f6f61c1f660a81d9176979b3b3348e4422"
+      "bytes": 175,
+      "sha256": "2fe1b562d82b189a26dc61f5dab5fbdf1354d7f908c96a2a4fede705951d3d04"
     },
     {
       "path": "METARpy/GoMETAR.py",
@@ -548,8 +783,8 @@
     },
     {
       "path": "baseline/build_manifest.py",
-      "bytes": 10203,
-      "sha256": "aae5dd19b37295f0e8ca8c7fbb5ffc17c68c3eae979e27124a400833c12a2ce1"
+      "bytes": 13594,
+      "sha256": "4cd42c8fb3a0cc7bd4244a792bcc804db1b3447e97483fc14a7b490cf930833d"
     },
     {
       "path": "baseline/freeze.json",
@@ -618,48 +853,48 @@
     },
     {
       "path": "classes_MET/gera_mapas_MAN_MET.py",
-      "bytes": 7527,
-      "sha256": "07b947c95b13980d3086d90599641d18234f1f4de641ac3e75035ee15b6e5cb9"
+      "bytes": 7633,
+      "sha256": "375803743718385711a7887fcacb26dff12a07b0531b52bb2ad4e100dd5344d2"
     },
     {
       "path": "classes_MET/gera_mapas_MET.py",
-      "bytes": 8568,
-      "sha256": "6044fe2f5665fca359fa415197ecfb2c8a18995e929e8ee30b6a73a05bb23756"
+      "bytes": 8674,
+      "sha256": "4d13a84b8f9ecd1253f2fa3e3371de9d1512b622ba0120eaa2c3196270f3adcb"
     },
     {
       "path": "classes_MET/gera_mapas_vento_MAN_MET.py",
-      "bytes": 19855,
-      "sha256": "2bf7cb3c282fc10616e152afb4e146d5dbb92ab3dc563cdb2c575d96d293052c"
+      "bytes": 20563,
+      "sha256": "71df1891e7ad7546ea56b4a656b326786986277adbd59163cb372dc0eb8e4374"
     },
     {
       "path": "classes_MET/gera_mapas_vento_MET.py",
-      "bytes": 8393,
-      "sha256": "4e54103b86d6191bb845dc0c7f3072aa01702604e921f4d9c554d0fb6089779a"
+      "bytes": 8629,
+      "sha256": "71acb47d3ea32240fcdf28dae0b9cbd61fe4a72a4f46d0d8c8a752e610ac45b2"
     },
     {
       "path": "classes_MET/gera_matriz_MAN_MET.py",
-      "bytes": 4642,
-      "sha256": "9f4a2d674e3d538e0fce86656b0e5d81e73acac495c766dd59f878421708409a"
+      "bytes": 4748,
+      "sha256": "6df13485ae2b8026c61ec647d01b55a81704042c13ae02f23daad82617ab5337"
     },
     {
       "path": "classes_MET/gera_matriz_MET.py",
-      "bytes": 6402,
-      "sha256": "9c4125e6d4c22382d4bc521c6a2f9755b85ea8a75d45d41142529f0c1e1a2aa8"
+      "bytes": 6508,
+      "sha256": "6148e08b8155fe5674dea6ecb97c04c1960b871d65911bc68649b2456f01be26"
     },
     {
       "path": "classes_MET/gera_matriz_vento_MAN_MET.py",
-      "bytes": 19700,
-      "sha256": "e4877264a7a6fcc21643933530483a328ce3b7e108f312310ed467166fc62263"
+      "bytes": 20960,
+      "sha256": "58b2a32224d61fe3baade4fc87c6c0a0402daed6438ad84803a2aec25a0eeeac"
     },
     {
       "path": "classes_MET/gera_matriz_vento_MET.py",
-      "bytes": 14549,
-      "sha256": "deb2dc5feb803a5d114ca80940022dc4ef43f522565f50851dcb3299fd2b0e07"
+      "bytes": 15477,
+      "sha256": "85e185e756a91e58d2c9f2cc5d3992df99e939628d8a18a80dc9ada8547321af"
     },
     {
       "path": "classes_MET/leitura_dados_grib_MET.py",
-      "bytes": 15271,
-      "sha256": "23a83f0be3ac545984f9506a1f4f68e8c43bd641b7ded7705cf21da4d9e4fb43"
+      "bytes": 8999,
+      "sha256": "63cbda1d7be036e864c07b7917c8d21066939dae7b651cbec51c8a941cceea51"
     },
     {
       "path": "classes_MET/parse_param_MET.py",
@@ -698,8 +933,8 @@
     },
     {
       "path": "docs/03-dados-e-saidas.md",
-      "bytes": 19948,
-      "sha256": "a4d88cb934bf15c2a842684b3791cbd375078ca31f79d34ba51eee17e7da54d1"
+      "bytes": 20198,
+      "sha256": "5c1dfabc414e850887394eb00679694d9a182342d52fb2ae58a4861d94615b85"
     },
     {
       "path": "docs/04-operacao.md",
@@ -708,28 +943,33 @@
     },
     {
       "path": "docs/05-diagnostico.md",
-      "bytes": 44336,
-      "sha256": "95d233a947d01206a6deeaa8482ac8d097c79d3af0575434977d91521deb2559"
+      "bytes": 46573,
+      "sha256": "619e221b5285bb24bc01d611637576499fa25b8e5758a45ce3efe0fb153bdaed"
     },
     {
       "path": "docs/06-plano-de-melhorias-e-variaveis.md",
-      "bytes": 32790,
-      "sha256": "04d1abf577270da7b2606dcdb294e9f6561ce716f83da541a1a2959e4a0223ac"
+      "bytes": 33377,
+      "sha256": "392b78c8376547f6aaa0e0e5406915c4f1ff9b23df4d887eb1adf7af7a2884a4"
     },
     {
       "path": "docs/07-fase-0-baseline.md",
-      "bytes": 15330,
-      "sha256": "12c14644b3b9f85f9c0a911ec4f0e2e491a72b64cf7ff05ac437773c836319eb"
+      "bytes": 17066,
+      "sha256": "775991e8ef1ab4a35a1fe0df342d7e2c4215cf866e13f346c55efd07f25b34e6"
     },
     {
       "path": "docs/08-contratos-e-consumidores.md",
-      "bytes": 13468,
-      "sha256": "a5394d803cf261b82449d34c6934d5dafd50cc8ea170419019ca8e38ecf36e43"
+      "bytes": 13997,
+      "sha256": "de48d791b1c6051e935004ff93dba61f0da261b0df3e3c5179258537d588cdfc"
+    },
+    {
+      "path": "docs/09-fase-1-resultados.md",
+      "bytes": 18919,
+      "sha256": "152906ec63e3c5df4f0012008f690649ba3192d4b3a174c80e92baa4e5bb8a3d"
     },
     {
       "path": "docs/README.md",
-      "bytes": 10054,
-      "sha256": "18a88689454a375bb4450758ca0501089dfe0047780714dcc5242c73664f2f9d"
+      "bytes": 11513,
+      "sha256": "c6cebc64aaf1829e6d5d9d4e0e52c4e60a990cd119e3f51916bef93da27ea6dd"
     },
     {
       "path": "environment/path.conf",
@@ -752,9 +992,34 @@
       "sha256": "be7f58e073960f738974b99d4f405acbcb87d968e221d2ef7cb456b01cdf9aa7"
     },
     {
+      "path": "reprocessamento/reports/20261022-00/pytest.txt",
+      "bytes": 195,
+      "sha256": "15ee9cdd882b5b7dc361d28a4b8463c715ed9ba62cd41a5a9db6cf36e9f33abf"
+    },
+    {
+      "path": "reprocessamento/reports/20261022-00/summary.json",
+      "bytes": 15877,
+      "sha256": "5a3cd3abe535fffd1a454374ba3094a197a682df558bb81353f71f58ee496a00"
+    },
+    {
+      "path": "reprocessamento/reports/20261022-00/validation.json",
+      "bytes": 24935,
+      "sha256": "5cca612379f1979684aac9c5ed1021a1ff5c567559de7ab45cd63d5b970f7132"
+    },
+    {
+      "path": "reprocessamento/run_reprocessamento.py",
+      "bytes": 10727,
+      "sha256": "de9937963970c312370f095e86daae943ce434c9037ded1f614d54a6eaa36792"
+    },
+    {
+      "path": "reprocessamento/validar_fase1.py",
+      "bytes": 14045,
+      "sha256": "aa8e7db3c79e957af743862e9e2ee7bfff9ff79a85b2309184df8cb1881d949b"
+    },
+    {
       "path": "tests/README.md",
-      "bytes": 7225,
-      "sha256": "4511bb967bae3a4903f42268963f0fa03f3d9cfb874ce293071bd74fb959534c"
+      "bytes": 8576,
+      "sha256": "ff607bb554ab151f7e76b05fb1df1cb56e7097a59cd21af2d658322b31a9b6cd"
     },
     {
       "path": "tests/conftest.py",
@@ -768,23 +1033,23 @@
     },
     {
       "path": "tests/phase0_harness.py",
-      "bytes": 12329,
-      "sha256": "8a28fe2d16597419ddc1ac0b4b4d969fa01826bb6e3091582f07bf3f09694b98"
+      "bytes": 22420,
+      "sha256": "ae3ef88f3e3dacd70d9db46cad2570a2fc9e6c55e848875d8fee1efbb2208730"
     },
     {
       "path": "tests/test_phase0_acceptance.py",
-      "bytes": 15166,
-      "sha256": "2f3f61d37db615850a4c9c8eee46c593d4c412e0973a803218230e61c4b926a3"
+      "bytes": 15392,
+      "sha256": "73fd6ce5796147ba733b6ddedf5402ba9198d75688c04c1e86fceeb432ef199b"
     },
     {
       "path": "tests/test_phase0_calculations.py",
-      "bytes": 2420,
-      "sha256": "83f6e370f9c1706a7868e3c9eab9a4292f078c1c59266446323cb6b2dc7c69ee"
+      "bytes": 2347,
+      "sha256": "e30f75ab9d533f1b37ac88debff7c5b959a7c5c162f0024feaf5e0e159dd779a"
     },
     {
       "path": "tests/test_phase0_cycle.py",
-      "bytes": 1585,
-      "sha256": "f42f4f36941946bb73e782ac8c379d8db54203ed0baf4b07465d161eb988c397"
+      "bytes": 1285,
+      "sha256": "98357d4450536b06526334e82a94faeb978b838c1d8d670134f5bc45b401f89b"
     },
     {
       "path": "tests/test_phase0_freeze.py",
@@ -793,13 +1058,18 @@
     },
     {
       "path": "tests/test_phase0_orientation.py",
-      "bytes": 7480,
-      "sha256": "c4f1038f1e105ae0bd1df4db876ee1197ace12a703004a786a07092269ce1f72"
+      "bytes": 6408,
+      "sha256": "b6db217667bb36fbcfab82886866fcdfd1b47ed4df8d2094db180e5642a976bf"
     },
     {
       "path": "tests/test_phase0_real_grib.py",
       "bytes": 4636,
       "sha256": "789304d86fcee7567d54ca8c6edeef7467075232395ee43e3e2e5d3ab9f8773d"
+    },
+    {
+      "path": "tests/test_phase1_acceptance.py",
+      "bytes": 19249,
+      "sha256": "03c981d21956aee2cf36cac7612d3435120295da3312f32028fa535b9280475d"
     }
   ],
   "notes": [

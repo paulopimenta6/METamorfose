@@ -39,16 +39,23 @@ def criaAngAzMET(data_u, data_v):
 
 def criaAngMET(data_u, data_v):
     angResult=np.empty(data_u.shape)
-    angResult=(((180/np.pi)*(np.arctan2((-data_u),(-data_v)))))
+    angResult=(((180/np.pi)*(np.arctan2((-data_u),(-data_v)))) + 360) % 360
     return angResult 
 
 def converte_altitude(pres):    
-    #retorna a altitude em feet    
+    #retorna a altitude em feet a partir da pressao em hPa
     p0=1013.25
     h_alt = (1 - (pres/p0)**0.190284) * 145366.45
     return h_alt
+
+def calcula_hmet(nivel, eh_vento_superficie):
+    #No fluxo "winds" o nivel e uma altura em metros acima do solo;
+    #no fluxo "wind" o nivel e uma pressao em hPa.
+    if eh_vento_superficie:
+        return float(nivel) * 3.28084
+    return converte_altitude(nivel)
     
-def geraMatriz_Vento_Resu(u_objGRIB, v_objGRIB, lon_lat, regNome, nivel):
+def geraMatriz_Vento_Resu(u_objGRIB, v_objGRIB, lon_lat, regNome, nivel, eh_vento_superficie):
 
 #Gerador de vento para o BlueSky    
 # =============================================================================
@@ -120,6 +127,8 @@ def geraMatriz_Vento_Resu(u_objGRIB, v_objGRIB, lon_lat, regNome, nivel):
             if flag==2:
                 lon_u=lon_u-360
                 lon_v=lon_v-360 
+            data_U=data_U[::-1,:]
+            data_V=data_V[::-1,:]
             lon_u=lon_u[0,:]
             lat_u=lat_u[:,0]
             lat_u=lat_u[::-1]  
@@ -134,6 +143,8 @@ def geraMatriz_Vento_Resu(u_objGRIB, v_objGRIB, lon_lat, regNome, nivel):
             data_U_ini, lat_u_ini, lon_u_ini = u_objGRIB[i].data(lat1=lats1,lat2=lats2,lon1=lons1_ini,lon2=lons2_ini)
             data_V_ini, lat_v_ini, lon_v_ini = v_objGRIB[i].data(lat1=lats1,lat2=lats2,lon1=lons1_ini,lon2=lons2_ini)
 
+            data_U_ini=data_U_ini[::-1,:]
+            data_V_ini=data_V_ini[::-1,:]
             lon_u_ini=lon_u_ini[0,:]
             lon_u_ini=lon_u_ini-360
             lat_u_ini=lat_u_ini[:,0]
@@ -142,6 +153,8 @@ def geraMatriz_Vento_Resu(u_objGRIB, v_objGRIB, lon_lat, regNome, nivel):
             data_U_fim, lat_u_fim, lon_u_fim = u_objGRIB[i].data(lat1=lats1,lat2=lats2,lon1=lons1_fim,lon2=lons2_fim)
             data_V_fim, lat_v_fim, lon_v_fim = v_objGRIB[i].data(lat1=lats1,lat2=lats2,lon1=lons1_fim,lon2=lons2_fim)
 
+            data_U_fim=data_U_fim[::-1,:]
+            data_V_fim=data_V_fim[::-1,:]
             lon_u_fim=lon_u_fim[0,:]            
             lat_u_fim=lat_u_fim[:,0]
             lat_u_fim=lat_u_fim[::-1]        
@@ -167,7 +180,7 @@ def geraMatriz_Vento_Resu(u_objGRIB, v_objGRIB, lon_lat, regNome, nivel):
         coluna=data_U.shape[1]   
         vento_resultante=criaResultanteKnot(data_U, data_V)        
         angMET=criaAngMET(data_U, data_V)
-        hMET=converte_altitude(nivel)              
+        hMET=calcula_hmet(nivel, eh_vento_superficie)
 
         w.writerow([ "lat", "lon", "hMET", "angMET", "vento_resultante" ])
         for i in range(linha):
@@ -236,6 +249,9 @@ def geraMatriz_Vento_UVT_predi(u_objGRIB, v_objGRIB, t_objGRIB, lon_lat, regNome
                 lon_u=lon_u-360
                 lon_v=lon_v-360
         
+            data_U=data_U[::-1,:]
+            data_V=data_V[::-1,:]
+            data_T=data_T[::-1,:]
             lon_u=lon_u[0,:]
             lat_u=lat_u[:,0]
             lat_u=lat_u[::-1]
@@ -251,6 +267,9 @@ def geraMatriz_Vento_UVT_predi(u_objGRIB, v_objGRIB, t_objGRIB, lon_lat, regNome
             data_V_ini, lat_v_ini, lon_v_ini = v_objGRIB[i].data(lat1=lats1,lat2=lats2,lon1=lons1_ini,lon2=lons2_ini)
             data_T_ini, lat_t_ini, lon_t_ini = t_objGRIB[i].data(lat1=lats1,lat2=lats2,lon1=lons1_ini,lon2=lons2_ini) 
 
+            data_U_ini=data_U_ini[::-1,:]
+            data_V_ini=data_V_ini[::-1,:]
+            data_T_ini=data_T_ini[::-1,:]
             lon_u_ini=lon_u_ini[0,:]
             lon_u_ini=lon_u_ini-360
             lat_u_ini=lat_u_ini[:,0]
@@ -260,6 +279,9 @@ def geraMatriz_Vento_UVT_predi(u_objGRIB, v_objGRIB, t_objGRIB, lon_lat, regNome
             data_V_fim, lat_v_fim, lon_v_fim = v_objGRIB[i].data(lat1=lats1,lat2=lats2,lon1=lons1_fim,lon2=lons2_fim)
             data_T_fim, lat_t_fim, lon_t_fim = t_objGRIB[i].data(lat1=lats1,lat2=lats2,lon1=lons1_fim,lon2=lons2_fim) 
 
+            data_U_fim=data_U_fim[::-1,:]
+            data_V_fim=data_V_fim[::-1,:]
+            data_T_fim=data_T_fim[::-1,:]
             lon_u_fim=lon_u_fim[0,:]            
             lat_u_fim=lat_u_fim[:,0]
             lat_u_fim=lat_u_fim[::-1]        
@@ -313,8 +335,8 @@ def geraMatrizVentoSup(lon_lat, varReg):
         u_comp_supe=processamento_dados_met_AUT("uSupe", varNivel_sup).define_lista_var_com_altitude()
         v_comp_supe=processamento_dados_met_AUT("vSupe", varNivel_sup).define_lista_var_com_altitude()
 
-        geraMatriz_Vento_Resu(u_comp_supe, v_comp_supe, lon_lat, varReg, varNivel_sup)
-        geraMatriz_Vento_UVT_predi(u_comp_supe, u_comp_supe, t_comp_supe, lon_lat, varReg, varNivel_sup) 
+        geraMatriz_Vento_Resu(u_comp_supe, v_comp_supe, lon_lat, varReg, varNivel_sup, True)
+        geraMatriz_Vento_UVT_predi(u_comp_supe, v_comp_supe, t_comp_supe, lon_lat, varReg, varNivel_sup)
  
 
 varMET, varNivel, varRegiao = parse_param(sys.argv).imprime_parse()
@@ -351,7 +373,7 @@ if varMET=="wind":
     # =============================================================================
     # ventos para BlueSky
     # var impressas: <lat[deg]> <lon[deg]> <alt[feet]> <angMET[deg]> <VResul[m**s-1]> 
-    geraMatriz_Vento_Resu(u_comp, v_comp, lonslats, varRegiaoNome, varNivel)
+    geraMatriz_Vento_Resu(u_comp, v_comp, lonslats, varRegiaoNome, varNivel, False)
     # =============================================================================
     # =============================================================================
     # ventos e temperatura para o preditor

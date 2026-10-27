@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Gera `baseline/manifest.json` com hashes, versões e resultados da Fase 0."""
+"""Gera `baseline/manifest.json` com hashes, versões e resultados das Fases 0 e 1."""
 
 from __future__ import annotations
 
@@ -23,6 +23,11 @@ SUMMARY = REPORT / "summary.json"
 PYTEST = REPORT / "pytest.txt"
 MANIFEST = ROOT / "baseline" / "manifest.json"
 
+PHASE1_REPORT = ROOT / "reprocessamento" / "reports" / "20261022-00"
+PHASE1_SUMMARY = PHASE1_REPORT / "summary.json"
+PHASE1_PYTEST = PHASE1_REPORT / "pytest.txt"
+PHASE1_VALIDATION = PHASE1_REPORT / "validation.json"
+
 SOURCE_GLOBS = [
     ".gitignore",
     "pytest.ini",
@@ -42,6 +47,11 @@ SOURCE_GLOBS = [
     "baseline/samples/*.json",
     "baseline/reports/20261022-00/summary.json",
     "baseline/reports/20261022-00/pytest.txt",
+    "reprocessamento/*.py",
+    "reprocessamento/*.md",
+    "reprocessamento/reports/20261022-00/summary.json",
+    "reprocessamento/reports/20261022-00/validation.json",
+    "reprocessamento/reports/20261022-00/pytest.txt",
 ]
 
 
@@ -81,7 +91,15 @@ def source_files():
 
 def parse_pytest(text: str):
     counts = {}
-    for name in ("passed", "failed", "skipped", "xfailed", "xpassed", "error"):
+    for name in (
+        "passed",
+        "failed",
+        "skipped",
+        "xfailed",
+        "xpassed",
+        "error",
+        "deselected",
+    ):
         match = re.search(rf"(\d+) {name}", text)
         counts[name] = int(match.group(1)) if match else 0
     xfail_tests = []
@@ -157,6 +175,71 @@ def build_evidence(summary):
             ),
         },
         "reference_point": summary.get("sample", {}).get("reference_point"),
+    }
+
+
+def file_info(path: Path):
+    if not path.is_file():
+        return None
+    return {
+        "path": str(path.relative_to(ROOT)),
+        "bytes": path.stat().st_size,
+        "sha256": sha256_file(path),
+    }
+
+
+def build_phase1():
+    """Consolida a evidência da Fase 1 sem tocar na seção histórica da Fase 0."""
+    if not (
+        PHASE1_SUMMARY.is_file()
+        and PHASE1_VALIDATION.is_file()
+        and PHASE1_PYTEST.is_file()
+    ):
+        return None
+
+    summary = json.loads(PHASE1_SUMMARY.read_text(encoding="utf-8"))
+    validation = json.loads(PHASE1_VALIDATION.read_text(encoding="utf-8"))
+    pytest_counts, _ = parse_pytest(PHASE1_PYTEST.read_text(encoding="utf-8"))
+
+    return {
+        "phase": "Fase 1",
+        "base_commit": git("rev-parse", "fase-0-concluida^{commit}"),
+        "purpose": (
+            "Registrar as correções de cálculo D-01/D-02/D-03/D-04/D-12 e o "
+            "reprocessamento da amostra em diretório separado."
+        ),
+        "fixes": ["D-01", "D-02", "D-03", "D-04", "D-12"],
+        "report_dir": str(PHASE1_REPORT.relative_to(ROOT)),
+        "fixed_local_time": summary.get("fixed_local_time"),
+        "summary": file_info(PHASE1_SUMMARY),
+        "validation": {
+            **file_info(PHASE1_VALIDATION),
+            "status": validation.get("status"),
+            "checks": validation.get("checks"),
+            "failures": validation.get("failures"),
+        },
+        "pytest": {
+            **file_info(PHASE1_PYTEST),
+            **pytest_counts,
+            "total_cases": sum(
+                pytest_counts.get(name, 0)
+                for name in ("passed", "failed", "skipped", "xfailed", "xpassed")
+            ),
+        },
+        "product_count": len(summary.get("files", [])),
+        "csv_count": len(summary.get("csv", {})),
+        "product_hashes": summary.get("files", []),
+        "runs": summary.get("runs", []),
+        "notes": [
+            "O baseline da Fase 0 não foi sobrescrito e continua incorreto de "
+            "propósito para comparação histórica.",
+            "O reprocessamento usa a mesma amostra f000 do baseline; "
+            "f006/f012/f018 são cópias com forecastTime=0.",
+            "A validação independente com pygrib grava validation.json separado "
+            "do summary.json e não é executada pelo runner.",
+            "goGribV2.sh, URLs, ciclos, previsões, resoluções, variáveis, "
+            "headers e nomes de produtos foram preservados.",
+        ],
     }
 
 
@@ -250,6 +333,7 @@ def build_manifest():
             ),
             "xfail_tests": xfail_tests,
         },
+        "phase_1": build_phase1(),
         "source_files": source_files(),
         "notes": [
             "O baseline é intencionalmente incorreto e não deve ser usado como "
@@ -288,6 +372,14 @@ def main():
         f"{manifest['tests']['xfailed']} xfailed, "
         f"{manifest['tests']['skipped']} skipped"
     )
+    if manifest["phase_1"]:
+        validation = manifest["phase_1"]["validation"]
+        print(f"produtos da Fase 1: {manifest['phase_1']['product_count']}")
+        print(
+            "validação da Fase 1: "
+            f"{validation['checks']} verificações, "
+            f"{validation['failures']} falhas"
+        )
 
 
 if __name__ == "__main__":

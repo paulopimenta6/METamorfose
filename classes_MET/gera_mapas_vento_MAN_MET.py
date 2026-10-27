@@ -63,6 +63,8 @@ class met_gera_mapas_vento_man:
             if flag==2:
                 lon_u=lon_u-360
                 lon_v=lon_v-360
+            data_U=data_U[::-1,:]
+            data_V=data_V[::-1,:]
             lon_u=lon_u[0,:]
             lat_u=lat_u[:,0]
             lat_u=lat_u[::-1]
@@ -76,6 +78,8 @@ class met_gera_mapas_vento_man:
             data_U_ini, lat_u_ini, lon_u_ini = varMET_AUX_u.data(lat1=lats1,lat2=lats2,lon1=lons1_ini,lon2=lons2_ini)
             data_V_ini, lat_v_ini, lon_v_ini = varMET_AUX_v.data(lat1=lats1,lat2=lats2,lon1=lons1_ini,lon2=lons2_ini)
 
+            data_U_ini=data_U_ini[::-1,:]
+            data_V_ini=data_V_ini[::-1,:]
             lon_u_ini=lon_u_ini[0,:]
             lon_u_ini=lon_u_ini-360
             lat_u_ini=lat_u_ini[:,0]
@@ -84,6 +88,8 @@ class met_gera_mapas_vento_man:
             data_U_fim, lat_u_fim, lon_u_fim = varMET_AUX_u.data(lat1=lats1,lat2=lats2,lon1=lons1_fim,lon2=lons2_fim)
             data_V_fim, lat_v_fim, lon_v_fim = varMET_AUX_v.data(lat1=lats1,lat2=lats2,lon1=lons1_fim,lon2=lons2_fim)
 
+            data_U_fim=data_U_fim[::-1,:]
+            data_V_fim=data_V_fim[::-1,:]
             lon_u_fim=lon_u_fim[0,:]            
             lat_u_fim=lat_u_fim[:,0]
             lat_u_fim=lat_u_fim[::-1]        
@@ -182,6 +188,8 @@ class met_gera_mapas_vento_man:
             if flag==2:
                 lon_u=lon_u-360
                 lon_v=lon_v-360
+            data_U=data_U[::-1,:]
+            data_V=data_V[::-1,:]
             lon_u=lon_u[0,:]
             lat_u=lat_u[:,0]
             lat_u=lat_u[::-1]
@@ -195,6 +203,8 @@ class met_gera_mapas_vento_man:
             data_U_ini, lat_u_ini, lon_u_ini = varMET_AUX_u.data(lat1=lats1,lat2=lats2,lon1=lons1_ini,lon2=lons2_ini)
             data_V_ini, lat_v_ini, lon_v_ini = varMET_AUX_v.data(lat1=lats1,lat2=lats2,lon1=lons1_ini,lon2=lons2_ini)
 
+            data_U_ini=data_U_ini[::-1,:]
+            data_V_ini=data_V_ini[::-1,:]
             lon_u_ini=lon_u_ini[0,:]
             lon_u_ini=lon_u_ini-360
             lat_u_ini=lat_u_ini[:,0]
@@ -203,6 +213,8 @@ class met_gera_mapas_vento_man:
             data_U_fim, lat_u_fim, lon_u_fim = varMET_AUX_u.data(lat1=lats1,lat2=lats2,lon1=lons1_fim,lon2=lons2_fim)
             data_V_fim, lat_v_fim, lon_v_fim = varMET_AUX_v.data(lat1=lats1,lat2=lats2,lon1=lons1_fim,lon2=lons2_fim)
 
+            data_U_fim=data_U_fim[::-1,:]
+            data_V_fim=data_V_fim[::-1,:]
             lon_u_fim=lon_u_fim[0,:]            
             lat_u_fim=lat_u_fim[:,0]
             lat_u_fim=lat_u_fim[::-1]        
@@ -295,6 +307,8 @@ class met_gera_mapas_vento_man:
             if flag==2:
                 lon_u=lon_u-360
                 lon_v=lon_v-360
+            data_U=data_U[::-1,:]
+            data_V=data_V[::-1,:]
             lon_u=lon_u[0,:]
             lat_u=lat_u[:,0]
             lat_u=lat_u[::-1]
@@ -308,6 +322,8 @@ class met_gera_mapas_vento_man:
             data_U_ini, lat_u_ini, lon_u_ini = varMET_AUX_u.data(lat1=lats1,lat2=lats2,lon1=lons1_ini,lon2=lons2_ini)
             data_V_ini, lat_v_ini, lon_v_ini = varMET_AUX_v.data(lat1=lats1,lat2=lats2,lon1=lons1_ini,lon2=lons2_ini)
 
+            data_U_ini=data_U_ini[::-1,:]
+            data_V_ini=data_V_ini[::-1,:]
             lon_u_ini=lon_u_ini[0,:]
             lon_u_ini=lon_u_ini-360
             lat_u_ini=lat_u_ini[:,0]
@@ -316,6 +332,8 @@ class met_gera_mapas_vento_man:
             data_U_fim, lat_u_fim, lon_u_fim = varMET_AUX_u.data(lat1=lats1,lat2=lats2,lon1=lons1_fim,lon2=lons2_fim)
             data_V_fim, lat_v_fim, lon_v_fim = varMET_AUX_v.data(lat1=lats1,lat2=lats2,lon1=lons1_fim,lon2=lons2_fim)
 
+            data_U_fim=data_U_fim[::-1,:]
+            data_V_fim=data_V_fim[::-1,:]
             lon_u_fim=lon_u_fim[0,:]            
             lat_u_fim=lat_u_fim[:,0]
             lat_u_fim=lat_u_fim[::-1]        

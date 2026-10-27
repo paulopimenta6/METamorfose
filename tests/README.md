@@ -1,8 +1,9 @@
-# Testes da Fase 0
+# Testes das Fases 0 e 1
 
-Este diretório contém o harness de testes criado antes de qualquer correção de
-cálculo. O objetivo é transformar os defeitos conhecidos em contratos
-executáveis, sem alterar o código de produção.
+Este diretório contém o harness da Fase 0 e a suíte de aceitação da Fase 1. O
+harness foi criado antes das correções de cálculo para transformar os defeitos
+conhecidos em contratos executáveis; a suíte da Fase 1 passou a exigir o
+comportamento corrigido.
 
 ## Pré-requisitos
 
@@ -29,8 +30,8 @@ basemap 2.0.0
 # suíte completa
 python3 -m pytest -q
 
-# mostra o motivo de cada xfail
-python3 -m pytest -q -rx
+# relatório resumido de falhas, skips e xfails
+python3 -m pytest -q -ra
 
 # apenas os contratos que não precisam da amostra real
 python3 -m pytest -q tests/test_phase0_freeze.py tests/test_phase0_calculations.py \
@@ -41,6 +42,9 @@ python3 -m pytest -q tests/test_phase0_real_grib.py
 
 # apenas a aceitação da Fase 0 (inclui verificação dos remotos)
 python3 -m pytest -q -m acceptance
+
+# apenas a aceitação da Fase 1 (T-01 a T-05)
+python3 -m pytest -q tests/test_phase1_acceptance.py
 
 # aceitação sem rede
 python3 -m pytest -q -m "acceptance and not network"
@@ -66,8 +70,25 @@ A suíte é intencionalmente estrita: se o backup, a amostra ou um remoto
 obrigatório estiverem ausentes, o teste **falha** com uma mensagem explícita.
 Os testes que consultam a rede usam o marker `network` e podem ser excluídos
 com `-m "not network"`; nesse caso eles aparecem como `deselected`, não como
-`skip`. A aceitação só é considerada concluída quando a suíte completa termina
-com zero falhas, zero `skip` e os 20 `xfail` esperados.
+`skip`. Na Fase 0 a suíte terminava com 40 `passed` e 20 `xfailed`; esses 20
+contratos foram corrigidos na Fase 1 e hoje passam sem `xfail`.
+
+## Aceitação da Fase 1
+
+`tests/test_phase1_acceptance.py` cobre os critérios T-01 a T-05 do
+[plano](../docs/06-plano-de-melhorias-e-variaveis.md):
+
+- T-01: orientação norte-sul em CSVs e mapas, AUT e MAN, inclusive `flag == 3`;
+- T-02: componentes U/V, resultante e regressões estruturais do mapa e do
+  preditor automáticos;
+- T-03: `hMET`/`halt` para 20/30/40/50/80 m e para níveis de pressão;
+- T-04: `angMET` nos quatro quadrantes e em toda a grade;
+- T-05: fronteiras de ciclo, meia-noite, ciclo ausente e fallback de resolução.
+
+A suíte tem **65 testes** (27 funções, várias parametrizadas) e não usa `xfail`
+para os defeitos corrigidos. A suíte completa, sem os testes de rede, termina
+com **123 passed** e 3 `deselected`. O resultado detalhado da fase está em
+[docs/09-fase-1-resultados.md](../docs/09-fase-1-resultados.md).
 
 ## Amostra real
 
@@ -98,34 +119,25 @@ Para forçar um novo download:
 python3 tests/fetch_gfs_sample.py --force
 ```
 
-## Semântica dos `xfail`
+## Histórico dos `xfail` e contratos da Fase 1
 
-Os testes que descrevem o comportamento **desejado** usam
-`@pytest.mark.xfail(strict=True)`. Eles falham hoje porque o código de produção
-ainda tem os defeitos da Fase 0. O `strict=True` é intencional:
+Na Fase 0, os testes que descreviam o comportamento **desejado** usavam
+`@pytest.mark.xfail(strict=True)`. Eles falhavam porque o código original tinha
+os defeitos diagnosticados; os 20 marcadores foram removidos na Fase 1, quando
+cada defeito foi corrigido. Hoje os mesmos testes passam e protegem a correção
+permanentemente.
 
-- enquanto o defeito existir, o teste é contabilizado como `xfailed`;
-- quando a correção for aplicada, o teste passa e o pytest passa a reportar
-  `XPASS(strict)`, que é uma falha;
-- nesse momento, o marcador deve ser removido e o teste passa a proteger a
-  correção permanentemente.
-
-Não remova um `xfail` sem corrigir o código; não marque um teste como `skip`
-para esconder uma regressão.
-
-### Grupos de contratos
-
-| Defeito | Testes principais | Comportamento esperado após a correção |
+| Defeito | Testes principais | Comportamento exigido |
 |---|---|---|
 | D-01 | `test_matriz_escalar_primeira_linha_deve_ser_o_sul`, `test_bluesky_primeira_linha_deve_ser_o_sul`, `test_preditor_primeira_linha_deve_ser_o_sul` | A primeira linha do CSV (latitude mínima) deve conter o dado da latitude mínima, não o dado do norte. |
 | D-02 | `test_aut_preditor_deve_receber_v_comp_supe`, `test_mapa_vento_superficial_deve_ler_v_supe` | O preditor e o mapa de `winds` devem usar `vSupe` como componente V. |
 | D-03 | `test_altura_em_metros_deveria_ser_convertida_por_3_28084`, `test_bluesky_altitude_de_20_metros`, `test_man_bluesky_altitude_de_20_metros` | `hMET` de 20 m deve ser 65,6168 ft (`20 × 3,28084`), não a conversão de pressão. |
-| D-04 | `test_ciclo_0630_deve_escolher_o_ciclo_06`, `test_ciclo_0030_deve_usar_o_18_do_dia_anterior` | Às 06:30 deve ser usado o ciclo 06 do mesmo dia; às 00:30, o ciclo 18 do dia anterior. |
+| D-04 | `test_ciclo_0630_deve_escolher_o_ciclo_06`, `test_ciclo_0030_usa_o_ciclo_00_do_mesmo_dia` | Às 06:30 deve ser usado o ciclo 06 do mesmo dia; às 00:30, o ciclo 00 do mesmo dia. |
 | D-12 | `test_angmet_quadrantes_negativos_devem_ser_normalizados`, `test_bluesky_angulo_de_vento_de_oeste`, `test_man_bluesky_angulo_de_vento_de_oeste` | `angMET` deve estar em `[0, 360)`, inclusive para vento de oeste e noroeste. |
 
-Os testes que passam hoje protegem o que **não** pode mudar: nomes de headers,
-conversão Kelvin → Celsius, resultante em nós, altitude de pressão em 850/500 hPa
-e o congelamento do `goGribV2.sh`.
+Os testes que nunca foram `xfail` protegem o que **não** pode mudar: nomes de
+headers, conversão Kelvin → Celsius, resultante em nós, altitude de pressão em
+850/500 hPa e o congelamento do `goGribV2.sh`.
 
 ## Harness sem efeitos colaterais
 
@@ -160,6 +172,22 @@ O comando não escreve em `/media/MET`. O resultado fica em
 `baseline/reports/20261022-00/`. Para o baseline, a amostra `f000` é copiada
 para `f006/f012/f018` apenas para satisfazer o loop do leitor atual; todas as
 mensagens têm `forecastTime=0`, então o baseline representa somente `f000`.
+
+## Reprocessamento da Fase 1
+
+O reprocessamento usa o código corrigido, grava em
+`reprocessamento/reports/20261022-00/` e nunca sobrescreve o baseline:
+
+```bash
+python3 reprocessamento/run_reprocessamento.py
+python3 reprocessamento/validar_fase1.py
+```
+
+O runner aceita `--resume` para preservar `reprocessamento/run/` e pular os
+comandos cujo log já existe. A validação independente é um passo separado: ela
+relê a amostra com `pygrib`, compara os 13 CSVs linha a linha e grava
+`validation.json`. O resultado esperado é **158 verificações e 0 falhas**,
+incluindo o ciclo `00` nos seis logs de execução.
 
 ## Limitações
 

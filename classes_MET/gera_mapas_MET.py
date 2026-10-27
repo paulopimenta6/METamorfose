@@ -113,6 +113,7 @@ def gera_mapas(objGRIB, lon_lat, variavelMET, regiao, nivel):
             data, lat, lon = objMET.data(lat1=lats1,lat2=lats2,lon1=lons1,lon2=lons2)
             if flag==2:
                 lon=lon-360            
+            data=data[::-1,:]
             lon=lon[0,:]
             lat=lat[:,0]
             lat=lat[::-1]
@@ -124,6 +125,7 @@ def gera_mapas(objGRIB, lon_lat, variavelMET, regiao, nivel):
             lons2_fim=lons2
 
             data_ini, lat_ini, lon_ini = objMET.data(lat1=lats1,lat2=lats2,lon1=lons1_ini,lon2=lons2_ini)
+            data_ini=data_ini[::-1,:]
             
             lon_ini=lon_ini[0,:]
             lon_ini=lon_ini-360
@@ -133,6 +135,7 @@ def gera_mapas(objGRIB, lon_lat, variavelMET, regiao, nivel):
             print(data_ini.shape)          
 
             data_fim, lat_fim, lon_fim = objMET.data(lat1=lats1,lat2=lats2,lon1=lons1_fim,lon2=lons2_fim)
+            data_fim=data_fim[::-1,:]
             
             lon_fim=lon_fim[0,:]            
             lat_fim=lat_fim[:,0]

@@ -1,6 +1,8 @@
 # 05 — Diagnóstico de bugs e recomendações
 
-> **Aviso de uso**: os produtos GFS gerados pelo código atual não devem ser usados como referência geográfica sem antes corrigir **D-01**. Os produtos de vento superficial não devem ser usados sem corrigir **D-02** e **D-03**. Os JSONs METAR marcados como inválidos em **D-07** não devem ser consumidos por parsers estritos.
+> **Aviso de uso**: os produtos GFS gerados pelo código **original** (`main`) não devem ser usados como referência geográfica sem antes corrigir **D-01**. Os produtos de vento superficial não devem ser usados sem corrigir **D-02** e **D-03**. Os JSONs METAR marcados como inválidos em **D-07** não devem ser consumidos por parsers estritos.
+>
+> **Fase 1:** na branch `execucao`, **D-01, D-02, D-03, D-04 e D-12** já foram corrigidos e validados com a amostra real. O resultado, os testes T-01–T-05 e o reprocessamento estão em [09-fase-1-resultados.md](09-fase-1-resultados.md). Os demais achados continuam em aberto.
 
 ## 1. Sumário executivo
 
@@ -25,12 +27,12 @@ A auditoria encontrou **20 achados principais** e **8 achados secundários**:
 
 ### Ordem mínima de correção
 
-1. **D-01** antes de qualquer reprocessamento, porque contamina todos os produtos.
-2. **D-02 e D-03** antes de gerar ou consumir vento superficial.
-3. **D-04** antes de comparar produtos entre ciclos ou reprocessar datas.
-4. **D-07 e D-08** antes de ampliar a série METAR.
-5. **D-05 e D-06** para completar os produtos automáticos.
-6. Demais achados conforme o plano da seção 9.
+1. **D-01** antes de qualquer reprocessamento, porque contamina todos os produtos. *(corrigido na Fase 1)*
+2. **D-02 e D-03** antes de gerar ou consumir vento superficial. *(corrigidos na Fase 1)*
+3. **D-04** antes de comparar produtos entre ciclos ou reprocessar datas. *(corrigido na Fase 1)*
+4. **D-07 e D-08** antes de ampliar a série METAR. *(pendentes)*
+5. **D-05 e D-06** para completar os produtos automáticos. *(pendentes)*
+6. Demais achados conforme o plano da seção 9; **D-12** foi corrigido junto da Fase 1.
 
 ## 2. Método e escopo
 
@@ -1029,6 +1031,11 @@ D-11, D-15, D-16, D-17, D-18, D-19, D-21 a D-28.
 | T-13 | Idempotência | Duas execuções iguais não corrompem nem duplicam arquivos |
 | T-14 | Regressão | Conjunto de produtos de referência permanece estável após correções |
 
+**Estado na Fase 1:** T-01 a T-05 foram implementados em
+`tests/test_phase1_acceptance.py` e estão verdes; o reprocessamento da amostra
+foi validado de forma independente com `pygrib`. T-06 a T-14 continuam
+pendentes. Ver [09-fase-1-resultados.md](09-fase-1-resultados.md).
+
 ### Exemplo de verificação de orientação
 
 ```python
@@ -1075,3 +1082,21 @@ with open("GFS_0.25_SP_Nsurface_temps_00_..._00.csv") as f:
 ### O que não foi alterado
 
 Nenhum arquivo de código-fonte foi modificado durante esta auditoria. As correções propostas são recomendações; a implementação deve ser feita em branch separado, com os testes acima.
+
+## 12. Estado após a Fase 1
+
+A Fase 1 foi executada na branch `execucao` e cobriu os cinco achados de
+cálculo priorizados:
+
+| Achado | Correção | Evidência |
+|---|---|---|
+| D-01 | Dados invertidos junto com `lat` em todos os geradores AUT/MAN, escalares e vento, inclusive no ramo `flag == 3` | Primeira linha do CSV de `temp` 850 hPa passou de 26,0934 °C (valor do norte) para 15,7734 °C (valor do sul), conferindo com `pygrib` |
+| D-02 | Preditor AUT passou a receber `v_comp_supe`; mapa superficial AUT passou a ler `vSupe` | `vento U` e `vento V` deixaram de ser idênticos nos níveis 20/30/40/50/80 m; valores conferem com o GRIB |
+| D-03 | Níveis de altura `20/30/40/50/80` usam `metros × 3,28084`; níveis de pressão mantêm a fórmula barométrica | `hMET` de 20 m passou de 76.487,0118 ft para 65,6168 ft; 850 hPa permaneceu em 4.779,1936 ft |
+| D-04 | Intervalo semiaberto `[ciclo, próximo)`, caminhos absolutos e erro explícito quando o ciclo não existe | 00:00–05:59 → ciclo `00` do mesmo dia; 06:00 → `06`; 12:00 → `12`; 18:00 → `18` |
+| D-12 | `angMET = ((180/π)·arctan2(-u,-v) + 360) mod 360` | Todos os ângulos ficaram em `[0, 360)`; o mínimo do baseline era -179,2747° |
+
+Nenhum nome de variável, produto, arquivo, header ou unidade foi alterado. O
+baseline da Fase 0 permanece intacto em `baseline/reports/20261022-00/`; o
+reprocessamento está em `reprocessamento/reports/20261022-00/`. O detalhamento
+completo está em [09-fase-1-resultados.md](09-fase-1-resultados.md).

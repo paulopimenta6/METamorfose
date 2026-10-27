@@ -4,4 +4,6 @@ __pycache__/
 *.py[cod]
 baseline/run/
 baseline/samples/*.grb2
+reprocessamento/run/
+reprocessamento/.run.lock
 *.log

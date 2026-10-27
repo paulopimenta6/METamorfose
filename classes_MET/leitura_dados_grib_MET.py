@@ -46,128 +46,64 @@ class leitura_dados_gribs_AUT:
     def limpa_lista_obj_gribs(self):
         self.obj_lista_grib=[]
 
-    def imprime_lista_obj_gribs_AUT(self):        
+    def _seleciona_ciclo(self):
+        # Ciclos GFS em hora local, com intervalo semiaberto [ciclo, proximo).
+        hora_int = int(self.hora)
+        if not 0 <= hora_int < 24:
+            raise ValueError("hora fora dos ciclos GFS: " + str(self.hora))
+        ciclo = max(c for c in (0, 6, 12, 18) if c <= hora_int)
+        return "%02d" % ciclo
+
+    def imprime_lista_obj_gribs_AUT(self):
         self.limpa_lista_obj_gribs()
+        self.lista_dir = []
+        self.lista_grib = []
         ###Entrando no diretorio Grib
         self.dir_grib_completo=dir_save.imprime_dirGrib()
-        os.chdir(self.dir_grib_completo)
         ###Mostrando diretorio
         print("Diretorio de armazenamento dos GRIBS: " + self.dir_grib_completo)
 
-        ###Verificando os arquivos e diretorios
-        for elementos in os.listdir("."):
-            if os.path.isdir(elementos):
-                self.lista_dir.append(elementos)
-            else:
-                self.lista_grib.append(elementos)
+        caminho_dia = os.path.join(self.dir_grib_completo, self.var_data_dir)
+        if not os.path.isdir(caminho_dia):
+            print("diretorio dos GRIBS do dia nao encontrado: " + caminho_dia)
+            return self.obj_lista_grib
 
-        print("lista de diretorios: ")
-        print(self.lista_dir)
-        print("lista de arquivos no interior do diretorio de diretorios de GRIBS: ") 
-        print(self.lista_grib)
+        ciclo = self._seleciona_ciclo()
+        caminho_ciclo = os.path.join(caminho_dia, ciclo)
+        print("entrou no diretorio dos GRIBS correspondentes do dia: " + caminho_dia)
+        print("ciclo GFS selecionado para a hora local " + str(self.hora) + ": " + ciclo)
 
-        ###verificando a existencia do diretorio
-        if os.path.exists(self.var_data_dir):
-            os.chdir(self.var_data_dir)    
-            print("entrou no diretorio dos GRIBS correspondentes do dia: " + self.var_data_dir)
-            print(os.listdir("."))
-            i=0
-            j=i+1
-                                    
-            while i<=(len(self.prev_ana)-2):
-                
-                print((int(self.prev_ana[i])<=int(self.hora)<int(self.prev_ana[j])))
-                print("%d<=%d<%d" %(int(self.prev_ana[i]), int(self.hora), int(self.prev_ana[j])))
-                print("hora do primeiro GRIB de compracao: %d" %(int(self.prev_ana[i])))
-                print("hora atual: %d" %(int(self.hora)))
-                print("hora do segundo GRIB de compracao: %d " %(int(self.prev_ana[j])))
-                
-                if int(self.prev_ana[i])<=int(self.hora)<=int(self.prev_ana[j]): 
-                   if os.path.exists(self.prev_ana[i]):
-                       os.chdir(self.prev_ana[i])
-                       print("entrou no diretorio: " + os.getcwd())
-                       print("hora atual: " + str(self.hora))   
-                       print(os.listdir(".")) 
-                       for p in self.prev_ana:
-                           #if os.path.exists("gfs.t" + self.prev_ana[i] + "z.pgrb2.0p25.f0" + p):
-                           #    print("gfs.t" + self.prev_ana[i] + "z.pgrb2.0p25.f0" + p)                       
-                           #   self.obj_lista_grib.append(pygrib.open("gfs.t" + self.prev_ana[i] + "z.pgrb2.0p25.f0" + p))
-                           
-                        try:
-                            print("# =============================================================================")
-                            print("GRIB de 0.25 grau")
-                            self.obj_lista_grib.append(pygrib.open("gfs.t" + self.prev_ana[i] + "z.pgrb2.0p25.f0" + p))
-                            print("# =============================================================================")
-                        except OSError:
-                            try:
-                                print("# =============================================================================")
-                                print("arquivo de GRIB de 0.25 grau nao foi encontrado...")
-                                print("GRIB de 0.50 grau")
-                                self.obj_lista_grib.append(pygrib.open("gfs.t" + self.prev_ana[i] + "z.pgrb2.0p50.f0" + p))
-                                print("# =============================================================================")
-                            except OSError:
-                                try:
-                                    print("# =============================================================================")
-                                    print("arquivo de GRIB de 0.50 grau nao foi encontrado...")
-                                    print("GRIB de 1.00 grau")
-                                    self.obj_lista_grib.append(pygrib.open("gfs.t" + self.prev_ana[i] + "z.pgrb2.1p00.f0" + p))
-                                    print("# =============================================================================")
-                                except OSError:
-                                    try:
-                                        print("# =============================================================================")
-                                        print("arquivo de GRIB de 1.00 grau nao foi encontrado...")
-                                        print("GRIB de 1.00 grau do Lab MASTER")
-                                        self.obj_lista_grib.append(pygrib.open("gfs" + self.ano + self.mes + self.dia + self.prev_ana[i] + "00_000.grb"))
-                                        print("# =============================================================================")
-                                    except OSError:
-                                        print("# =============================================================================")
-                                        print("arquivo de GRIB de 1.00 grau do laboratorio MASTER nao foi encontrado")
-                                        print("# =============================================================================")                      
-                                               
-                i=i+1
-                j=j+1
-        
-            if int(self.hora)>=int(self.prev_ana[len(self.prev_ana)-1]):        
-                if os.path.exists(self.prev_ana[len(self.prev_ana)-1]):
-                    os.chdir(self.prev_ana[len(self.prev_ana)-1])
-                    print("entrou no diretorio: " + os.getcwd())
-                    print("entrou na hora: " + str(self.hora)) 
-                    print(os.listdir(".")) 
-                    for p in self.prev_ana:                
-                        #if os.path.exists("gfs.t" + self.prev_ana[len(self.prev_ana)-1] + "z.pgrb2.0p25.f0" + p):
-                        #    print("gfs.t" + self.prev_ana[len(self.prev_ana)-1] + "z.pgrb2.0p25.f0" + p)
-                        #    self.obj_lista_grib.append(pygrib.open("gfs.t" + self.prev_ana[len(self.prev_ana)-1] + "z.pgrb2.0p25.f0" + p))       
-                        try:
-                            print("# =============================================================================")
-                            print("GRIB de 0.25 grau")
-                            self.obj_lista_grib.append(pygrib.open("gfs.t" + self.prev_ana[len(self.prev_ana)-1] + "z.pgrb2.0p25.f0" + p))
-                            print("# =============================================================================")
-                        except OSError:
-                            try:
-                                print("# =============================================================================")
-                                print("arquivo de GRIB de 0.25 grau nao foi encontrado...")
-                                print("GRIB de 0.50 grau")
-                                self.obj_lista_grib.append(pygrib.open("gfs.t" + self.prev_ana[len(self.prev_ana)-1] + "z.pgrb2.0p50.f0" + p))
-                                print("# =============================================================================")
-                            except OSError:
-                                try:
-                                    print("# =============================================================================")
-                                    print("arquivo de GRIB de 0.50 grau nao foi encontrado...")
-                                    print("GRIB de 1.00 grau")
-                                    self.obj_lista_grib.append(pygrib.open("gfs.t" + self.prev_ana[len(self.prev_ana)-1] + "z.pgrb2.1p00.f0" + p))
-                                    print("# =============================================================================")
-                                except OSError:
-                                    try:
-                                        print("# =============================================================================")
-                                        print("arquivo de GRIB de 1.00 grau nao foi encontrado...")
-                                        print("GRIB de 1.00 grau da USP")
-                                        self.obj_lista_grib.append(pygrib.open("gfs" + self.ano + self.mes + self.dia + self.prev_ana[len(self.prev_ana)-1] + "00_000.grb"))
-                                        print("# =============================================================================")
-                                    except OSError:
-                                        print("# =============================================================================")
-                                        print("arquivo de GRIB de 1.00 grau da USP nao foi encontrado")
-                                        print("# =============================================================================")   
-        
+        if not os.path.isdir(caminho_ciclo):
+            raise FileNotFoundError(
+                "ciclo GFS selecionado nao existe: " + caminho_ciclo
+            )
+
+        for p in self.prev_ana:
+            candidatos = [
+                ("GRIB de 0.25 grau", "gfs.t" + ciclo + "z.pgrb2.0p25.f0" + p),
+                ("GRIB de 0.50 grau", "gfs.t" + ciclo + "z.pgrb2.0p50.f0" + p),
+                ("GRIB de 1.00 grau", "gfs.t" + ciclo + "z.pgrb2.1p00.f0" + p),
+                (
+                    "GRIB de 1.00 grau legado",
+                    "gfs" + str(self.ano) + str(self.mes) + str(self.dia)
+                    + ciclo + "00_000.grb",
+                ),
+            ]
+            aberto = False
+            for descricao, nome in candidatos:
+                caminho = os.path.join(caminho_ciclo, nome)
+                print("# =============================================================================")
+                print(descricao)
+                try:
+                    self.obj_lista_grib.append(pygrib.open(caminho))
+                    print("# =============================================================================")
+                    aberto = True
+                    break
+                except OSError:
+                    print("arquivo de " + descricao + " nao foi encontrado...")
+            if not aberto:
+                print("nenhum arquivo GRIB encontrado para a previsao f0" + p)
+
         if len(self.obj_lista_grib)>0:
             print(self.obj_lista_grib)
         print(len(self.obj_lista_grib))

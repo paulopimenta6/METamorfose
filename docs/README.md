@@ -5,8 +5,9 @@ Documentação do sistema batch `servidor_MET`, produzida a partir do código e 
 > **Escopo e limites desta entrega**
 >
 > - Formato: somente Markdown. Os diagramas usam blocos Mermaid e não geram imagens.
-> - Nenhum arquivo de código-fonte foi alterado.
-> - O diagnóstico descreve o comportamento **atual** do código, inclusive os defeitos. As correções são recomendações, não foram aplicadas.
+> - Os documentos 01–08 descrevem o código original em `main`, **antes** das correções da Fase 1.
+> - A Fase 1 foi executada no worktree `METamorfose`, branch `execucao`; o resultado está em [09-fase-1-resultados.md](09-fase-1-resultados.md). O checkout principal e `/media/MET` permanecem sem as correções.
+> - O diagnóstico descreve o comportamento original, inclusive os defeitos. As correções C-05, C-03, C-01, C-02 e C-04 já foram implementadas e validadas na branch `execucao`; os demais itens continuam recomendações.
 > - O diretório `gribs/`, `mapasGrib/` e `matrizGrib/` deste checkout está vazio; a documentação dos produtos GFS foi feita pelo código, pelos scripts e por uma amostra real de GFS 0.25°. Os dados METAR históricos estão presentes.
 
 ## O que é o sistema
@@ -51,6 +52,7 @@ O sistema **não é** um serviço HTTP/API, não usa banco de dados, fila, cache
 | [06-plano-de-melhorias-e-variaveis.md](06-plano-de-melhorias-e-variaveis.md) | Conclusões sobre nomenclatura/semântica das variáveis e plano de melhorias priorizado |
 | [07-fase-0-baseline.md](07-fase-0-baseline.md) | Backup, snapshot Git, amostra real de GFS, harness e baseline da Fase 0 |
 | [08-contratos-e-consumidores.md](08-contratos-e-consumidores.md) | Contratos de CSV/JSON, headers, unidades, ordem das linhas e consumidores |
+| [09-fase-1-resultados.md](09-fase-1-resultados.md) | Correções C-05/C-03/C-01/C-02/C-04, testes T-01–T-05, reprocessamento e validação independente |
 
 ## Fase 0 — preparação
 
@@ -69,6 +71,26 @@ A Fase 0 foi concluída antes de qualquer alteração de cálculo:
 
 Instruções de teste: [tests/README.md](../tests/README.md). Resultado detalhado:
 [07-fase-0-baseline.md](07-fase-0-baseline.md).
+
+## Fase 1 — correções de cálculo
+
+A Fase 1 foi executada no worktree `METamorfose`, branch `execucao`, sobre a
+tag `fase-0-concluida`:
+
+- C-05: seleção do ciclo GFS com intervalo semiaberto e caminhos absolutos;
+- C-03: dados invertidos junto com a latitude, em mapas e matrizes;
+- C-01: componente V corrigida no mapa superficial AUT e no preditor AUT;
+- C-02: altura de `winds` convertida de metros para pés com flag explícita;
+- C-04: `angMET` normalizado para `[0, 360)`;
+- **123 testes verdes** (3 `deselected` de rede), incluindo **65 testes de
+  aceitação** T-01 a T-05;
+- 20 produtos reprocessados em `reprocessamento/reports/20261022-00/`;
+- 13 CSVs comparados linha a linha com `pygrib` e 7 mapas gerados;
+- validação independente com **158 verificações e 0 falhas**;
+- 20 nomes de produtos e todos os headers preservados;
+- baseline e `goGribV2.sh` intactos.
+
+Resultado detalhado: [09-fase-1-resultados.md](09-fase-1-resultados.md).
 
 ## Diagrama de contexto
 

@@ -2,6 +2,10 @@
 
 Este documento descreve os dados de entrada, as variáveis suportadas, os níveis, as regiões, os padrões de nomes e os schemas de saída.
 
+> **Estado:** este documento descreve o código original em `main`, **antes** da
+> Fase 1. As correções C-05, C-03, C-01, C-02 e C-04 e os valores reprocessados
+> estão em [09-fase-1-resultados.md](09-fase-1-resultados.md).
+
 > Os diretórios `gribs/`, `mapasGrib/` e `matrizGrib/` deste checkout estão vazios. Os dados METAR históricos estão presentes e foram inventariados. As informações de GRIB e de produtos foram extraídas do código e validadas com uma amostra real de GFS 0.25° do NOMADS.
 
 ## 1. Estrutura de diretórios
@@ -247,8 +251,8 @@ lat,lon,hMET,angMET,vento_resultante
 |---|---|---|
 | `lat` | graus | Latitude |
 | `lon` | graus | Longitude |
-| `hMET` | pés | Para `wind`, altitude de pressão; para `winds`, deveria ser a altura em metros convertida para pés, mas o código usa a fórmula de pressão (D-03) |
-| `angMET` | graus | Direção meteorológica; pode sair negativa, sem normalização para 0–360 (D-12) |
+| `hMET` | pés | Para `wind`, altitude de pressão; para `winds`, altura em metros × 3,28084 desde a Fase 1 (antes usava a fórmula de pressão — D-03) |
+| `angMET` | graus | Direção meteorológica normalizada para `[0, 360)` desde a Fase 1 (antes podia ser negativa — D-12) |
 | `vento_resultante` | nós | `sqrt(U² + V²) * 1.943` |
 
 ### 4.4 Matrizes do preditor
@@ -328,8 +332,8 @@ Schemas:
 
 | Arquivo | Colunas | Unidades |
 |---|---|---|
-| `matriz_vento_...csv` | `lat,lon,nivel<hPa>,halt<feet>,angMET<grau>,vento U<ms**-1>,vento V<ms**-1>,vento_resultante<ms**-1>` | O header diz `nivel<hPa>`, mas para `winds` o valor é metros; `halt` usa a conversão errada para `winds`; resultado em m/s |
-| `matriz_vento_bluesky_...csv` | `lat,lon,hMET<feet>,angMET<grau>,vento_resultante<knot>` | `hMET` errado para `winds`; direção pode ser negativa |
+| `matriz_vento_...csv` | `lat,lon,nivel<hPa>,halt<feet>,angMET<grau>,vento U<ms**-1>,vento V<ms**-1>,vento_resultante<ms**-1>` | O header diz `nivel<hPa>`, mas para `winds` o valor é metros; `halt` usa a conversão correta desde a Fase 1; resultado em m/s |
+| `matriz_vento_bluesky_...csv` | `lat,lon,hMET<feet>,angMET<grau>,vento_resultante<knot>` | `hMET` correto para `winds` desde a Fase 1; direção em `[0, 360)` |
 | `matriz_vento_predi_...csv` | `lat,lon,vento U,vento V,temperatura K` | U/V em m/s; temperatura conforme o nível |
 
 Para `wind` (pressão), o MAN usa `u`/`v` do nível hPa e `temp` do mesmo nível. Para `winds` (superfície), usa `uSupe`/`vSupe` e `temps` de superfície.

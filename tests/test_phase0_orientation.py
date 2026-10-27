@@ -40,10 +40,6 @@ def test_matriz_escalar_converte_kelvin_para_celsius(tmp_path):
     assert float(row[2]) == pytest.approx(26.85, abs=0.01)
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="D-01: a latitude é invertida, mas os dados não; a primeira linha do CSV não corresponde ao sul.",
-)
 def test_matriz_escalar_primeira_linha_deve_ser_o_sul(tmp_path):
     lat = np.array([10.0, 0.0, -10.0])
     lon = np.array([-60.0, -50.0, -40.0, -30.0])
@@ -51,7 +47,7 @@ def test_matriz_escalar_primeira_linha_deve_ser_o_sul(tmp_path):
     path = run_scalar_matrix(tmp_path, data=data)
     _, row = _first_data_row(path)
     assert float(row[0]) == pytest.approx(-10.0)
-    assert float(row[2]) == pytest.approx(float(data[2, 0]))
+    assert float(row[2]) == pytest.approx(float(data[2, 0]) - 273.15)
 
 
 def test_bluesky_cabecalho_atual(tmp_path):
@@ -68,39 +64,27 @@ def test_bluesky_resultante_em_nos(tmp_path):
 
 
 def test_bluesky_altitude_de_pressao_500_hpa(tmp_path):
-    path = run_bluesky_matrix(tmp_path, level=500)
+    path = run_bluesky_matrix(tmp_path, level=500, eh_vento_superficie=False)
     _, row = _first_data_row(path)
     assert float(row[2]) == pytest.approx(18281.18, abs=0.1)
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="D-03: hMET de 20 m usa a fórmula de pressão (76.487 ft) em vez de 65,6 ft.",
-)
 def test_bluesky_altitude_de_20_metros(tmp_path):
     path = run_bluesky_matrix(tmp_path, level=20)
     _, row = _first_data_row(path)
     assert float(row[2]) == pytest.approx(65.6168, abs=0.01)
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="D-12: angMET de vento de oeste sai -90 em vez de 270.",
-)
 def test_bluesky_angulo_de_vento_de_oeste(tmp_path):
     path = run_bluesky_matrix(tmp_path)
     _, row = _first_data_row(path)
     assert float(row[3]) == pytest.approx(270.0)
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="D-01: a primeira linha tem lat=-10, mas o valor ainda é o da linha de lat=10.",
-)
 def test_bluesky_primeira_linha_deve_ser_o_sul(tmp_path):
     lat = np.array([10.0, 0.0, -10.0])
     lon = np.array([-60.0, -50.0, -40.0, -30.0])
-    u = 10.0 + (lat[:, None] + 10.0)  # 10 no sul, 20 no equador, 30 no norte
+    u = 10.0 + np.repeat(lat[:, None] + 10.0, lon.size, axis=1)
     v = np.zeros_like(u)
     path = run_bluesky_matrix(tmp_path, lat=lat, lon=lon, u=u, v=v)
     _, row = _first_data_row(path)
@@ -123,14 +107,10 @@ def test_preditor_preserva_u_e_v_quando_recebe_componentes_corretas(tmp_path):
     assert float(row[4]) == pytest.approx(280.0)
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="D-01: a primeira linha tem lat=-10, mas o U ainda é o da linha de lat=10.",
-)
 def test_preditor_primeira_linha_deve_ser_o_sul(tmp_path):
     lat = np.array([10.0, 0.0, -10.0])
     lon = np.array([-60.0, -50.0, -40.0, -30.0])
-    u = 10.0 + (lat[:, None] + 10.0)
+    u = 10.0 + np.repeat(lat[:, None] + 10.0, lon.size, axis=1)
     v = np.zeros_like(u)
     path = run_predi_matrix(tmp_path, lat=lat, lon=lon, u=u, v=v)
     _, row = _first_data_row(path)
@@ -145,20 +125,12 @@ def test_man_bluesky_cabecalho_atual(tmp_path):
     assert len(row) == 5
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="D-03: hMET do MAN para 20 m também usa a fórmula de pressão.",
-)
 def test_man_bluesky_altitude_de_20_metros(tmp_path):
     path = run_man_bluesky(tmp_path)
     _, row = _first_data_row(path)
     assert float(row[2]) == pytest.approx(65.6168, abs=0.01)
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="D-12: angMET do MAN também não é normalizado.",
-)
 def test_man_bluesky_angulo_de_vento_de_oeste(tmp_path):
     path = run_man_bluesky(tmp_path)
     _, row = _first_data_row(path)
@@ -181,10 +153,6 @@ def _calls_in_function(source: Path, function_name: str, call_name: str):
     ]
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="D-02: geraMatrizVentoSup passa u_comp_supe também como componente V do preditor.",
-)
 def test_aut_preditor_deve_receber_v_comp_supe():
     calls = _calls_in_function(
         CLASSES / "gera_matriz_vento_MET.py",
@@ -197,10 +165,6 @@ def test_aut_preditor_deve_receber_v_comp_supe():
     assert second_arg.id == "v_comp_supe"
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="D-02: o mapa de vento superficial lê uSupe para a componente V.",
-)
 def test_mapa_vento_superficial_deve_ler_v_supe():
     tree = ast.parse(
         (CLASSES / "gera_mapas_vento_MET.py").read_text(encoding="utf-8"),

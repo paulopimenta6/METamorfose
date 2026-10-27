@@ -83,6 +83,8 @@ def gera_mapas_vento(u_objGRIB, v_objGRIB, lon_lat, regNome, nivel):
             if flag==2:
                 lon_u=lon_u-360
                 lon_v=lon_v-360
+            data_U=data_U[::-1,:]
+            data_V=data_V[::-1,:]
             lon_u=lon_u[0,:]
             lat_u=lat_u[:,0]
             lat_u=lat_u[::-1]
@@ -91,6 +93,8 @@ def gera_mapas_vento(u_objGRIB, v_objGRIB, lon_lat, regNome, nivel):
             data_U_ini, lat_u_ini, lon_u_ini = u_objGRIB[i].data(lat1=lats1,lat2=lats2,lon1=lons1_ini,lon2=lons2_ini)
             data_V_ini, lat_v_ini, lon_v_ini = v_objGRIB[i].data(lat1=lats1,lat2=lats2,lon1=lons1_ini,lon2=lons2_ini)
 
+            data_U_ini=data_U_ini[::-1,:]
+            data_V_ini=data_V_ini[::-1,:]
             lon_u_ini=lon_u_ini[0,:]
             lon_u_ini=lon_u_ini-360
             lat_u_ini=lat_u_ini[:,0]
@@ -99,6 +103,8 @@ def gera_mapas_vento(u_objGRIB, v_objGRIB, lon_lat, regNome, nivel):
             data_U_fim, lat_u_fim, lon_u_fim = u_objGRIB[i].data(lat1=lats1,lat2=lats2,lon1=lons1_fim,lon2=lons2_fim)
             data_V_fim, lat_v_fim, lon_v_fim = v_objGRIB[i].data(lat1=lats1,lat2=lats2,lon1=lons1_fim,lon2=lons2_fim)
 
+            data_U_fim=data_U_fim[::-1,:]
+            data_V_fim=data_V_fim[::-1,:]
             lon_u_fim=lon_u_fim[0,:]            
             lat_u_fim=lat_u_fim[:,0]
             lat_u_fim=lat_u_fim[::-1]        
@@ -212,6 +218,6 @@ if varMET=="wind":
 if varMET=="winds" and varNivel=="surface":
     for nivelQuaseSupe in varNivelProxSupe: 
         u_comp=processamento_dados_met_AUT("uSupe", nivelQuaseSupe).define_lista_var_com_altitude()
-        v_comp=processamento_dados_met_AUT("uSupe", nivelQuaseSupe).define_lista_var_com_altitude()
+        v_comp=processamento_dados_met_AUT("vSupe", nivelQuaseSupe).define_lista_var_com_altitude()
         gera_mapas_vento(u_comp, v_comp, lonslats, varRegiaoNome, nivelQuaseSupe)
 

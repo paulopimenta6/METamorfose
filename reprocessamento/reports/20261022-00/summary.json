@@ -1,0 +1,590 @@
+{
+  "generated_at": "2026-10-27T21:00:30.088434+00:00",
+  "purpose": "Reprocessamento da Fase 1 com D-01/D-02/D-03/D-04/D-12 corrigidos.",
+  "fixed_local_time": "2026-10-22T01:00",
+  "note": "Produtos gerados com o código corrigido da Fase 1, a partir da mesma amostra f000 do baseline. As previsões f006/f012/f018 são cópias da amostra f000; todas têm forecastTime=0.",
+  "sample": {
+    "path": "baseline/samples/gfs.20261022.00.0p25.subset.grb2",
+    "bytes": 14852876,
+    "sha256": "7adc84c35743c9fe4884756b938f38c8a18a5278d3b30bb945a300adde908a90",
+    "source": {
+      "url": "https://nomads.ncep.noaa.gov/pub/data/nccf/com/gfs/prod/gfs.20261022/00/atmos/gfs.t00z.pgrb2.0p25.f000",
+      "index_url": "https://nomads.ncep.noaa.gov/pub/data/nccf/com/gfs/prod/gfs.20261022/00/atmos/gfs.t00z.pgrb2.0p25.f000.idx",
+      "date": "20261022",
+      "cycle": "00",
+      "resolution": "0p25",
+      "forecast_hour": "000",
+      "full_bytes": 489780434
+    },
+    "sidecar": "baseline/samples/gfs.20261022.00.0p25.subset.grb2.json",
+    "sidecar_sha256": "fc7b1f607b5b91512325591a0d99bda76e70848be9bfd1d1730c4ea9df69e31d",
+    "reference_point": {
+      "lat": -23.55,
+      "lon_0_360": 313.37,
+      "lon_180": -46.63,
+      "values": {
+        "Temperature_850": 286.3202734375,
+        "U_850": -4.85838623046875,
+        "V_850": 1.6511474609375,
+        "Temperature_surface": 290.1187255859375,
+        "U_20m": -2.184248046875,
+        "V_20m": 1.82025390625,
+        "Pressure_MSL": 102170.475
+      }
+    }
+  },
+  "frozen_acquisition": {
+    "sha256": "994ce16c1480b17a62b78e72761307af2000dc47819abbaf48ce042c72023ce0",
+    "bytes": 4291
+  },
+  "environment": {
+    "python": "3.11.14 (main, Oct 21 2025, 18:31:21) [GCC 11.2.0]",
+    "platform": "Linux-6.8.0-138-generic-x86_64-with-glibc2.35",
+    "numpy": "2.3.5",
+    "matplotlib": "3.10.0",
+    "pygrib": "2.1.8",
+    "basemap": "2.0.0"
+  },
+  "runs": [
+    {
+      "label": "matriz_temp_850",
+      "script": "gera_matriz_MET.py",
+      "args": [
+        "-v",
+        "temp",
+        "-n",
+        "850",
+        "-r",
+        "SP"
+      ],
+      "returncode": 0,
+      "log": "reprocessamento/run/logs/matriz_temp_850.log"
+    },
+    {
+      "label": "mapa_temp_850",
+      "script": "gera_mapas_MET.py",
+      "args": [
+        "-v",
+        "temp",
+        "-n",
+        "850",
+        "-r",
+        "SP"
+      ],
+      "returncode": 0,
+      "log": "reprocessamento/run/logs/mapa_temp_850.log"
+    },
+    {
+      "label": "matriz_wind_850",
+      "script": "gera_matriz_vento_MET.py",
+      "args": [
+        "-v",
+        "wind",
+        "-n",
+        "850",
+        "-r",
+        "SP"
+      ],
+      "returncode": 0,
+      "log": "reprocessamento/run/logs/matriz_wind_850.log"
+    },
+    {
+      "label": "mapa_wind_850",
+      "script": "gera_mapas_vento_MET.py",
+      "args": [
+        "-v",
+        "wind",
+        "-n",
+        "850",
+        "-r",
+        "SP"
+      ],
+      "returncode": 0,
+      "log": "reprocessamento/run/logs/mapa_wind_850.log"
+    },
+    {
+      "label": "matriz_winds_20",
+      "script": "gera_matriz_vento_MET.py",
+      "args": [
+        "-v",
+        "winds",
+        "-ns",
+        "-r",
+        "SP"
+      ],
+      "returncode": 0,
+      "log": "reprocessamento/run/logs/matriz_winds_20.log"
+    },
+    {
+      "label": "mapa_winds_20",
+      "script": "gera_mapas_vento_MET.py",
+      "args": [
+        "-v",
+        "winds",
+        "-ns",
+        "-r",
+        "SP"
+      ],
+      "returncode": 0,
+      "log": "reprocessamento/run/logs/mapa_winds_20.log"
+    }
+  ],
+  "files": [
+    {
+      "path": "bluesky/GFS_0.25_matriz_lat_lon_alt_angMET_VentoResult_SP_N20_00_20261022_00.csv",
+      "bytes": 137175,
+      "sha256": "19bebe572f5bf2e203bfd255b331076ae51ab904459edbef447afc216f028dde"
+    },
+    {
+      "path": "bluesky/GFS_0.25_matriz_lat_lon_alt_angMET_VentoResult_SP_N30_00_20261022_00.csv",
+      "bytes": 137174,
+      "sha256": "400bc0aa21a00c1d3758beabe33e98c4e0b709d3e045c7c0a22551afe5c1074e"
+    },
+    {
+      "path": "bluesky/GFS_0.25_matriz_lat_lon_alt_angMET_VentoResult_SP_N40_00_20261022_00.csv",
+      "bytes": 139596,
+      "sha256": "de620a1755fe8bbcd0dde477296192e634088d3bd9d377685dbea8bd44c22577"
+    },
+    {
+      "path": "bluesky/GFS_0.25_matriz_lat_lon_alt_angMET_VentoResult_SP_N50_00_20261022_00.csv",
+      "bytes": 137294,
+      "sha256": "f06a3da778eb6e0f7ef15102c051f04e906d16e0f3f43b78e8290b9c06fc4ad8"
+    },
+    {
+      "path": "bluesky/GFS_0.25_matriz_lat_lon_alt_angMET_VentoResult_SP_N80_00_20261022_00.csv",
+      "bytes": 139751,
+      "sha256": "86ff40828348020ee7e0e821aebe57e96cc3f5b5d74ef3a84d0878b62de9aaae"
+    },
+    {
+      "path": "bluesky/GFS_0.25_matriz_lat_lon_alt_angMET_VentoResult_SP_N850_00_20261022_00.csv",
+      "bytes": 162972,
+      "sha256": "9cfaf91edfcfe9774cae51aaf7080bdcdfd465b50742f3aa3cc3254d3be07e70"
+    },
+    {
+      "path": "mapas/GFS_0.25_SP_N20_CampoVento_00_20261022_00.png",
+      "bytes": 1088239,
+      "sha256": "23c89349a28a856783502746db6c84cd1366a67d6f14af429f73c63a7b71a6f1"
+    },
+    {
+      "path": "mapas/GFS_0.25_SP_N30_CampoVento_00_20261022_00.png",
+      "bytes": 1066938,
+      "sha256": "f3443f46c0b19a704d89e4810fbca87d273b60da8aa120dea492ef1c6bbaefd2"
+    },
+    {
+      "path": "mapas/GFS_0.25_SP_N40_CampoVento_00_20261022_00.png",
+      "bytes": 1084540,
+      "sha256": "a5213e6234b524cba3ff16c842e7c83a1aa4c9ac1ff1683be0f491ac975c8a85"
+    },
+    {
+      "path": "mapas/GFS_0.25_SP_N50_CampoVento_00_20261022_00.png",
+      "bytes": 1070342,
+      "sha256": "44484246a3ba264468b158335436e4183487950c60005fb27826f66fd998fa68"
+    },
+    {
+      "path": "mapas/GFS_0.25_SP_N80_CampoVento_00_20261022_00.png",
+      "bytes": 1064433,
+      "sha256": "7ccb4a155dae0c84d28aaf89b53c08acaa63446211c0efb672478ee12c131ef7"
+    },
+    {
+      "path": "mapas/GFS_0.25_SP_N850_CampoVento_00_20261022_00.png",
+      "bytes": 1152621,
+      "sha256": "ac664cc89a94d57fb48bea73205b11b5e9220994343c429f67f8b08e5c6482fe"
+    },
+    {
+      "path": "mapas/GFS_0.25_SP_N850_temp_00_20261022_00.png",
+      "bytes": 420133,
+      "sha256": "598451950f181bf7e386bca7cc1ecf02d5e6544b70caa76e6ab07bf187352351"
+    },
+    {
+      "path": "matrizes/GFS_0.25_SP_N850_temp_00_20261022_00.csv",
+      "bytes": 76318,
+      "sha256": "4b82f53aa3d27c52f54b98466ed57748dfb643103392cd4b686c661cbb8e6238"
+    },
+    {
+      "path": "predi/GFS_0.25_matriz_lat_lon_Vento_UVT_Predi_SP_N20_00_20261022_00.csv",
+      "bytes": 148934,
+      "sha256": "f011230a7af5e495bfb964d2c23a11f94690727e6be791f606883fe42c3c1ac7"
+    },
+    {
+      "path": "predi/GFS_0.25_matriz_lat_lon_Vento_UVT_Predi_SP_N30_00_20261022_00.csv",
+      "bytes": 151166,
+      "sha256": "d9269726d8348b2bb8deb42e809998576e719c56654b0e08af1ade8b88bc9c9a"
+    },
+    {
+      "path": "predi/GFS_0.25_matriz_lat_lon_Vento_UVT_Predi_SP_N40_00_20261022_00.csv",
+      "bytes": 156508,
+      "sha256": "4f927627d5bfd6a20d482739e76466db7996db38d9ebd22fd642d438d37c38cb"
+    },
+    {
+      "path": "predi/GFS_0.25_matriz_lat_lon_Vento_UVT_Predi_SP_N50_00_20261022_00.csv",
+      "bytes": 164213,
+      "sha256": "2658489c8b1edd8217278dbbcd5c3a1f21488a6dddb52282fcd70956d9627d44"
+    },
+    {
+      "path": "predi/GFS_0.25_matriz_lat_lon_Vento_UVT_Predi_SP_N80_00_20261022_00.csv",
+      "bytes": 156537,
+      "sha256": "b28d1bba7990d152f061f41128036756bb930f73b77dd619400b1e8dd063ebf9"
+    },
+    {
+      "path": "predi/GFS_0.25_matriz_lat_lon_Vento_UVT_Predi_SP_N850_00_20261022_00.csv",
+      "bytes": 153403,
+      "sha256": "c0ad34f8df850af9707ae12175bb7ca701b2f6432541da48994205017a45c9d0"
+    }
+  ],
+  "csv": {
+    "bluesky/GFS_0.25_matriz_lat_lon_alt_angMET_VentoResult_SP_N20_00_20261022_00.csv": {
+      "header": [
+        "lat",
+        "lon",
+        "hMET",
+        "angMET",
+        "vento_resultante"
+      ],
+      "rows": 2337,
+      "lat_first": -28.0,
+      "lat_last": -18.0,
+      "lat_min": -28.0,
+      "lat_max": -18.0,
+      "ranges": {
+        "hMET": {
+          "min": 65.6168,
+          "max": 65.6168
+        },
+        "angMET": {
+          "min": 4.513653922992944,
+          "max": 355.3495600041895
+        },
+        "vento_resultante": {
+          "min": 0.4089980026153849,
+          "max": 21.850067039138327
+        }
+      }
+    },
+    "bluesky/GFS_0.25_matriz_lat_lon_alt_angMET_VentoResult_SP_N30_00_20261022_00.csv": {
+      "header": [
+        "lat",
+        "lon",
+        "hMET",
+        "angMET",
+        "vento_resultante"
+      ],
+      "rows": 2337,
+      "lat_first": -28.0,
+      "lat_last": -18.0,
+      "lat_min": -28.0,
+      "lat_max": -18.0,
+      "ranges": {
+        "hMET": {
+          "min": 98.4252,
+          "max": 98.4252
+        },
+        "angMET": {
+          "min": 1.0903357311435684,
+          "max": 357.93095478398976
+        },
+        "vento_resultante": {
+          "min": 0.4519169111453621,
+          "max": 22.775528462701555
+        }
+      }
+    },
+    "bluesky/GFS_0.25_matriz_lat_lon_alt_angMET_VentoResult_SP_N40_00_20261022_00.csv": {
+      "header": [
+        "lat",
+        "lon",
+        "hMET",
+        "angMET",
+        "vento_resultante"
+      ],
+      "rows": 2337,
+      "lat_first": -28.0,
+      "lat_last": -18.0,
+      "lat_min": -28.0,
+      "lat_max": -18.0,
+      "ranges": {
+        "hMET": {
+          "min": 131.2336,
+          "max": 131.2336
+        },
+        "angMET": {
+          "min": 4.482812436429185,
+          "max": 357.42688172227247
+        },
+        "vento_resultante": {
+          "min": 0.5174756783086648,
+          "max": 23.21394743719625
+        }
+      }
+    },
+    "bluesky/GFS_0.25_matriz_lat_lon_alt_angMET_VentoResult_SP_N50_00_20261022_00.csv": {
+      "header": [
+        "lat",
+        "lon",
+        "hMET",
+        "angMET",
+        "vento_resultante"
+      ],
+      "rows": 2337,
+      "lat_first": -28.0,
+      "lat_last": -18.0,
+      "lat_min": -28.0,
+      "lat_max": -18.0,
+      "ranges": {
+        "hMET": {
+          "min": 164.042,
+          "max": 164.042
+        },
+        "angMET": {
+          "min": 8.433984706568083,
+          "max": 357.67296084533353
+        },
+        "vento_resultante": {
+          "min": 0.49550232652770404,
+          "max": 23.64973804659663
+        }
+      }
+    },
+    "bluesky/GFS_0.25_matriz_lat_lon_alt_angMET_VentoResult_SP_N80_00_20261022_00.csv": {
+      "header": [
+        "lat",
+        "lon",
+        "hMET",
+        "angMET",
+        "vento_resultante"
+      ],
+      "rows": 2337,
+      "lat_first": -28.0,
+      "lat_last": -18.0,
+      "lat_min": -28.0,
+      "lat_max": -18.0,
+      "ranges": {
+        "hMET": {
+          "min": 262.4672,
+          "max": 262.4672
+        },
+        "angMET": {
+          "min": 3.652076329416161,
+          "max": 351.7587161192626
+        },
+        "vento_resultante": {
+          "min": 0.5184539890147323,
+          "max": 24.113237648836126
+        }
+      }
+    },
+    "bluesky/GFS_0.25_matriz_lat_lon_alt_angMET_VentoResult_SP_N850_00_20261022_00.csv": {
+      "header": [
+        "lat",
+        "lon",
+        "hMET",
+        "angMET",
+        "vento_resultante"
+      ],
+      "rows": 2337,
+      "lat_first": -28.0,
+      "lat_last": -18.0,
+      "lat_min": -28.0,
+      "lat_max": -18.0,
+      "ranges": {
+        "hMET": {
+          "min": 4779.1936018229135,
+          "max": 4779.1936018229135
+        },
+        "angMET": {
+          "min": 0.3594549563353553,
+          "max": 359.8037276694351
+        },
+        "vento_resultante": {
+          "min": 0.5263366678417086,
+          "max": 28.567646585393785
+        }
+      }
+    },
+    "matrizes/GFS_0.25_SP_N850_temp_00_20261022_00.csv": {
+      "header": [
+        "lat",
+        "lon",
+        "temp"
+      ],
+      "rows": 2337,
+      "lat_first": -28.0,
+      "lat_last": -18.0,
+      "lat_min": -28.0,
+      "lat_max": -18.0,
+      "ranges": {
+        "temp": {
+          "min": 6.753398437500039,
+          "max": 26.423398437500055
+        }
+      }
+    },
+    "predi/GFS_0.25_matriz_lat_lon_Vento_UVT_Predi_SP_N20_00_20261022_00.csv": {
+      "header": [
+        "lat",
+        "lon",
+        "vento U",
+        "vento V",
+        "temp"
+      ],
+      "rows": 2337,
+      "lat_first": -28.0,
+      "lat_last": -18.0,
+      "lat_min": -28.0,
+      "lat_max": -18.0,
+      "ranges": {
+        "vento U": {
+          "min": -11.180498046875,
+          "max": 1.439501953125
+        },
+        "vento V": {
+          "min": -4.38974609375,
+          "max": 7.46025390625
+        },
+        "temp": {
+          "min": 283.0999755859375,
+          "max": 304.7999755859375
+        }
+      }
+    },
+    "predi/GFS_0.25_matriz_lat_lon_Vento_UVT_Predi_SP_N30_00_20261022_00.csv": {
+      "header": [
+        "lat",
+        "lon",
+        "vento U",
+        "vento V",
+        "temp"
+      ],
+      "rows": 2337,
+      "lat_first": -28.0,
+      "lat_last": -18.0,
+      "lat_min": -28.0,
+      "lat_max": -18.0,
+      "ranges": {
+        "vento U": {
+          "min": -11.654951171875,
+          "max": 1.545048828125
+        },
+        "vento V": {
+          "min": -4.810146484375,
+          "max": 8.329853515625
+        },
+        "temp": {
+          "min": 283.0999755859375,
+          "max": 304.7999755859375
+        }
+      }
+    },
+    "predi/GFS_0.25_matriz_lat_lon_Vento_UVT_Predi_SP_N40_00_20261022_00.csv": {
+      "header": [
+        "lat",
+        "lon",
+        "vento U",
+        "vento V",
+        "temp"
+      ],
+      "rows": 2337,
+      "lat_first": -28.0,
+      "lat_last": -18.0,
+      "lat_min": -28.0,
+      "lat_max": -18.0,
+      "ranges": {
+        "vento U": {
+          "min": -11.883560180664062,
+          "max": 1.5164398193359376
+        },
+        "vento V": {
+          "min": -5.3658203125,
+          "max": 8.9341796875
+        },
+        "temp": {
+          "min": 283.0999755859375,
+          "max": 304.7999755859375
+        }
+      }
+    },
+    "predi/GFS_0.25_matriz_lat_lon_Vento_UVT_Predi_SP_N50_00_20261022_00.csv": {
+      "header": [
+        "lat",
+        "lon",
+        "vento U",
+        "vento V",
+        "temp"
+      ],
+      "rows": 2337,
+      "lat_first": -28.0,
+      "lat_last": -18.0,
+      "lat_min": -28.0,
+      "lat_max": -18.0,
+      "ranges": {
+        "vento U": {
+          "min": -12.025970458984375,
+          "max": 1.6740295410156252
+        },
+        "vento V": {
+          "min": -5.821734619140625,
+          "max": 9.278265380859375
+        },
+        "temp": {
+          "min": 283.0999755859375,
+          "max": 304.7999755859375
+        }
+      }
+    },
+    "predi/GFS_0.25_matriz_lat_lon_Vento_UVT_Predi_SP_N80_00_20261022_00.csv": {
+      "header": [
+        "lat",
+        "lon",
+        "vento U",
+        "vento V",
+        "temp"
+      ],
+      "rows": 2337,
+      "lat_first": -28.0,
+      "lat_last": -18.0,
+      "lat_min": -28.0,
+      "lat_max": -18.0,
+      "ranges": {
+        "vento U": {
+          "min": -12.33564453125,
+          "max": 1.76435546875
+        },
+        "vento V": {
+          "min": -7.2251831054687505,
+          "max": 10.27481689453125
+        },
+        "temp": {
+          "min": 283.0999755859375,
+          "max": 304.7999755859375
+        }
+      }
+    },
+    "predi/GFS_0.25_matriz_lat_lon_Vento_UVT_Predi_SP_N850_00_20261022_00.csv": {
+      "header": [
+        "lat",
+        "lon",
+        "vento U",
+        "vento V",
+        "temp"
+      ],
+      "rows": 2337,
+      "lat_first": -28.0,
+      "lat_last": -18.0,
+      "lat_min": -28.0,
+      "lat_max": -18.0,
+      "ranges": {
+        "vento U": {
+          "min": -10.87088623046875,
+          "max": 5.829113769531251
+        },
+        "vento V": {
+          "min": -14.0988525390625,
+          "max": 7.7011474609375
+        },
+        "temp": {
+          "min": 279.9033984375,
+          "max": 299.57339843750003
+        }
+      }
+    }
+  }
+}

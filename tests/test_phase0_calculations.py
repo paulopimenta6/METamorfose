@@ -15,6 +15,7 @@ NS = load_definitions(
         "criaAngAzMET",
         "criaAngMET",
         "converte_altitude",
+        "calcula_hmet",
     ],
 )
 
@@ -43,10 +44,6 @@ def test_angmet_quadrantes_nao_negativos(u, v, expected):
     assert angle.tolist() == pytest.approx([expected])
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="D-12: angMET não é normalizado para [0, 360); oeste e noroeste saem negativos.",
-)
 @pytest.mark.parametrize(
     "u,v,expected",
     [
@@ -66,10 +63,6 @@ def test_altitude_de_pressao_500_hpa():
     assert altitude == pytest.approx(18281.18, abs=0.1)
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="D-03: níveis em metros (20/30/40/50/80 m) passam pela fórmula de pressão.",
-)
 @pytest.mark.parametrize(
     "height_m,expected_ft",
     [
@@ -81,5 +74,10 @@ def test_altitude_de_pressao_500_hpa():
     ],
 )
 def test_altura_em_metros_deveria_ser_convertida_por_3_28084(height_m, expected_ft):
-    altitude = NS["converte_altitude"](height_m)
+    altitude = NS["calcula_hmet"](height_m, True)
     assert altitude == pytest.approx(expected_ft, abs=0.01)
+
+
+def test_altura_de_pressao_500_hpa_usa_formula_barometrica():
+    altitude = NS["calcula_hmet"](500, False)
+    assert altitude == pytest.approx(18281.18, abs=0.1)

@@ -363,11 +363,14 @@ def test_manifesto_consolida_os_artefatos_da_fase_0(summary, manifest):
     assert len(tests["xfail_tests"]) == 20
 
 
-def test_codigo_de_producao_nao_mudou_desde_o_snapshot():
+def test_codigo_de_producao_nao_mudou_na_fase_0():
+    # A Fase 1 altera o código de propósito. Este teste preserva a evidência
+    # histórica de que a Fase 0 não tocou no código de produção; o aceite da
+    # Fase 1 é feito por tests/test_phase1_acceptance.py.
     changed = _git_ok(
         "diff",
         "--name-only",
-        f"{SNAPSHOT_COMMIT}..HEAD",
+        f"{SNAPSHOT_COMMIT}..fase-0-concluida",
         "--",
         "classes_MET",
         "bash",

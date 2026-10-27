@@ -1,7 +1,7 @@
 # Plano de melhorias e auditoria de variáveis — servidor_MET
 
-**Status:** proposta para aprovação; nenhuma alteração de código foi aplicada.  
-**Data:** 23/10/2026.  
+**Status:** Fase 1 executada no worktree `METamorfose` (branch `execucao`); Fases 2–4 pendentes.
+**Data:** 23/10/2026; execução da Fase 1 registrada em 27/10/2026.
 **Escopo:** conclusões sobre nomenclatura e semântica das variáveis, revisão da orientação norte-sul e plano priorizado de correções do `servidor_MET`.
 
 > **Restrições obrigatórias**
@@ -9,7 +9,7 @@
 > - A aquisição GRIB permanece congelada: `goGribV2.sh`, ciclos `00/06/12/18`, previsões `f000/f006/f012/f018`, resoluções `0p25`/`1p00`, URLs e escopo não mudam.
 > - Nenhuma variável ou produto será renomeado, removido ou adicionado.
 > - Nomes de colunas, schemas e contratos existentes serão preservados, salvo decisão explícita em contrário.
-> - Este documento é um plano; a implementação só começa após aprovação.
+> - Este documento é um plano. A Fase 1 foi executada conforme a ordem e os critérios abaixo; o registro está em [09-fase-1-resultados.md](09-fase-1-resultados.md). As fases seguintes dependem de aprovação.
 
 ---
 
@@ -457,6 +457,13 @@ Ordem:
 5. **C-04** — `angMET`.
 
 **Critério de saída:** T-01 a T-05 passam; mapas e matrizes conferem com leitura independente do GRIB; nenhum nome de variável/produto mudou; reprocessamento de amostra em diretório separado.
+
+**Resultado (27/10/2026):** concluída na branch `execucao`. T-01 a T-05 estão
+verdes em `tests/test_phase1_acceptance.py`; os 20 produtos da amostra foram
+reprocessados em `reprocessamento/reports/20261022-00/` e os 13 CSVs conferem
+linha a linha com leitura independente via `pygrib`; nomes, headers e unidades
+foram preservados. Detalhes em
+[09-fase-1-resultados.md](09-fase-1-resultados.md).
 
 ### Fase 2 — Produtos, CLI e METAR
 

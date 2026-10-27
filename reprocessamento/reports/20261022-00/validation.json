@@ -1,0 +1,1115 @@
+{
+  "generated_at": "2026-10-27T21:02:30.294757+00:00",
+  "purpose": "Validação independente do reprocessamento da Fase 1.",
+  "sample": {
+    "path": "baseline/samples/gfs.20261022.00.0p25.subset.grb2",
+    "sha256": "7adc84c35743c9fe4884756b938f38c8a18a5278d3b30bb945a300adde908a90"
+  },
+  "region": {
+    "lat": [
+      -28.0,
+      -18.0
+    ],
+    "lon": [
+      -56.0,
+      -42.0
+    ]
+  },
+  "baseline": "baseline/reports/20261022-00",
+  "reprocessamento": "reprocessamento/reports/20261022-00",
+  "status": "ok",
+  "checks": 158,
+  "failures": 0,
+  "items": [
+    {
+      "name": "inventário: mesmos caminhos do baseline",
+      "status": "ok",
+      "detail": {
+        "baseline": 20,
+        "reprocessamento": 20
+      }
+    },
+    {
+      "name": "inventário: 13 CSVs",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "inventário: 7 PNGs",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "mapa não vazio: mapas/GFS_0.25_SP_N20_CampoVento_00_20261022_00.png",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "mapa não vazio: mapas/GFS_0.25_SP_N30_CampoVento_00_20261022_00.png",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "mapa não vazio: mapas/GFS_0.25_SP_N40_CampoVento_00_20261022_00.png",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "mapa não vazio: mapas/GFS_0.25_SP_N50_CampoVento_00_20261022_00.png",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "mapa não vazio: mapas/GFS_0.25_SP_N80_CampoVento_00_20261022_00.png",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "mapa não vazio: mapas/GFS_0.25_SP_N850_CampoVento_00_20261022_00.png",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "mapa não vazio: mapas/GFS_0.25_SP_N850_temp_00_20261022_00.png",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "baseline/reprocessamento: mesmos nomes de produto",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "bluesky/GFS_0.25_matriz_lat_lon_alt_angMET_VentoResult_SP_N20_00_20261022_00.csv: header preservado",
+      "status": "ok",
+      "detail": [
+        "lat",
+        "lon",
+        "hMET",
+        "angMET",
+        "vento_resultante"
+      ]
+    },
+    {
+      "name": "bluesky/GFS_0.25_matriz_lat_lon_alt_angMET_VentoResult_SP_N20_00_20261022_00.csv: 2337 linhas (igual ao baseline)",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "bluesky/GFS_0.25_matriz_lat_lon_alt_angMET_VentoResult_SP_N20_00_20261022_00.csv: lat de -28 a -18",
+      "status": "ok",
+      "detail": [
+        -28.0,
+        -18.0
+      ]
+    },
+    {
+      "name": "bluesky/GFS_0.25_matriz_lat_lon_alt_angMET_VentoResult_SP_N30_00_20261022_00.csv: header preservado",
+      "status": "ok",
+      "detail": [
+        "lat",
+        "lon",
+        "hMET",
+        "angMET",
+        "vento_resultante"
+      ]
+    },
+    {
+      "name": "bluesky/GFS_0.25_matriz_lat_lon_alt_angMET_VentoResult_SP_N30_00_20261022_00.csv: 2337 linhas (igual ao baseline)",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "bluesky/GFS_0.25_matriz_lat_lon_alt_angMET_VentoResult_SP_N30_00_20261022_00.csv: lat de -28 a -18",
+      "status": "ok",
+      "detail": [
+        -28.0,
+        -18.0
+      ]
+    },
+    {
+      "name": "bluesky/GFS_0.25_matriz_lat_lon_alt_angMET_VentoResult_SP_N40_00_20261022_00.csv: header preservado",
+      "status": "ok",
+      "detail": [
+        "lat",
+        "lon",
+        "hMET",
+        "angMET",
+        "vento_resultante"
+      ]
+    },
+    {
+      "name": "bluesky/GFS_0.25_matriz_lat_lon_alt_angMET_VentoResult_SP_N40_00_20261022_00.csv: 2337 linhas (igual ao baseline)",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "bluesky/GFS_0.25_matriz_lat_lon_alt_angMET_VentoResult_SP_N40_00_20261022_00.csv: lat de -28 a -18",
+      "status": "ok",
+      "detail": [
+        -28.0,
+        -18.0
+      ]
+    },
+    {
+      "name": "bluesky/GFS_0.25_matriz_lat_lon_alt_angMET_VentoResult_SP_N50_00_20261022_00.csv: header preservado",
+      "status": "ok",
+      "detail": [
+        "lat",
+        "lon",
+        "hMET",
+        "angMET",
+        "vento_resultante"
+      ]
+    },
+    {
+      "name": "bluesky/GFS_0.25_matriz_lat_lon_alt_angMET_VentoResult_SP_N50_00_20261022_00.csv: 2337 linhas (igual ao baseline)",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "bluesky/GFS_0.25_matriz_lat_lon_alt_angMET_VentoResult_SP_N50_00_20261022_00.csv: lat de -28 a -18",
+      "status": "ok",
+      "detail": [
+        -28.0,
+        -18.0
+      ]
+    },
+    {
+      "name": "bluesky/GFS_0.25_matriz_lat_lon_alt_angMET_VentoResult_SP_N80_00_20261022_00.csv: header preservado",
+      "status": "ok",
+      "detail": [
+        "lat",
+        "lon",
+        "hMET",
+        "angMET",
+        "vento_resultante"
+      ]
+    },
+    {
+      "name": "bluesky/GFS_0.25_matriz_lat_lon_alt_angMET_VentoResult_SP_N80_00_20261022_00.csv: 2337 linhas (igual ao baseline)",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "bluesky/GFS_0.25_matriz_lat_lon_alt_angMET_VentoResult_SP_N80_00_20261022_00.csv: lat de -28 a -18",
+      "status": "ok",
+      "detail": [
+        -28.0,
+        -18.0
+      ]
+    },
+    {
+      "name": "bluesky/GFS_0.25_matriz_lat_lon_alt_angMET_VentoResult_SP_N850_00_20261022_00.csv: header preservado",
+      "status": "ok",
+      "detail": [
+        "lat",
+        "lon",
+        "hMET",
+        "angMET",
+        "vento_resultante"
+      ]
+    },
+    {
+      "name": "bluesky/GFS_0.25_matriz_lat_lon_alt_angMET_VentoResult_SP_N850_00_20261022_00.csv: 2337 linhas (igual ao baseline)",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "bluesky/GFS_0.25_matriz_lat_lon_alt_angMET_VentoResult_SP_N850_00_20261022_00.csv: lat de -28 a -18",
+      "status": "ok",
+      "detail": [
+        -28.0,
+        -18.0
+      ]
+    },
+    {
+      "name": "matrizes/GFS_0.25_SP_N850_temp_00_20261022_00.csv: header preservado",
+      "status": "ok",
+      "detail": [
+        "lat",
+        "lon",
+        "temp"
+      ]
+    },
+    {
+      "name": "matrizes/GFS_0.25_SP_N850_temp_00_20261022_00.csv: 2337 linhas (igual ao baseline)",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "matrizes/GFS_0.25_SP_N850_temp_00_20261022_00.csv: lat de -28 a -18",
+      "status": "ok",
+      "detail": [
+        -28.0,
+        -18.0
+      ]
+    },
+    {
+      "name": "predi/GFS_0.25_matriz_lat_lon_Vento_UVT_Predi_SP_N20_00_20261022_00.csv: header preservado",
+      "status": "ok",
+      "detail": [
+        "lat",
+        "lon",
+        "vento U",
+        "vento V",
+        "temp"
+      ]
+    },
+    {
+      "name": "predi/GFS_0.25_matriz_lat_lon_Vento_UVT_Predi_SP_N20_00_20261022_00.csv: 2337 linhas (igual ao baseline)",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "predi/GFS_0.25_matriz_lat_lon_Vento_UVT_Predi_SP_N20_00_20261022_00.csv: lat de -28 a -18",
+      "status": "ok",
+      "detail": [
+        -28.0,
+        -18.0
+      ]
+    },
+    {
+      "name": "predi/GFS_0.25_matriz_lat_lon_Vento_UVT_Predi_SP_N30_00_20261022_00.csv: header preservado",
+      "status": "ok",
+      "detail": [
+        "lat",
+        "lon",
+        "vento U",
+        "vento V",
+        "temp"
+      ]
+    },
+    {
+      "name": "predi/GFS_0.25_matriz_lat_lon_Vento_UVT_Predi_SP_N30_00_20261022_00.csv: 2337 linhas (igual ao baseline)",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "predi/GFS_0.25_matriz_lat_lon_Vento_UVT_Predi_SP_N30_00_20261022_00.csv: lat de -28 a -18",
+      "status": "ok",
+      "detail": [
+        -28.0,
+        -18.0
+      ]
+    },
+    {
+      "name": "predi/GFS_0.25_matriz_lat_lon_Vento_UVT_Predi_SP_N40_00_20261022_00.csv: header preservado",
+      "status": "ok",
+      "detail": [
+        "lat",
+        "lon",
+        "vento U",
+        "vento V",
+        "temp"
+      ]
+    },
+    {
+      "name": "predi/GFS_0.25_matriz_lat_lon_Vento_UVT_Predi_SP_N40_00_20261022_00.csv: 2337 linhas (igual ao baseline)",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "predi/GFS_0.25_matriz_lat_lon_Vento_UVT_Predi_SP_N40_00_20261022_00.csv: lat de -28 a -18",
+      "status": "ok",
+      "detail": [
+        -28.0,
+        -18.0
+      ]
+    },
+    {
+      "name": "predi/GFS_0.25_matriz_lat_lon_Vento_UVT_Predi_SP_N50_00_20261022_00.csv: header preservado",
+      "status": "ok",
+      "detail": [
+        "lat",
+        "lon",
+        "vento U",
+        "vento V",
+        "temp"
+      ]
+    },
+    {
+      "name": "predi/GFS_0.25_matriz_lat_lon_Vento_UVT_Predi_SP_N50_00_20261022_00.csv: 2337 linhas (igual ao baseline)",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "predi/GFS_0.25_matriz_lat_lon_Vento_UVT_Predi_SP_N50_00_20261022_00.csv: lat de -28 a -18",
+      "status": "ok",
+      "detail": [
+        -28.0,
+        -18.0
+      ]
+    },
+    {
+      "name": "predi/GFS_0.25_matriz_lat_lon_Vento_UVT_Predi_SP_N80_00_20261022_00.csv: header preservado",
+      "status": "ok",
+      "detail": [
+        "lat",
+        "lon",
+        "vento U",
+        "vento V",
+        "temp"
+      ]
+    },
+    {
+      "name": "predi/GFS_0.25_matriz_lat_lon_Vento_UVT_Predi_SP_N80_00_20261022_00.csv: 2337 linhas (igual ao baseline)",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "predi/GFS_0.25_matriz_lat_lon_Vento_UVT_Predi_SP_N80_00_20261022_00.csv: lat de -28 a -18",
+      "status": "ok",
+      "detail": [
+        -28.0,
+        -18.0
+      ]
+    },
+    {
+      "name": "predi/GFS_0.25_matriz_lat_lon_Vento_UVT_Predi_SP_N850_00_20261022_00.csv: header preservado",
+      "status": "ok",
+      "detail": [
+        "lat",
+        "lon",
+        "vento U",
+        "vento V",
+        "temp"
+      ]
+    },
+    {
+      "name": "predi/GFS_0.25_matriz_lat_lon_Vento_UVT_Predi_SP_N850_00_20261022_00.csv: 2337 linhas (igual ao baseline)",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "predi/GFS_0.25_matriz_lat_lon_Vento_UVT_Predi_SP_N850_00_20261022_00.csv: lat de -28 a -18",
+      "status": "ok",
+      "detail": [
+        -28.0,
+        -18.0
+      ]
+    },
+    {
+      "name": "matriz temp 850: header",
+      "status": "ok",
+      "detail": [
+        "lat",
+        "lon",
+        "temp"
+      ]
+    },
+    {
+      "name": "matriz temp 850: lat alinhada e crescente",
+      "status": "ok",
+      "detail": {
+        "lat_min": -28.0,
+        "lat_max": -18.0
+      }
+    },
+    {
+      "name": "matriz temp 850: lon alinhada",
+      "status": "ok",
+      "detail": {
+        "lon_min": -56.0,
+        "lon_max": -42.0
+      }
+    },
+    {
+      "name": "matriz temp 850: coluna temp",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "bluesky N20: header",
+      "status": "ok",
+      "detail": [
+        "lat",
+        "lon",
+        "hMET",
+        "angMET",
+        "vento_resultante"
+      ]
+    },
+    {
+      "name": "bluesky N20: lat alinhada e crescente",
+      "status": "ok",
+      "detail": {
+        "lat_min": -28.0,
+        "lat_max": -18.0
+      }
+    },
+    {
+      "name": "bluesky N20: lon alinhada",
+      "status": "ok",
+      "detail": {
+        "lon_min": -56.0,
+        "lon_max": -42.0
+      }
+    },
+    {
+      "name": "bluesky N20: coluna hMET",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "bluesky N20: coluna angMET",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "bluesky N20: coluna vento_resultante",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "bluesky N20: ângulo em [0, 360)",
+      "status": "ok",
+      "detail": [
+        4.513653922992944,
+        355.3495600041895
+      ]
+    },
+    {
+      "name": "bluesky N30: header",
+      "status": "ok",
+      "detail": [
+        "lat",
+        "lon",
+        "hMET",
+        "angMET",
+        "vento_resultante"
+      ]
+    },
+    {
+      "name": "bluesky N30: lat alinhada e crescente",
+      "status": "ok",
+      "detail": {
+        "lat_min": -28.0,
+        "lat_max": -18.0
+      }
+    },
+    {
+      "name": "bluesky N30: lon alinhada",
+      "status": "ok",
+      "detail": {
+        "lon_min": -56.0,
+        "lon_max": -42.0
+      }
+    },
+    {
+      "name": "bluesky N30: coluna hMET",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "bluesky N30: coluna angMET",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "bluesky N30: coluna vento_resultante",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "bluesky N30: ângulo em [0, 360)",
+      "status": "ok",
+      "detail": [
+        1.0903357311435684,
+        357.93095478398976
+      ]
+    },
+    {
+      "name": "bluesky N40: header",
+      "status": "ok",
+      "detail": [
+        "lat",
+        "lon",
+        "hMET",
+        "angMET",
+        "vento_resultante"
+      ]
+    },
+    {
+      "name": "bluesky N40: lat alinhada e crescente",
+      "status": "ok",
+      "detail": {
+        "lat_min": -28.0,
+        "lat_max": -18.0
+      }
+    },
+    {
+      "name": "bluesky N40: lon alinhada",
+      "status": "ok",
+      "detail": {
+        "lon_min": -56.0,
+        "lon_max": -42.0
+      }
+    },
+    {
+      "name": "bluesky N40: coluna hMET",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "bluesky N40: coluna angMET",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "bluesky N40: coluna vento_resultante",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "bluesky N40: ângulo em [0, 360)",
+      "status": "ok",
+      "detail": [
+        4.482812436429185,
+        357.42688172227247
+      ]
+    },
+    {
+      "name": "bluesky N50: header",
+      "status": "ok",
+      "detail": [
+        "lat",
+        "lon",
+        "hMET",
+        "angMET",
+        "vento_resultante"
+      ]
+    },
+    {
+      "name": "bluesky N50: lat alinhada e crescente",
+      "status": "ok",
+      "detail": {
+        "lat_min": -28.0,
+        "lat_max": -18.0
+      }
+    },
+    {
+      "name": "bluesky N50: lon alinhada",
+      "status": "ok",
+      "detail": {
+        "lon_min": -56.0,
+        "lon_max": -42.0
+      }
+    },
+    {
+      "name": "bluesky N50: coluna hMET",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "bluesky N50: coluna angMET",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "bluesky N50: coluna vento_resultante",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "bluesky N50: ângulo em [0, 360)",
+      "status": "ok",
+      "detail": [
+        8.433984706568083,
+        357.67296084533353
+      ]
+    },
+    {
+      "name": "bluesky N80: header",
+      "status": "ok",
+      "detail": [
+        "lat",
+        "lon",
+        "hMET",
+        "angMET",
+        "vento_resultante"
+      ]
+    },
+    {
+      "name": "bluesky N80: lat alinhada e crescente",
+      "status": "ok",
+      "detail": {
+        "lat_min": -28.0,
+        "lat_max": -18.0
+      }
+    },
+    {
+      "name": "bluesky N80: lon alinhada",
+      "status": "ok",
+      "detail": {
+        "lon_min": -56.0,
+        "lon_max": -42.0
+      }
+    },
+    {
+      "name": "bluesky N80: coluna hMET",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "bluesky N80: coluna angMET",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "bluesky N80: coluna vento_resultante",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "bluesky N80: ângulo em [0, 360)",
+      "status": "ok",
+      "detail": [
+        3.652076329416161,
+        351.7587161192626
+      ]
+    },
+    {
+      "name": "bluesky N850: header",
+      "status": "ok",
+      "detail": [
+        "lat",
+        "lon",
+        "hMET",
+        "angMET",
+        "vento_resultante"
+      ]
+    },
+    {
+      "name": "bluesky N850: lat alinhada e crescente",
+      "status": "ok",
+      "detail": {
+        "lat_min": -28.0,
+        "lat_max": -18.0
+      }
+    },
+    {
+      "name": "bluesky N850: lon alinhada",
+      "status": "ok",
+      "detail": {
+        "lon_min": -56.0,
+        "lon_max": -42.0
+      }
+    },
+    {
+      "name": "bluesky N850: coluna hMET",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "bluesky N850: coluna angMET",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "bluesky N850: coluna vento_resultante",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "bluesky N850: ângulo em [0, 360)",
+      "status": "ok",
+      "detail": [
+        0.3594549563353553,
+        359.8037276694351
+      ]
+    },
+    {
+      "name": "predi N20: header",
+      "status": "ok",
+      "detail": [
+        "lat",
+        "lon",
+        "vento U",
+        "vento V",
+        "temp"
+      ]
+    },
+    {
+      "name": "predi N20: lat alinhada e crescente",
+      "status": "ok",
+      "detail": {
+        "lat_min": -28.0,
+        "lat_max": -18.0
+      }
+    },
+    {
+      "name": "predi N20: lon alinhada",
+      "status": "ok",
+      "detail": {
+        "lon_min": -56.0,
+        "lon_max": -42.0
+      }
+    },
+    {
+      "name": "predi N20: coluna vento U",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "predi N20: coluna vento V",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "predi N20: coluna temp",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "predi N20: U e V independentes",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "predi N30: header",
+      "status": "ok",
+      "detail": [
+        "lat",
+        "lon",
+        "vento U",
+        "vento V",
+        "temp"
+      ]
+    },
+    {
+      "name": "predi N30: lat alinhada e crescente",
+      "status": "ok",
+      "detail": {
+        "lat_min": -28.0,
+        "lat_max": -18.0
+      }
+    },
+    {
+      "name": "predi N30: lon alinhada",
+      "status": "ok",
+      "detail": {
+        "lon_min": -56.0,
+        "lon_max": -42.0
+      }
+    },
+    {
+      "name": "predi N30: coluna vento U",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "predi N30: coluna vento V",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "predi N30: coluna temp",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "predi N30: U e V independentes",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "predi N40: header",
+      "status": "ok",
+      "detail": [
+        "lat",
+        "lon",
+        "vento U",
+        "vento V",
+        "temp"
+      ]
+    },
+    {
+      "name": "predi N40: lat alinhada e crescente",
+      "status": "ok",
+      "detail": {
+        "lat_min": -28.0,
+        "lat_max": -18.0
+      }
+    },
+    {
+      "name": "predi N40: lon alinhada",
+      "status": "ok",
+      "detail": {
+        "lon_min": -56.0,
+        "lon_max": -42.0
+      }
+    },
+    {
+      "name": "predi N40: coluna vento U",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "predi N40: coluna vento V",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "predi N40: coluna temp",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "predi N40: U e V independentes",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "predi N50: header",
+      "status": "ok",
+      "detail": [
+        "lat",
+        "lon",
+        "vento U",
+        "vento V",
+        "temp"
+      ]
+    },
+    {
+      "name": "predi N50: lat alinhada e crescente",
+      "status": "ok",
+      "detail": {
+        "lat_min": -28.0,
+        "lat_max": -18.0
+      }
+    },
+    {
+      "name": "predi N50: lon alinhada",
+      "status": "ok",
+      "detail": {
+        "lon_min": -56.0,
+        "lon_max": -42.0
+      }
+    },
+    {
+      "name": "predi N50: coluna vento U",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "predi N50: coluna vento V",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "predi N50: coluna temp",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "predi N50: U e V independentes",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "predi N80: header",
+      "status": "ok",
+      "detail": [
+        "lat",
+        "lon",
+        "vento U",
+        "vento V",
+        "temp"
+      ]
+    },
+    {
+      "name": "predi N80: lat alinhada e crescente",
+      "status": "ok",
+      "detail": {
+        "lat_min": -28.0,
+        "lat_max": -18.0
+      }
+    },
+    {
+      "name": "predi N80: lon alinhada",
+      "status": "ok",
+      "detail": {
+        "lon_min": -56.0,
+        "lon_max": -42.0
+      }
+    },
+    {
+      "name": "predi N80: coluna vento U",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "predi N80: coluna vento V",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "predi N80: coluna temp",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "predi N80: U e V independentes",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "predi N850: header",
+      "status": "ok",
+      "detail": [
+        "lat",
+        "lon",
+        "vento U",
+        "vento V",
+        "temp"
+      ]
+    },
+    {
+      "name": "predi N850: lat alinhada e crescente",
+      "status": "ok",
+      "detail": {
+        "lat_min": -28.0,
+        "lat_max": -18.0
+      }
+    },
+    {
+      "name": "predi N850: lon alinhada",
+      "status": "ok",
+      "detail": {
+        "lon_min": -56.0,
+        "lon_max": -42.0
+      }
+    },
+    {
+      "name": "predi N850: coluna vento U",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "predi N850: coluna vento V",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "predi N850: coluna temp",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "predi N850: U e V independentes",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "D-01: baseline começa com o valor do norte",
+      "status": "ok",
+      "detail": 26.093398437500014
+    },
+    {
+      "name": "D-01: reprocessamento começa com o valor do sul",
+      "status": "ok",
+      "detail": 15.77339843750002
+    },
+    {
+      "name": "D-02: baseline repete U em V em todas as linhas",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "D-02: reprocessamento separa U e V",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "D-02: reprocessamento usa o V real",
+      "status": "ok",
+      "detail": -2.00974609375
+    },
+    {
+      "name": "D-03: baseline trata 20 m como pressão",
+      "status": "ok",
+      "detail": 76487.0117634869
+    },
+    {
+      "name": "D-03: reprocessamento usa 20 m × 3.28084",
+      "status": "ok",
+      "detail": 65.6168
+    },
+    {
+      "name": "D-03: baseline trata 80 m como pressão",
+      "status": "ok",
+      "detail": 55695.456840965366
+    },
+    {
+      "name": "D-03: reprocessamento usa 80 m × 3.28084",
+      "status": "ok",
+      "detail": 262.4672
+    },
+    {
+      "name": "D-03: 850 hPa mantém a fórmula barométrica",
+      "status": "ok",
+      "detail": 4779.1936018229135
+    },
+    {
+      "name": "D-12: baseline tem ângulos negativos",
+      "status": "ok",
+      "detail": -179.27465110422273
+    },
+    {
+      "name": "D-12: reprocessamento tem ângulos em [0, 360)",
+      "status": "ok",
+      "detail": [
+        4.513653922992944,
+        355.3495600041895
+      ]
+    },
+    {
+      "name": "D-12: ângulo do primeiro ponto confere com arctan2",
+      "status": "ok",
+      "detail": 48.859099468051795
+    },
+    {
+      "name": "D-04: seis logs de execução",
+      "status": "ok",
+      "detail": [
+        "mapa_temp_850.log",
+        "mapa_wind_850.log",
+        "mapa_winds_20.log",
+        "matriz_temp_850.log",
+        "matriz_wind_850.log",
+        "matriz_winds_20.log"
+      ]
+    },
+    {
+      "name": "D-04: mapa_temp_850.log seleciona o ciclo 00 do mesmo dia",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "D-04: mapa_wind_850.log seleciona o ciclo 00 do mesmo dia",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "D-04: mapa_winds_20.log seleciona o ciclo 00 do mesmo dia",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "D-04: matriz_temp_850.log seleciona o ciclo 00 do mesmo dia",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "D-04: matriz_wind_850.log seleciona o ciclo 00 do mesmo dia",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "D-04: matriz_winds_20.log seleciona o ciclo 00 do mesmo dia",
+      "status": "ok",
+      "detail": null
+    }
+  ]
+}

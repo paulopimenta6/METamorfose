@@ -9,6 +9,11 @@ partir do código, dos produtos do baseline e dos schemas descritos em
 > ordem de colunas, ordem das linhas, padrões de nome de arquivo e unidades.
 > Mudança de schema é uma decisão separada (schema v2), não um efeito colateral
 > de correção.
+>
+> **Estado:** as correções C-05, C-03, C-01, C-02 e C-04 já foram aplicadas na
+> branch `execucao`; o contrato abaixo foi preservado. As descrições marcadas
+> como “hoje” referem-se ao código original em `main`. O resultado e os valores
+> corrigidos estão em [09-fase-1-resultados.md](09-fase-1-resultados.md).
 
 ## 1. Regras gerais dos CSV
 
@@ -372,18 +377,21 @@ Os testes que protegem headers e unidades passam hoje:
 - `test_bluesky_resultante_em_nos`
 - `test_man_bluesky_*` (headers e schemas)
 
-Os testes que descrevem as correções desejadas estão marcados com
-`xfail(strict=True)`:
+Os contratos que descrevem as correções da Fase 1 estão verdes e **não** usam
+mais `xfail`:
 
 | Defeito | Contrato desejado |
 |---|---|
 | D-01 | Primeira linha do CSV (latitude mínima) deve conter o dado da latitude mínima. |
 | D-02 | `vento V` do preditor e a componente V do mapa superficial devem usar `vSupe`. |
 | D-03 | `hMET` de `winds` deve ser `metros × 3,28084`, não a fórmula de pressão. |
-| D-04 | 06:30 → ciclo 06; 00:30 → ciclo 18 do dia anterior. |
+| D-04 | 06:30 → ciclo 06; 00:30 → ciclo 00 do mesmo dia. |
 | D-12 | `angMET` em `[0, 360)`. |
 
-Detalhes e comandos estão em `tests/README.md` e `docs/07-fase-0-baseline.md`.
+Na Fase 0 esses contratos estavam marcados com `xfail(strict=True)`; os 20
+marcadores foram removidos após as correções e os testes passaram a protegê-las
+permanentemente. Detalhes e comandos estão em `tests/README.md` e
+[docs/09-fase-1-resultados.md](09-fase-1-resultados.md).
 
 ## 9. Decisões pendentes
 

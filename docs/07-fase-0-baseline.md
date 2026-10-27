@@ -7,6 +7,11 @@ produção **antes** das correções.
 > **Aviso:** o baseline é intencionalmente incorreto. Ele preserva o
 > comportamento atual, inclusive os defeitos D-01, D-02, D-03, D-04 e D-12.
 > Não use os arquivos de `baseline/reports/` como referência operacional.
+>
+> **Nota de fase:** este documento registra a Fase 0, executada com o código
+> original. As correções da Fase 1, os testes T-01–T-05 e o reprocessamento
+> estão em [09-fase-1-resultados.md](09-fase-1-resultados.md). O baseline aqui
+> descrito permanece intacto para comparação histórica.
 
 ## 1. Resultado da fase
 
@@ -135,6 +140,10 @@ Os 20 `xfail` são contratos do comportamento **desejado** que o código atual
 ainda não cumpre. Eles usam `strict=True`: quando a Fase 1 corrigir um defeito,
 o teste correspondente passará a `XPASS(strict)` e a suíte falhará até que o
 marcador seja removido. Isso evita que uma correção passe despercebida.
+
+Na Fase 1 os cinco defeitos priorizados foram corrigidos e os 20 marcadores
+foram removidos; a suíte passou a exigir o comportamento correto. Ver
+[09-fase-1-resultados.md](09-fase-1-resultados.md).
 
 ### 4.1 O que está coberto
 
@@ -274,7 +283,7 @@ descritos em `docs/05-diagnostico.md` e são a referência para a Fase 1.
 | D-01 | Todos os CSVs começam em `lat=-28.0` e terminam em `lat=-18.0`. A primeira linha (`lat=-28,lon=-56`) tem `temp=26,0934 °C`, que é exatamente o valor do GFS em `lat=-18,lon=-56`; o GFS em `lat=-28,lon=-56` vale 15,7734 °C. A última linha (`lat=-18,lon=-42`) tem 6,7534 °C, que é o valor do GFS em `lat=-28,lon=-42`. | A coluna `lat` foi revertida, mas a matriz `data` não. A ordem das linhas é ascendente (-28 → -18), porém os dados continuam na ordem norte-sul do GFS. Não é correto dizer que o CSV tem “latitude decrescente”; o defeito é o desalinhamento entre `lat` e `data`. |
 | D-02 | Nos preditores de 20/30/40/50/80 m, `vento U` e `vento V` são idênticos em todas as linhas. Em 850 hPa, U e V diferem. | `geraMatrizVentoSup` passa `u_comp_supe` também como V. O mapa superficial tem o mesmo problema. |
 | D-03 | `hMET` de 20 m = 76.487,0118 ft; 30 m = 70.962,3367 ft; 80 m = 55.695,4568 ft. | A fórmula de pressão é aplicada a níveis em metros. O correto seria `20 × 3,28084 = 65,6168 ft`, `30 × 3,28084 = 98,4252 ft`, etc. |
-| D-04 | Com hora local 06:30, o leitor abre o diretório `20261023/00/` em vez de `20261023/06/`. Com 00:30, abre `20261023/00/` em vez do `18` do dia anterior. | A comparação inclusiva de horas escolhe o ciclo anterior durante toda a primeira hora. |
+| D-04 | Com hora local 06:30, o leitor abre o diretório `20261023/00/` em vez de `20261023/06/`. O mesmo ocorre na primeira hora dos ciclos 12 e 18. Às 00:30, o ciclo `00` do mesmo dia é o correto e já era o escolhido. | A comparação inclusiva `<=` escolhe o ciclo anterior durante toda a primeira hora de 06/12/18. |
 | D-12 | `angMET` mínimo -179,27° (20 m), -179,76° (30 m), -179,69° (40 m), -178,74° (50 m), -179,18° (80 m), -179,38° (850 hPa). | A direção não é normalizada para `[0, 360)`. |
 
 Outros números úteis do baseline:
@@ -350,3 +359,24 @@ os valores numéricos não, desde que a amostra e a hora sejam as mesmas.
 | Inventário de consumidores e contratos | Concluído em `docs/08-contratos-e-consumidores.md` |
 | `goGribV2.sh` congelado | Concluído (`994ce16c…`) |
 | Nenhum código de produção alterado | Concluído |
+
+## 8. Fase 1 (posterior)
+
+A Fase 1 foi executada depois deste baseline, na mesma branch `execucao`, sobre
+o commit `7954357` (tag `fase-0-concluida`). Ela corrigiu D-01/D-02/D-03/D-04/
+D-12, removeu os 20 `xfail` e gerou um reprocessamento separado em
+`reprocessamento/reports/20261022-00/`.
+
+O baseline deste documento **não foi sobrescrito**: ele continua sendo a
+referência incorreta usada para comparar antes/depois. Os resultados, as
+evidências numéricas e a validação independente com `pygrib` estão em
+[09-fase-1-resultados.md](09-fase-1-resultados.md).
+
+| Item | Fase 0 (baseline) | Fase 1 (reprocessamento) |
+|---|---|---|
+| Suíte | 40 `passed`, 20 `xfailed`, 0 `skip` | 123 `passed`, 3 `deselected` (rede); 65 testes T-01–T-05; 0 `xfail` |
+| Produtos | 20 em `baseline/reports/20261022-00/` | 20 em `reprocessamento/reports/20261022-00/` |
+| Primeira linha de `temp` 850 hPa | 26,0934 °C (valor do norte) | 15,7734 °C (valor do sul) |
+| `hMET` de 20 m | 76.487,0118 ft | 65,6168 ft |
+| `angMET` | mínimo -179,2747° | todos em `[0, 360)` |
+| `vento U`/`V` do preditor de 20 m | idênticos em todas as linhas | independentes e iguais ao GRIB |
