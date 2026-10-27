@@ -1,9 +1,9 @@
-# Testes das Fases 0 e 1
+# Testes das Fases 0, 1 e 2
 
-Este diretório contém o harness da Fase 0 e a suíte de aceitação da Fase 1. O
-harness foi criado antes das correções de cálculo para transformar os defeitos
-conhecidos em contratos executáveis; a suíte da Fase 1 passou a exigir o
-comportamento corrigido.
+Este diretório contém o harness da Fase 0 e as suítes de aceitação das Fases 1
+e 2. O harness foi criado antes das correções de cálculo para transformar os
+defeitos conhecidos em contratos executáveis; as suítes das fases seguintes
+passaram a exigir o comportamento corrigido.
 
 ## Pré-requisitos
 
@@ -45,6 +45,9 @@ python3 -m pytest -q -m acceptance
 
 # apenas a aceitação da Fase 1 (T-01 a T-05)
 python3 -m pytest -q tests/test_phase1_acceptance.py
+
+# apenas a aceitação da Fase 2 (T-06 a T-12)
+python3 -m pytest -q tests/test_phase2_acceptance.py
 
 # aceitação sem rede
 python3 -m pytest -q -m "acceptance and not network"
@@ -89,6 +92,28 @@ A suíte tem **65 testes** (27 funções, várias parametrizadas) e não usa `xf
 para os defeitos corrigidos. A suíte completa, sem os testes de rede, termina
 com **123 passed** e 3 `deselected`. O resultado detalhado da fase está em
 [docs/09-fase-1-resultados.md](../docs/09-fase-1-resultados.md).
+
+## Aceitação da Fase 2
+
+`tests/test_phase2_acceptance.py` cobre os critérios T-06 a T-12 do
+[plano](../docs/06-plano-de-melhorias-e-variaveis.md):
+
+- T-06: `umidadeRel -ns` falha com mensagem clara; `-n 850` funciona no AUT e
+  no MAN;
+- T-07: controlador ativa `winds` sem bloco duplicado; mapas e matrizes são
+  gerados; produtos reais de 20/30/40/50/80 m são conferidos;
+- T-08: referência UTC com rollover, sobrescrita atômica e ausência de
+  concatenação;
+- T-09: intervalo MAN nas duas ordens, níveis iguais e limites 150–1000 hPa;
+- T-10: limpeza do dia `hoje - 2` em viradas de mês, `0p25`/`1p00`/legados e
+  diretórios de produtos;
+- T-11: `-v chuva` e `MN` rejeitados; flags fora de ordem; sem argumento
+  duplicado;
+- T-12: visibilidade METAR com nuvem ausente/presente e valores não `9999`.
+
+A suíte tem **28 testes** (24 funções, algumas parametrizadas). A suíte completa
+termina com **154 passed**. O resultado detalhado está em
+[docs/10-fase-2-resultados.md](../docs/10-fase-2-resultados.md).
 
 ## Amostra real
 
@@ -188,6 +213,21 @@ comandos cujo log já existe. A validação independente é um passo separado: e
 relê a amostra com `pygrib`, compara os 13 CSVs linha a linha e grava
 `validation.json`. O resultado esperado é **158 verificações e 0 falhas**,
 incluindo o ciclo `00` nos seis logs de execução.
+
+## Validação da Fase 2
+
+A Fase 2 não regera os produtos da Fase 1; ela valida os produtos de `winds` já
+reprocessados e os comportamentos de CLI, METAR e limpeza:
+
+```bash
+python3 reprocessamento/validar_fase2.py
+```
+
+O validador confere os invariantes (Fase 1 `ok`, 20 produtos preservados,
+baseline limpo e `goGribV2.sh` congelado), relê os produtos `winds` com
+`pygrib`, exercita os wrappers e scripts em diretórios temporários e grava
+`reprocessamento/reports/fase-2/validation.json` e `pytest.txt`. O resultado
+esperado é **169 verificações e 0 falhas**.
 
 ## Limitações
 

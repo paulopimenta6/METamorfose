@@ -108,20 +108,20 @@ cd /media/MET/servidor_MET/bash
 ```
 
 - O controlador chama os wrappers em sequência.
-- **O controlador termina com `exit 1` mesmo quando tudo dá certo** (`automatizacao_controle_MET.sh:75`). Não use apenas o código de saída para decidir se houve sucesso; verifique os arquivos gerados.
-- Os ventos em 1000/200 hPa são gerados pelas linhas 20-24, mas o **vento superficial (`winds`) não é gerado** pelo controlador atual (D-05). As linhas 17-18 e o bloco duplicado de 1000/200 das linhas 62-65 são no-op. Para gerar o vento superficial, chame o wrapper manualmente:
+- Desde a Fase 2, o controlador gera `winds -ns` para SP e RJ e `wind` em 1000/200 hPa; o bloco duplicado de 1000/200 foi removido (D-05).
+- A umidade relativa é gerada em **850 hPa** (`umidadeRel -n 850`). Não use `-ns`: o wrapper rejeita a chamada com mensagem clara (D-06).
+- **O controlador ainda termina com `exit 1` mesmo quando tudo dá certo** (`automatizacao_controle_MET.sh`, última linha). Isso é D-16, previsto para a Fase 3. Não use apenas o código de saída para decidir se houve sucesso; verifique os arquivos gerados.
 
 ```bash
 cd /media/MET/servidor_MET/bash
+./automatiza_vento_MET.sh -v winds -ns -r SP
 ./automatiza_vento_MET.sh -v wind -n 1000 -r SP
-./automatiza_vento_MET.sh -v winds -ns -r SP   # vento quase-superfície; ainda contém D-02/D-03
+./automatiza_MET.sh -v umidadeRel -n 850 -r SP
 ```
-
-- A umidade relativa superficial também não sai pelo controlador (D-06). O comando executa, mas não grava.
 
 ### 2.3 Requisições manuais
 
-Sintaxe e ordem:
+As flags podem vir em qualquer ordem. Use `--help` para ver o catálogo e os exemplos:
 
 ```bash
 cd /media/MET/servidor_MET/bash
@@ -142,25 +142,27 @@ cd /media/MET/servidor_MET/bash
   -datetime 202212170000 \
   -out /tmp/saida/
 
-# Intervalo (min > max é a ordem que funciona hoje)
+# Intervalo (as duas ordens produzem a mesma lista crescente)
 ./reqs_MAN_MET.sh \
   -v temp \
   -lonmin -56 -lonmax -42 -latmin -28 -latmax -18 \
-  -altminhpa 500 -altmaxhpa 200 \
+  -altminhpa 200 -altmaxhpa 500 \
   -datetime 202212170000 \
   -out /tmp/saida/
 ```
 
 Regras:
 
-- A ordem das flags é posicional; não reordene.
-- `-out` deve existir e terminar com `/`.
+- O parser é `argparse`; as flags não dependem mais de posição e todos os campos obrigatórios são validados.
+- `-out` deve ser um diretório **existente** e com permissão de escrita. A barra final é normalizada automaticamente.
 - A data tem 12 dígitos: `AAAAMMDD` + `AA` + `PP` (análise + previsão).
-- `-nhpa` = nível em hPa; `-nf` = altitude em pés; `-ns` = superfície.
-- `-altminhpa`/`-altmaxhpa` e `-altminfeet`/`-altmaxfeet` = intervalo.
+- Informe exatamente um modo de nível: `-ns`, `-nhpa`, `-nf`, `-altminhpa/-altmaxhpa` ou `-altminfeet/-altmaxfeet`.
+- `-nhpa` aceita 150–1000 hPa (com snap para o nível GFS mais próximo); `-nf` aceita 0–145000 pés; `-ns` é superfície.
+- Os dois extremos do intervalo podem vir em qualquer ordem e passam pelo mesmo snap. Níveis iguais produzem um único elemento; fora da faixa retorna código 2.
 - Vento com intervalo gera apenas mapas, não matrizes.
-- `-v chuva` não existe; use `chuvaConvec` ou `chuvaNaoConvec`.
-- O MAN não usa regiões predefinidas (`-r`); ele usa bounding box (`-lonmin/-lonmax/-latmin/-latmax`).
+- `-v chuva` é rejeitado com mensagem que indica `chuvaConvec` e `chuvaNaoConvec`.
+- Regiões `MN`/`-r` não existem no MAN; use a bounding box (`-lonmin/-lonmax/-latmin/-latmax`).
+- As variáveis de superfície exigem `-ns`; `umidadeRel` exige nível de pressão (por exemplo, `-nhpa 850`).
 
 ### 2.4 Coletar METAR
 
@@ -169,9 +171,12 @@ cd /media/MET/servidor_MET/METARpy
 ./automatizaMetar.sh
 ```
 
-- Cria o diretório `METARpy/AAAAMMDD/` com a data local.
-- Executa `METARpy.py` e `METARpy_traduzido.py`.
-- Cada script consulta a NOAA separadamente; os dois JSONs podem refletir observações diferentes.
+- Calcula uma única referência UTC (`METAR_REFERENCIA_UTC`) e a compartilha com os dois scripts Python.
+- Cria o diretório `METARpy/AAAAMMDD/` com a **data UTC** da referência.
+- Executa `METARpy.py` e `METARpy_traduzido.py`; cada estação grava um JSON bruto e um traduzido.
+- A escrita é atômica (`.tmp` + `os.replace`) e sobrescreve a mesma estação + timestamp; reexecuções não concatenam JSON.
+- Cada script consulta a NOAA separadamente; os dois JSONs ainda podem refletir observações diferentes.
+- Para testes ou reprocessamento, os overrides são `METAR_BASE_DIR` e `METAR_REFERENCIA_UTC` (formato `AAAAMMDDHHMM`).
 - Execute preferencialmente a cada 30–60 minutos, ou alinhado às observações de 00/06/12/18 UTC.
 - Valide os JSONs depois da coleta:
 
@@ -197,11 +202,13 @@ cd /media/MET/servidor_MET
 ./remove_GRIBS_antigos.sh
 ```
 
-Cuidados:
+Comportamento:
 
-- O script tenta remover dados de dois dias atrás.
-- Nos dois primeiros dias de cada mês ele calcula a data errada (D-10) e não remove os dados antigos.
-- Remove apenas GRIBs `0p25`; `1p00` e legados permanecem.
+- A data alvo é `hoje - 2 dias`, calculada com `date -d "-2 days" +"%Y%m%d"`, sem misturar ano/mês de hoje com o dia anterior.
+- Remove os GRIBs `0p25`, `1p00` e legados `gfs????????????_???.grb` do dia alvo, nos ciclos `00/06/12/18`.
+- Remove também os diretórios de produtos do dia alvo em `mapasGrib/`, `matrizGrib/`, `matrizGrib/bluesky/` e `matrizGrib/predi/`.
+- Dados de outras datas não são tocados. O retorno é 0 em sucesso e 2 para data alvo inválida.
+- Overrides para teste: `MET_BASE_DIR`, `MET_HOJE` (data de referência) e `MET_DATA_ALVO` (data alvo explícita).
 - Não execute em paralelo com a geração de produtos.
 - Considere fazer backup ou listar o que será removido antes de rodar (`find ... -maxdepth ... -print`).
 
@@ -225,7 +232,7 @@ O repositório não contém cron ou systemd. Uma agenda típica, assumindo servi
 
 Justificativa dos horários:
 
-- Às 01:10, 07:10, 13:10 e 19:10 locais, a hora local não está na primeira hora do ciclo (06/12/18), evitando o bug D-04. O ciclo 00 é usado das 00:00 às 05:59 e já está disponível.
+- Às 01:10, 07:10, 13:10 e 19:10 locais, a hora local não está na primeira hora do ciclo (06/12/18). D-04 já foi corrigido, mas a folga continua útil para aguardar a publicação do GFS.
 - Se o servidor estiver em UTC, ajuste os horários para 04:10, 10:10, 16:10 e 22:10 UTC.
 - Use `flock` se houver risco de sobreposição:
 
@@ -268,35 +275,36 @@ wc -l /media/MET/servidor_MET/matrizGrib/$(date +%Y%m%d)/*/*.csv
 grep -iE 'nan|inf' /media/MET/servidor_MET/matrizGrib/$(date +%Y%m%d)/*/*.csv | head
 ```
 
-### 4.3 Conferência de sanidade (após correções)
+### 4.3 Conferência de sanidade
 
-1. **Orientação**: escolher um CSV de temperatura de superfície e comparar um ponto ao norte e um ponto ao sul com um visualizador GFS. Se os valores estiverem trocados, D-01 está presente.
-2. **Ciclo**: gerar um produto às 06:30 e conferir se o GRIB usado é o ciclo 06; se for 00, D-04 está presente.
-3. **Vento**: comparar U/V/direção com um ponto de referência; conferir se a direção está em 0–360 (D-12).
-4. **Altura do vento**: conferir `hMET` para 20 m (~65,6 ft) e 80 m (~262,5 ft); valores de 55.696–76.487 ft indicam D-03.
-5. **Umidade**: verificar se existe algum arquivo de `umidadeRel` superficial (D-06).
-6. **METAR**: rodar o validador JSON e comparar bruto × traduzido da mesma estação/horário (D-07/D-08).
+1. **Orientação**: escolher um CSV de temperatura e comparar um ponto ao norte e um ponto ao sul com um visualizador GFS. Os valores devem bater; se estiverem trocados, houve regressão de D-01.
+2. **Ciclo**: gerar um produto às 06:30 e conferir se o GRIB usado é o ciclo 06; se for 00, houve regressão de D-04.
+3. **Vento**: comparar U/V/direção com um ponto de referência; a direção deve estar em `[0, 360)`.
+4. **Altura do vento**: conferir `hMET` para 20 m (~65,6 ft) e 80 m (~262,5 ft); valores de 55.696–76.487 ft indicam regressão de D-03.
+5. **Umidade**: `umidadeRel -ns` deve falhar com mensagem clara; `umidadeRel -n 850` deve gerar CSV/PNG com valores entre 0 e 100.
+6. **METAR**: rodar o validador JSON e comparar bruto × traduzido da mesma estação/horário. Novas execuções devem sobrescrever atomicamente, sem concatenar (D-07/D-08).
+7. **Limpeza**: em ambiente de teste, usar `MET_BASE_DIR`/`MET_HOJE` e conferir que somente o dia `hoje - 2` foi removido.
 
 ## 5. Troubleshooting
 
 | Sintoma | Causa provável | Ação |
 |---|---|---|
 | Nenhum arquivo em `mapasGrib`/`matrizGrib` | GRIB ausente, `path.conf` inacessível, diretório de trabalho errado | Conferir `gribs/AAAAMMDD/CC`, `environment/path.conf` e executar a partir de `bash/`/`classes_MET/` |
-| Controlador termina com erro 1 | `exit 1` fixo no final (`automatizacao_controle_MET.sh:75`) | Ignorar o código e validar arquivos; corrigir o script |
-| Vento superficial não aparece | Chamadas `winds` no-op do controlador (D-05) | Chamar `automatiza_vento_MET.sh -v winds -ns -r ...` manualmente; ventos em 1000/200 hPa já são gerados |
-| Umidade relativa não aparece | Mapeamento para `isobaricInhPa` e sem superfície (D-06) | Não usar `-ns`; corrigir mapeamento/computação |
-| JSON METAR inválido | Append sem separador (D-07) | Remover duplicatas, reescrever com `"w"`/JSON Lines |
+| Controlador termina com erro 1 | `exit 1` fixo no final (D-16, Fase 3) | Ignorar o código e validar arquivos; a correção está prevista para a Fase 3 |
+| Vento superficial não aparece | `winds` não foi gerado ou o GRIB não tem os níveis 20/30/40/50/80 m | Conferir as chamadas `winds -ns` do controlador e os logs; rodar `automatiza_vento_MET.sh -v winds -ns -r SP` para isolar |
+| Umidade relativa não aparece | `umidadeRel` só existe em pressão; `-ns` é inválido | Usar `-n 850`; o controlador já usa 850 hPa. `-ns` retorna erro claro |
+| JSON METAR inválido | Arquivos históricos anteriores à escrita atômica (D-07) | Novas execuções sobrescrevem atomicamente; validar o acervo antigo e reparar/ignorar conforme o consumidor |
 | `ModuleNotFoundError: PythonMETAR` | Pacote não instalado | Instalar vendor ou exportar `PYTHONPATH` |
 | `ImportError: No module named mpl_toolkits.basemap` | Basemap ausente | Instalar `basemap`/`basemap-data-hires` |
 | Produto com ciclo errado na primeira hora | D-04 | Rodar após `HH:10` ou corrigir a seleção de ciclo |
 | Vento superficial com V errado | D-02 | Corrigir `vSupe` no mapa AUT e na matriz do preditor; o MAN já usa V correto |
 | Altitude de vento superficial absurda | D-03 | Corrigir conversão para metros × 3,28084 |
-| Nenhum Python chamado no MAN | Flags fora de ordem/faltando | Seguir a ordem posicional exata; usar `-ns`/`-nhpa`/intervalo |
-| CSV/PNG no lugar errado | `-out` sem `/` final | Terminar `-out` com `/` |
-| `UnboundLocalError` no MAN | Data sem 12 dígitos ou intervalo min<max | Usar 12 dígitos e min>max |
-| `KeyError: 'MN'` | Região inexistente | Usar `AM`, `SP`, `RJ` etc. |
+| Nenhum Python chamado no MAN | Flag obrigatória ausente ou combinação inválida | Ver `--help`; o `argparse` retorna código 2 com a mensagem. As flags podem vir em qualquer ordem |
+| CSV/PNG no lugar errado | `-out` inexistente, sem permissão ou apontando para arquivo | Criar o diretório e conferir a mensagem de validação do CLI |
+| Erro de nível no MAN | Nível fora de 150–1000 hPa ou mais de um modo de nível | Usar um único modo (`-ns`, `-nhpa`, `-nf` ou intervalo) dentro da faixa |
+| `KeyError: 'MN'` | Região inexistente | Usar `AM`, `SP`, `RJ` etc.; o MAN usa bounding box, não `-r` |
 | `FileNotFoundError: ../environment/path.conf` | Diretório de trabalho errado | Executar de `bash/` ou `classes_MET/` |
-| Disco cheio | Retenção/consumo de GRIB | Conferir D-10, limpar manualmente com cuidado |
+| Disco cheio | Retenção/consumo de GRIB | Conferir o agendamento da limpeza, o espaço livre e os logs; a data alvo agora é calculada corretamente |
 
 ## 6. Monitoramento e observabilidade
 
@@ -314,16 +322,17 @@ O sistema atual não tem métricas, logs estruturados nem alertas. Recomendaçõ
 
 ## 7. Backup, retenção e recuperação
 
-- Não há Git no diretório. Faça backup do código e de `environment/path.conf` antes de qualquer correção.
+- O projeto passou a ter histórico Git na Fase 0. Ainda assim, faça backup de `environment/path.conf` e dos produtos antes de qualquer intervenção.
 - Os produtos podem ser regenerados a partir dos GRIBs enquanto eles existirem; depois da limpeza, é necessário baixar novamente do NOMADS (nem todo ciclo antigo fica disponível).
 - O METAR histórico é o dado mais difícil de reconstruir; faça backup de `METARpy/20*` antes de mexer nos scripts.
-- Em caso de corrupção de JSON, preserve o arquivo original e corrija em cópia.
-- Após corrigir D-01/D-02/D-03/D-04, os produtos gerados antes da correção devem ser tratados como suspeitos e reprocessados ou descartados.
+- Em caso de corrupção de JSON, preserve o arquivo original e corrija em cópia; as novas execuções não concatenam mais.
+- Produtos gerados antes das correções da Fase 1 (D-01/D-02/D-03/D-04/D-12) devem ser tratados como suspeitos e reprocessados ou descartados.
+- A limpeza da Fase 2 remove somente o dia alvo, mas o `rm -rf` continua sendo destrutivo: teste com `MET_BASE_DIR` e `MET_HOJE` antes de usar em produção.
 
 ## 8. Segurança e limites
 
 - Todas as fontes são públicas (NOMADS/NOAA); não há credenciais no projeto.
 - O acesso é controlado por permissões de filesystem.
 - Evite executar downloads em paralelo agressivo para não bloquear/abusar do NOMADS.
-- Não há validação de entrada; trate o CLI manual como confiável e restrinja quem pode executá-lo.
-- O `rm -r` da limpeza deve ser revisado antes de rodar em produção; um erro de data pode remover diretório inesperado se a lógica for alterada sem cuidado.
+- O CLI manual e os wrappers agora validam variável, nível, coordenadas, data e diretório de saída, mas continuam sendo ferramentas operacionais: restrinja quem pode executá-las.
+- O `rm -rf` da limpeza deve ser testado com os overrides antes de rodar em produção; a validação de data reduz, mas não elimina, o risco de remoção indevida.

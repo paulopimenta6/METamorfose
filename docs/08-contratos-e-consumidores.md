@@ -10,10 +10,13 @@ partir do código, dos produtos do baseline e dos schemas descritos em
 > Mudança de schema é uma decisão separada (schema v2), não um efeito colateral
 > de correção.
 >
-> **Estado:** as correções C-05, C-03, C-01, C-02 e C-04 já foram aplicadas na
-> branch `execucao`; o contrato abaixo foi preservado. As descrições marcadas
-> como “hoje” referem-se ao código original em `main`. O resultado e os valores
-> corrigidos estão em [09-fase-1-resultados.md](09-fase-1-resultados.md).
+> **Estado:** as correções C-01, C-02, C-03, C-04 e C-05 (Fase 1) e C-06/C-07 e
+> os itens D-05, D-07, D-08, D-09, D-10, D-13, D-14, D-15, D-17, D-24, D-25,
+> D-27 e D-28 (Fase 2) já foram aplicadas na branch `execucao`; o contrato abaixo
+> foi preservado. As descrições marcadas como “hoje” referem-se ao código
+> original em `main`. Os resultados estão em
+> [09-fase-1-resultados.md](09-fase-1-resultados.md) e
+> [10-fase-2-resultados.md](10-fase-2-resultados.md).
 
 ## 1. Regras gerais dos CSV
 
@@ -112,8 +115,8 @@ Unidades efetivas:
 | `temp`, `temps` | °C | Kelvin convertido por `-273.15` |
 | `ps`, `prnm` | hPa | Pascal convertido por `/100` |
 | `nuvem` | % | Total cloud cover |
-| `chuvaConvec`, `chuvaNaoConvec` | kg m⁻² | Numericamente equivalente a mm |
-| `umidadeRel` | % | Quando gerado; superfície não funciona (D-06) |
+| `chuvaConvec`, `chuvaNaoConvec` | kg m⁻² | Numericamente equivalente a mm; `chuvaNaoConvec` é precipitação **total** e o rótulo `+6` é histórico (D-13/D-24) |
+| `umidadeRel` | % | Apenas em pressão; `-ns` é rejeitado com erro claro (D-06) |
 | `u`, `v` | m s⁻¹ | Componentes do vento |
 
 Não renomear `chuvaNaoConvec` para `chuvaTotal`, mesmo que o dado seja
@@ -141,8 +144,8 @@ lat,lon,hMET,angMET,vento_resultante
 |---|---|---|
 | `lat` | graus | Latitude do ponto |
 | `lon` | graus | Longitude do ponto |
-| `hMET` | pés | Para `wind`, altitude de pressão; para `winds`, altura em metros convertida para pés (hoje errada, D-03) |
-| `angMET` | graus | Direção meteorológica; deve estar em `[0, 360)` (hoje pode ser negativa, D-12) |
+| `hMET` | pés | Para `wind`, altitude de pressão; para `winds`, altura em metros convertida para pés (`metros × 3,28084`, corrigido na Fase 1) |
+| `angMET` | graus | Direção meteorológica em `[0, 360)` (corrigido na Fase 1) |
 | `vento_resultante` | nós | `sqrt(U² + V²) * 1.943` |
 
 O header não contém unidades; consumidores dependem desta documentação. Não
@@ -169,7 +172,7 @@ lat,lon,vento U,vento V,temp
 | Coluna | Unidade | Contrato |
 |---|---|---|
 | `vento U` | m s⁻¹ | Componente zonal |
-| `vento V` | m s⁻¹ | Componente meridional; hoje recebe U em `winds` (D-02) |
+| `vento V` | m s⁻¹ | Componente meridional (corrigida na Fase 1; em `winds` usa `vSupe`) |
 | `temp` | K | Para `winds`, é a temperatura de superfície (`temps`); não converter para °C |
 
 O header tem espaço em `vento U` e `vento V`; preservar exatamente. O header
@@ -211,8 +214,8 @@ Cabeçalho:
 lat,lon,<var>
 ```
 
-Mesmas unidades da matriz escalar AUT. O código chama `gera_matriz` duas vezes
-e sobrescreve o mesmo arquivo; o resultado final é o mesmo (D-15).
+Mesmas unidades da matriz escalar AUT. A matriz é gerada uma única vez desde a
+Fase 2; a chamada duplicada de `gera_matriz` foi removida (D-15).
 
 ### 3.3 Mapas de vento
 
@@ -237,10 +240,10 @@ lat,lon,nivel<hPa>,halt<feet>,angMET<grau>,vento U<ms**-1>,vento V<ms**-1>,vento
 | Coluna | Unidade | Contrato |
 |---|---|---|
 | `nivel<hPa>` | hPa | Para `wind`; para `winds`, o valor é a altura em metros, mas o header permanece |
-| `halt<feet>` | pés | Para `wind`, altitude de pressão; para `winds`, conversão errada (D-03) |
-| `angMET<grau>` | graus | Direção meteorológica; normalizar para `[0, 360)` (D-12) |
+| `halt<feet>` | pés | Para `wind`, altitude de pressão; para `winds`, `metros × 3,28084` (corrigido na Fase 1) |
+| `angMET<grau>` | graus | Direção meteorológica em `[0, 360)` (corrigido na Fase 1) |
 | `vento U<ms**-1>` | m s⁻¹ | Componente zonal |
-| `vento V<ms**-1>` | m s⁻¹ | Componente meridional |
+| `vento V<ms**-1>` | m s⁻¹ | Componente meridional (corrigida na Fase 1) |
 | `vento_resultante<ms**-1>` | m s⁻¹ | Resultante em m/s (diferente do BlueSky, em nós) |
 
 O header `nivel<hPa>` é semanticamente incorreto para `winds`, mas é parte do
@@ -259,7 +262,8 @@ Cabeçalho exato:
 lat,lon,hMET<feet>,angMET<grau>,vento_resultante<knot>
 ```
 
-Unidades: pés, graus, nós. O `hMET` de `winds` tem o mesmo defeito D-03 do AUT.
+Unidades: pés, graus, nós. O `hMET` de `winds` usa `metros × 3,28084` desde a
+Fase 1; o header e a unidade não mudaram.
 
 ### 3.6 Matriz do preditor do MAN
 
@@ -324,10 +328,13 @@ Campos podem faltar. `condicao_nuvem` e `vento` podem ser objeto ou a string
 
 ### 4.3 JSONs inválidos
 
-Doze arquivos do checkout contêm dois objetos JSON concatenados, sem separador.
-Eles não passam em `json.load`. A lista e o exemplo estão em
-`docs/03-dados-e-saidas.md` (seção 6.1). O consumidor deve decidir entre
-rejeitar, reparar ou ignorar; o código atual não corrige isso (D-07).
+Doze arquivos do acervo histórico contêm dois objetos JSON concatenados, sem
+separador. Eles não passam em `json.load`; a lista e o exemplo estão em
+`docs/03-dados-e-saidas.md` (seção 6.1). Desde a Fase 2, novas execuções gravam
+com `"w"` em `.tmp`, `fsync` e `os.replace`, sobrescrevendo a mesma estação +
+timestamp, e o timestamp é resolvido contra uma referência UTC com rollover
+(D-07/D-08). O consumidor ainda deve decidir entre rejeitar, reparar ou ignorar
+os 12 arquivos antigos; eles não são corrigidos retroativamente.
 
 ## 5. Consumidores conhecidos
 
@@ -355,7 +362,7 @@ responsáveis antes de alterar o schema.
 6. `goGribV2.sh`, suas URLs, ciclos, previsões e resoluções.
 7. Chaves METAR existentes, inclusive os espaços no JSON bruto.
 
-## 7. Mudanças permitidas na Fase 1
+## 7. Mudanças permitidas nas Fases 1 e 2
 
 - Corrigir a ordem/alinhamento dos dados sem mudar a ordem das linhas.
 - Corrigir a componente V sem mudar o header `vento V`.
@@ -364,6 +371,12 @@ responsáveis antes de alterar o schema.
 - Corrigir a seleção de ciclo sem mudar os nomes dos diretórios.
 - Corrigir a conversão de unidades onde o valor está errado, mantendo a unidade
   documentada.
+- Gerar `winds -ns` no controlador e remover chamadas no-op/duplicadas.
+- Trocar `umidadeRel -ns` por `-n 850`, mantendo o nome e o seletor de pressão.
+- Reescrever o CLI MAN com `argparse`, mantendo todas as flags e os padrões de
+  saída.
+- Gravar METAR de forma atômica e com timestamp UTC, mantendo os schemas.
+- Documentar a semântica de `chuvaNaoConvec`/`temps` e o rótulo `+6`.
 - Adicionar testes e documentação.
 
 ## 8. Testes de contrato
@@ -393,7 +406,25 @@ marcadores foram removidos após as correções e os testes passaram a protegê-
 permanentemente. Detalhes e comandos estão em `tests/README.md` e
 [docs/09-fase-1-resultados.md](09-fase-1-resultados.md).
 
-## 9. Decisões pendentes
+Os contratos da Fase 2 também estão verdes em
+`tests/test_phase2_acceptance.py`:
+
+| Item | Contrato desejado |
+|---|---|
+| D-05 | Controlador chama `winds -ns`; não há bloco duplicado nem chamada no-op; `winds` gera mapas e matrizes. |
+| D-06 | `umidadeRel -ns` retorna erro claro com `-n 850`; `umidadeRel -n 850` gera CSV/PNG em 0–100. |
+| D-07 | Reexecução do METAR sobrescreve o arquivo, sem concatenar; JSON sempre válido. |
+| D-08 | Timestamp e diretório usam a mesma referência UTC e resolvem rollover de mês/ano. |
+| D-09 | `200→500` e `500→200` produzem a mesma lista crescente; fora de 150–1000 hPa retorna erro 2. |
+| D-10 | Limpeza remove somente o dia `hoje - 2`, incluindo `0p25`, `1p00`, legados e produtos. |
+| D-13/D-24 | Nome `chuvaNaoConvec` e rótulo `+6` preservados; semântica documentada. |
+| D-14/D-28 | Flags do MAN em qualquer ordem; `chuva`/`MN` rejeitados; help e `set -euo pipefail`. |
+| D-15 | Matriz MAN escalar gerada uma única vez. |
+| D-17 | `9999` sem nuvem → `"10000"`; com nuvem → `"superior a 10000"`. |
+| D-25 | `automatizaMetar.sh` sem variáveis indefinidas e com referência UTC única. |
+| D-27 | `temps` documentado como temperatura de pele; seletor preservado. |
+
+## 9. Decisões e pendências
 
 - O header `nivel<hPa>` do MAN para `winds` permanece, apesar de o valor ser em
   metros. Mudança seria schema v2.
@@ -402,6 +433,14 @@ permanentemente. Detalhes e comandos estão em `tests/README.md` e
 - O header `temp` do preditor é Kelvin; o header `temp` das matrizes escalares é
   Celsius. Não unificar sem schema v2.
 - `chuvaNaoConvec` continua com esse nome, embora o dado seja precipitação total
-  (D-13).
-- A decisão de ativar `winds` no controlador automático (D-05) fica para depois
-  de D-01, D-02 e D-03 estarem corrigidos e testados.
+  (D-13), e o rótulo `+6` do arquivo continua sendo histórico (D-24).
+- `temps` continua sendo temperatura de pele, não do ar a 2 m (D-27).
+- `winds` foi ativado no controlador na Fase 2, depois de D-01, D-02 e D-03
+  estarem corrigidos e testados (D-05).
+- O JSON METAR bruto mantém as chaves com espaço final; a escrita nova é atômica
+  e UTC, mas os 12 arquivos históricos inválidos não são reparados
+  automaticamente (D-07/D-08).
+- Ainda pendente para a Fase 3: `exit 1` do controlador (D-16), sanitização de
+  caminho/região (D-18), limpeza de artefatos (D-19), logging/lock (D-20),
+  `ponto_regiao` (D-21), `varMET` global (D-22), `controla_env` (D-23) e
+  fechamento de figuras/GRIB (D-26).

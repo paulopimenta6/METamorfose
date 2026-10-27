@@ -11,7 +11,12 @@ from leitura_dados_grib_MET import leitura_dados_gribs_AUT, leitura_dados_gribs_
 # Inicio da classe
 # =============================================================================
 class processamento_dados_met_AUT:
-    
+
+    VARIAVEIS = (
+        "ps", "prnm", "temp", "temps", "nuvem", "chuvaNaoConvec", "chuvaConvec",
+        "umidadeRel", "u", "v", "uSupe", "vSupe",
+    )
+
     def __init__(self, varMET, nivel=None):
         
         self.varMET=varMET 
@@ -29,12 +34,45 @@ class processamento_dados_met_AUT:
                             "uSupe": ["U component of wind", "heightAboveGround"],
                             "vSupe": ["V component of wind", "heightAboveGround"]}
 
+        if varMET not in self.dict_var_met:
+            raise ValueError(self._mensagem_variavel_desconhecida(varMET))
+
         self.varMET_dict=self.dict_var_met[varMET][0] 
         self.tipo_nivel_dict=self.dict_var_met[varMET][1]
+        self._valida_nivel(varMET, self.tipo_nivel_dict, self.nivel)
         
         print(self.varMET_dict, self.tipo_nivel_dict)
         
-        self.obj_GRIBS=leitura_dados_gribs_AUT().imprime_lista_obj_gribs_AUT()        
+        self.obj_GRIBS=leitura_dados_gribs_AUT().imprime_lista_obj_gribs_AUT()
+
+    @classmethod
+    def _mensagem_variavel_desconhecida(cls, varMET):
+        if varMET == "chuva":
+            return "variável 'chuva' não existe; use 'chuvaConvec' ou 'chuvaNaoConvec'"
+        return (
+            "variável desconhecida: %s; use uma de: %s"
+            % (varMET, ", ".join(cls.VARIAVEIS))
+        )
+
+    @staticmethod
+    def _mensagem_nivel_incompativel(varMET, tipo_nivel_dict, nivel):
+        if varMET == "umidadeRel":
+            return "umidadeRel não possui campo em superfície; use -n <hPa> (por exemplo, -n 850)"
+        if tipo_nivel_dict == "heightAboveGround":
+            return "%s usa altura acima do solo; use -n <altura em metros>" % varMET
+        if tipo_nivel_dict in ("surface", "meanSea"):
+            return "%s é variável de superfície; use -ns" % varMET
+        return "%s não possui campo em superfície; use -n <hPa>" % varMET
+
+    @classmethod
+    def _valida_nivel(cls, varMET, tipo_nivel_dict, nivel):
+        if nivel == "surface" and tipo_nivel_dict not in ("surface", "meanSea"):
+            raise ValueError(cls._mensagem_nivel_incompativel(varMET, tipo_nivel_dict, nivel))
+        if tipo_nivel_dict in ("surface", "meanSea") and nivel not in (None, "surface"):
+            raise ValueError(
+                "%s é variável de superfície; use -ns (nível recebido: %s)"
+                % (varMET, nivel)
+            )
 
 # =============================================================================
 # Aqui recebera os objetos de leitura do GRIB
@@ -48,6 +86,10 @@ class processamento_dados_met_AUT:
 # =============================================================================
 
     def define_lista_var_com_nivel_pressao(self):
+        if self.tipo_nivel_dict != "isobaricInhPa":
+            raise ValueError(
+                "%s não possui níveis de pressão; use o seletor adequado" % self.varMET
+            )
         self.lista_var_met=[]
         self.lista_niveis=[]
         self.lista_var_com_niveis_pres_hPa_aceitaveis=[]
@@ -93,6 +135,10 @@ class processamento_dados_met_AUT:
         return self.lista_var_com_niveis_pres_hPa_aceitaveis
     
     def define_lista_var_com_altitude(self): #nivel de quase-superficie
+        if self.tipo_nivel_dict != "heightAboveGround":
+            raise ValueError(
+                "%s não possui níveis de altura acima do solo; use -n <hPa>" % self.varMET
+            )
         self.lista_var_met=[]
         self.lista_niveis=[]
         self.lista_var_com_niveis=[]
@@ -140,6 +186,12 @@ class processamento_dados_met_AUT:
         return self.lista_var_com_niveis
 
     def define_lista_var_com_nivel_superficie(self):
+        if self.tipo_nivel_dict not in ("surface", "meanSea"):
+            raise ValueError(
+                self._mensagem_nivel_incompativel(
+                    self.varMET, self.tipo_nivel_dict, "surface"
+                )
+            )
         #self.lista_var_met=[]
         lista_var_com_nivel=[]
 
@@ -186,21 +238,35 @@ class processamento_dados_met_MAN:
                             "uSupe": ["U component of wind", "heightAboveGround"],
                             "vSupe": ["V component of wind", "heightAboveGround"]}
 
+        if varMET not in self.dict_var_met:
+            raise ValueError(processamento_dados_met_AUT._mensagem_variavel_desconhecida(varMET))
+
         self.varMET_dict=self.dict_var_met[varMET][0] 
         self.tipo_nivel_dict=self.dict_var_met[varMET][1]
+        processamento_dados_met_AUT._valida_nivel(varMET, self.tipo_nivel_dict, self.nivel)
         self.obj_GRIB=leitura_dados_gribs_MAN(self.ano, self.mes, self.dia, self.ana, self.prev).imprime_obj_grib_MAN() #passar ano, mes, dia, ana, prev       
         
     def define_var_com_nivel_ou_superficie(self):
         if type(self.nivel)!=str:
             print("tem mais de um nivel")
+            if self.tipo_nivel_dict in ("surface", "meanSea"):
+                raise ValueError(
+                    "%s é variável de superfície; use -ns" % self.varMET
+                )
             self.var_met_com_nivel=self.obj_GRIB.select(name=self.varMET_dict, typeOfLevel=self.tipo_nivel_dict, level=self.nivel)[0]       
         else:
             print("tem somente o nivel de superficie")
             if self.tipo_nivel_dict=="surface" or self.tipo_nivel_dict=="meanSea":
-                self.var_met_com_nivel_superficie=self.obj_GRIB.select(name=self.varMET_dict, typeOfLevel=self.tipo_nivel_dict)    
+                self.var_met_com_nivel_superficie=self.obj_GRIB.select(name=self.varMET_dict, typeOfLevel=self.tipo_nivel_dict)
                 print("tipo de nivel: " + self.tipo_nivel_dict)
                 nivel_escolhido=self.var_met_com_nivel_superficie[0].level
                 self.var_met_com_nivel=self.obj_GRIB.select(name=self.varMET_dict, typeOfLevel=self.tipo_nivel_dict, level=nivel_escolhido)[0]
+            else:
+                raise ValueError(
+                    processamento_dados_met_AUT._mensagem_nivel_incompativel(
+                        self.varMET, self.tipo_nivel_dict, self.nivel
+                    )
+                )
         
         print("# =============================================================================")                 
         print("#conseguiu processar o dado")
@@ -209,6 +275,8 @@ class processamento_dados_met_MAN:
         return self.var_met_com_nivel        
 
     def define_var_com_nivel(self):
+        if self.tipo_nivel_dict in ("surface", "meanSea"):
+            raise ValueError("%s é variável de superfície; use -ns" % self.varMET)
         if type(self.nivel)!=str:
             print("tem mais de um nivel")
             self.var_met_com_nivel=self.obj_GRIB.select(name=self.varMET_dict, typeOfLevel=self.tipo_nivel_dict, level=self.nivel)[0]   
@@ -217,11 +285,16 @@ class processamento_dados_met_MAN:
         return self.var_met_com_nivel       
         
     def define_var_com_nivel_superficie(self):
-        if self.tipo_nivel_dict=="surface" or self.tipo_nivel_dict=="meanSea":
-            self.var_met_com_nivel_superficie=self.obj_GRIB.select(name=self.varMET_dict, typeOfLevel=self.tipo_nivel_dict)    
-            print("tipo de nivel: " + self.tipo_nivel_dict)
-            nivel_escolhido=self.var_met_com_nivel_superficie[0].level
-            self.var_com_nivel=self.obj_GRIB.select(name=self.varMET_dict, typeOfLevel=self.tipo_nivel_dict, level=nivel_escolhido)[0]            
+        if self.tipo_nivel_dict not in ("surface", "meanSea"):
+            raise ValueError(
+                processamento_dados_met_AUT._mensagem_nivel_incompativel(
+                    self.varMET, self.tipo_nivel_dict, "surface"
+                )
+            )
+        self.var_met_com_nivel_superficie=self.obj_GRIB.select(name=self.varMET_dict, typeOfLevel=self.tipo_nivel_dict)
+        print("tipo de nivel: " + self.tipo_nivel_dict)
+        nivel_escolhido=self.var_met_com_nivel_superficie[0].level
+        self.var_com_nivel=self.obj_GRIB.select(name=self.varMET_dict, typeOfLevel=self.tipo_nivel_dict, level=nivel_escolhido)[0]
                                         
         print(self.var_com_nivel)
         return self.var_com_nivel

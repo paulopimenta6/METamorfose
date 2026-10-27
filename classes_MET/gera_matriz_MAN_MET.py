@@ -124,6 +124,5 @@ class met_gera_matriz_man:
         objMET=self.processamento_dados_para_matrizes()
         print(objMET)
         print(self.gera_matriz(objMET, self.lonmin, self.lonmax, self.latmin, self.latmax, self.ana, self.prev, self.varMET, self.regiao, self.nivel, self.saida))          
-        self.gera_matriz(objMET, self.lonmin, self.lonmax, self.latmin, self.latmax, self.ana, self.prev, self.varMET, self.regiao, self.nivel, self.saida)        
         
       

@@ -14,8 +14,8 @@ cd ${dir_principal}${dir_bash}
 #############################
 # matrizes e mapas de vento # 
 #############################
-./automatiza_vento_MET.sh "-v" "winds" "-r" "SP"
-./automatiza_vento_MET.sh "-v" "winds" "-r" "RJ" 
+./automatiza_vento_MET.sh "-v" "winds" "-ns" "-r" "SP"
+./automatiza_vento_MET.sh "-v" "winds" "-ns" "-r" "RJ"
 
 ./automatiza_vento_MET.sh "-v" "wind" "-n" "1000" "-r" "SP"
 ./automatiza_vento_MET.sh "-v" "wind" "-n" "1000" "-r" "RJ"
@@ -49,20 +49,12 @@ cd ${dir_principal}${dir_bash}
 ./automatiza_MET.sh "-v" "nuvem" "-n" "700" "-r" "SP"
 ./automatiza_MET.sh "-v" "nuvem" "-n" "500" "-r" "SP"
 ./automatiza_MET.sh "-v" "nuvem" "-n" "200" "-r" "SP"
-./automatiza_MET.sh "-v" "umidadeRel" "-ns" "-r" "SP"
+./automatiza_MET.sh "-v" "umidadeRel" "-n" "850" "-r" "SP"
 
 ./automatiza_MET.sh "-v" "nuvem" "-n" "700" "-r" "RJ"
 ./automatiza_MET.sh "-v" "nuvem" "-n" "500" "-r" "RJ"
 ./automatiza_MET.sh "-v" "nuvem" "-n" "200" "-r" "RJ"
-./automatiza_MET.sh "-v" "umidadeRel" "-ns" "-r" "RJ"
-
-#############################
-# matrizes e mapas de vento # 
-#############################
-./automatiza_vento_MET.sh "-n" "1000" "-r" "SP"
-./automatiza_vento_MET.sh "-n" "200" "-r" "SP"
-./automatiza_vento_MET.sh "-n" "1000" "-r" "RJ"
-./automatiza_vento_MET.sh "-n" "200" "-r" "RJ"
+./automatiza_MET.sh "-v" "umidadeRel" "-n" "850" "-r" "RJ"
 
 #############################
 # matrizes e mapas de chuva # 

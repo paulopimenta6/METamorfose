@@ -1,5 +1,11 @@
 # 01 — Arquitetura
 
+> **Estado:** este documento descreve a arquitetura e o comportamento do código
+> original em `main`. As correções das Fases 1 e 2 estão resumidas em
+> [09-fase-1-resultados.md](09-fase-1-resultados.md) e
+> [10-fase-2-resultados.md](10-fase-2-resultados.md); o runbook atualizado está
+> em [04-operacao.md](04-operacao.md).
+
 ## 1. Objetivo e escopo
 
 O `servidor_MET` é um sistema de processamento meteorológico em lote. Ele transforma arquivos GFS GRIB2 em mapas PNG e matrizes CSV, e coleta observações METAR em JSON. O sistema foi projetado para rodar em um servidor Linux com diretórios fixos, acionado por um agendador externo.
@@ -77,14 +83,16 @@ flowchart LR
 | Arquivo | Responsabilidade | Executa |
 |---|---|---|
 | `goGribV2.sh` | Baixar GFS do NOMADS para a data local | `wget` |
-| `remove_GRIBS_antigos.sh` | Remover GRIB e produtos com mais de 2 dias | `rm`, `date` |
+| `remove_GRIBS_antigos.sh` | Remover GRIB e produtos do dia `hoje - 2` (corrigido na Fase 2) | `rm`, `date` |
 | `bash/automatizacao_controle_MET.sh` | Orquestrar os produtos automáticos do dia | Wrappers de mapas/matrizes |
 | `bash/automatiza_MET.sh` | Validar argumentos e chamar produtos escalares | `python3` |
 | `bash/automatiza_vento_MET.sh` | Validar argumentos e chamar produtos de vento | `python3` |
-| `bash/reqs_MAN_MET.sh` | CLI posicional para requisições manuais | `executa_reqs_param.py` |
-| `METARpy/automatizaMetar.sh` | Criar diretório do dia e rodar coleta/tradução | `METARpy.py`, `METARpy_traduzido.py` |
+| `bash/reqs_MAN_MET.sh` | Wrapper fino do CLI manual com `argparse` | `executa_reqs_param.py` |
+| `METARpy/automatizaMetar.sh` | Criar diretório UTC e rodar coleta/tradução | `METARpy.py`, `METARpy_traduzido.py` |
 
-Os wrappers automáticos usam **posição fixa dos argumentos**. Eles não usam `getopt`/`argparse` e não validam todas as combinações. Isso é relevante para os bugs D-05 e D-14 em [05-diagnostico.md](05-diagnostico.md).
+Os wrappers automáticos usam `set -euo pipefail` e validam variável, nível,
+região e coordenadas. O CLI manual usa `argparse` e aceita flags em qualquer
+ordem desde a Fase 2 (D-05/D-14 corrigidos).
 
 ### 3.2 Núcleo Python
 
@@ -240,19 +248,19 @@ flowchart TD
 |---|---|---|
 | Download GFS | NOMADS indisponível, ciclo ainda não publicado, disco cheio | `gribs/` incompleto; produtos posteriores falham ou ficam ausentes |
 | Leitura GRIB | Arquivo corrompido, resolução ausente, caminho errado | `pygrib` lança exceção; script termina com traceback |
-| Seleção de ciclo | Hora local na primeira hora do ciclo | Produto rotulado com ciclo novo, mas dados do ciclo anterior (D-04) |
-| Processamento | Variável/nível sem correspondência | Lista vazia; em alguns casos, `IndexError` ou `AttributeError` |
+| Seleção de ciclo | Hora local na primeira hora do ciclo | Corrigido na Fase 1; se regredir, produto rotulado com ciclo novo pode conter dados do anterior |
+| Processamento | Variável/nível sem correspondência | Validação clara no AUT/MAN; mensagens específicas para `umidadeRel -ns`, `chuva` e `MN` |
 | Geração de mapa | Basemap/dependência ausente, região inválida | Exceção; PNG não é gerado |
-| Geração de matriz | Diretório de saída inexistente ou sem barra final | CSV em caminho inesperado ou exceção |
-| METAR | `PythonMETAR` ausente, estação indisponível, JSON inválido | Coleta parcial, arquivo concatenado ou exceção |
-| Limpeza | Virada de mês/ano | Retenção cresce; dados antigos não são removidos (D-10) |
+| Geração de matriz | Diretório de saída inexistente ou sem barra final | CLI valida o diretório e normaliza a barra final |
+| METAR | `PythonMETAR` ausente, estação indisponível, JSON inválido | Coleta parcial ou exceção; escrita nova é atômica e UTC (Fase 2) |
+| Limpeza | Virada de mês/ano | Corrigida na Fase 2 com `date -d "-2 days"`; testar com overrides |
 
 ## 8. Limitações e dívida técnica
 
-- Não há `README` na raiz, `requirements.txt`, `pyproject.toml`, testes, lint ou CI; esta entrega adiciona somente `docs/`.
-- Não há logging estruturado; a maioria dos scripts usa `print` e deixa exceções subirem.
-- Não há `set -e`/`set -u` nos scripts shell; falhas intermediárias podem passar despercebidas.
-- Há arquivos residuais: `classes_MET/controla_env.pyc` (Python 2.7), dois arquivos `.swp` do Vim, `bash/tstbash.sh`, `bash/tst.txt`, `variable_inside_list.txt`, `variables.txt`, `varMET`, `varPythonGrib`.
+- Não há `README` na raiz, `requirements.txt`, `pyproject.toml`, lint ou CI; esta entrega adiciona somente `docs/` e `tests/`.
+- Não há logging estruturado; a maioria dos scripts usa `print` e deixa exceções subirem. Logging/lock é D-20 (Fase 3).
+- Os wrappers foram endurecidos com `set -euo pipefail` na Fase 2; `goGribV2.sh` permanece congelado e fora desse tratamento.
+- Há arquivos residuais: `classes_MET/controla_env.pyc` (Python 2.7), dois arquivos `.swp` do Vim, `bash/tstbash.sh`, `bash/tst.txt`, `variable_inside_list.txt`, `variables.txt`, `varMET`, `varPythonGrib` (D-19, Fase 3).
 - O vendor `METARpy` ocupa aproximadamente 71 MB e inclui duas árvores (`PythonMETAR-1.0.0.1` e `python-metar-master`).
 - Não há versionamento Git neste diretório.
 - O código usa nomes e unidades heterogêneos (`hPa`, `feet`, `m`, `kt`, `ms**-1`) sem metadados nos CSV.

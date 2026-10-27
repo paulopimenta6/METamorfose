@@ -1,13 +1,13 @@
 # servidor_MET — documentação técnica
 
-Documentação do sistema batch `servidor_MET`, produzida a partir do código e dos dados presentes neste diretório em **19/10/2026**.
+Documentação do sistema batch `servidor_MET`, produzida a partir do código e dos dados presentes neste diretório em **19/10/2026** e atualizada após as Fases 0, 1 e 2.
 
 > **Escopo e limites desta entrega**
 >
 > - Formato: somente Markdown. Os diagramas usam blocos Mermaid e não geram imagens.
-> - Os documentos 01–08 descrevem o código original em `main`, **antes** das correções da Fase 1.
-> - A Fase 1 foi executada no worktree `METamorfose`, branch `execucao`; o resultado está em [09-fase-1-resultados.md](09-fase-1-resultados.md). O checkout principal e `/media/MET` permanecem sem as correções.
-> - O diagnóstico descreve o comportamento original, inclusive os defeitos. As correções C-05, C-03, C-01, C-02 e C-04 já foram implementadas e validadas na branch `execucao`; os demais itens continuam recomendações.
+> - Os documentos 01–08 descrevem o código original em `main`, **antes** das correções da Fase 1. As seções de estado e os documentos 09/10 registram o que mudou na branch `execucao`.
+> - A Fase 1 foi executada no worktree `METamorfose`, branch `execucao`; o resultado está em [09-fase-1-resultados.md](09-fase-1-resultados.md). A Fase 2 está em [10-fase-2-resultados.md](10-fase-2-resultados.md). O checkout principal e `/media/MET` permanecem sem as correções.
+> - O diagnóstico descreve o comportamento original, inclusive os defeitos. As correções das Fases 1 e 2 já foram implementadas e validadas na branch `execucao`; os itens da Fase 3 continuam recomendações.
 > - O diretório `gribs/`, `mapasGrib/` e `matrizGrib/` deste checkout está vazio; a documentação dos produtos GFS foi feita pelo código, pelos scripts e por uma amostra real de GFS 0.25°. Os dados METAR históricos estão presentes.
 
 ## O que é o sistema
@@ -53,6 +53,7 @@ O sistema **não é** um serviço HTTP/API, não usa banco de dados, fila, cache
 | [07-fase-0-baseline.md](07-fase-0-baseline.md) | Backup, snapshot Git, amostra real de GFS, harness e baseline da Fase 0 |
 | [08-contratos-e-consumidores.md](08-contratos-e-consumidores.md) | Contratos de CSV/JSON, headers, unidades, ordem das linhas e consumidores |
 | [09-fase-1-resultados.md](09-fase-1-resultados.md) | Correções C-05/C-03/C-01/C-02/C-04, testes T-01–T-05, reprocessamento e validação independente |
+| [10-fase-2-resultados.md](10-fase-2-resultados.md) | Correções C-06/C-07 e D-05–D-28 da Fase 2, testes T-06–T-12 e validação independente |
 
 ## Fase 0 — preparação
 
@@ -91,6 +92,26 @@ tag `fase-0-concluida`:
 - baseline e `goGribV2.sh` intactos.
 
 Resultado detalhado: [09-fase-1-resultados.md](09-fase-1-resultados.md).
+
+## Fase 2 — produtos, CLI e METAR
+
+A Fase 2 foi executada no mesmo worktree, sobre o commit `9288c1f`:
+
+- C-06: `umidadeRel -ns` substituído por `-n 850`; `-ns` retorna erro claro;
+- C-07: `winds -ns` ativado no controlador; bloco duplicado de 1000/200 removido;
+- D-07/D-08: JSON METAR com escrita atômica e timestamp UTC com rollover;
+- D-09: intervalo MAN aceita as duas ordens e devolve níveis crescentes;
+- D-10: limpeza usa `date -d "-2 days"` e remove `0p25`, `1p00`, legados e produtos;
+- D-13/D-24/D-27: semântica de `chuvaNaoConvec`, rótulo `+6` e `temps` documentados sem renomear;
+- D-14/D-28: CLI MAN migrado para `argparse`; wrappers com `set -euo pipefail` e help;
+- D-15: chamada duplicada de `gera_matriz` removida;
+- D-17: checagem de nuvem corrigida para `is None`/`is not None`;
+- D-25: variáveis indefinidas do shell METAR removidas;
+- **154 testes verdes**, incluindo **28 testes de aceitação** T-06 a T-12;
+- validação independente com **169 verificações e 0 falhas**;
+- 20 produtos da Fase 1 preservados e `goGribV2.sh` congelado.
+
+Resultado detalhado: [10-fase-2-resultados.md](10-fase-2-resultados.md).
 
 ## Diagrama de contexto
 
@@ -139,32 +160,44 @@ flowchart LR
 
 ## Estado atual e riscos principais
 
-A lista completa, com evidências e recomendações, está em [05-diagnostico.md](05-diagnostico.md). Os riscos que mais afetam a confiança nos dados são:
+A lista completa, com evidências e recomendações, está em [05-diagnostico.md](05-diagnostico.md). O estado por fase é:
+
+| Fase | Escopo | Estado |
+|---|---|---|
+| 0 | Backup, baseline, harness e Git | Concluída |
+| 1 | D-01, D-02, D-03, D-04, D-12 (C-01–C-05) | Concluída e validada |
+| 2 | D-05, D-06, D-07, D-08, D-09, D-10, D-13, D-14, D-15, D-17, D-24, D-25, D-27, D-28 | Concluída e validada |
+| 3 | D-16, D-18, D-19, D-20, D-21, D-22, D-23, D-26 | Pendente |
+| 4 | Reprocessamento amplo, validação com consumidores e rollout | Pendente |
+
+Riscos que ainda exigem atenção operacional:
 
 | ID | Severidade | Achado | Efeito prático |
 |---|---|---|---|
-| D-01 | Crítica | Mapas e matrizes invertem a ordem das latitudes sem inverter os dados | Valores do norte aparecem no sul e vice-versa em todos os produtos GFS |
-| D-02 | Crítica | Mapas de vento superficial e matriz do preditor usam U no lugar de V | Vetores e coluna V ficam errados; a matriz BlueSky usa o V correto |
-| D-03 | Crítica | Altura de vento superficial convertida como se fosse pressão | Ventos de 20–80 m são gravados como 55.696–76.487 ft no BlueSky |
-| D-04 | Alta | Seleção do ciclo GFS usa o ciclo anterior na primeira hora de cada ciclo | Produto rotulado `06` pode conter dados de `00`; idem `12`/`06` e `18`/`12` |
-| D-05 | Alta | Chamadas de vento superficial e bloco duplicado são no-op | `winds` sem `-ns` e chamadas de 1000/200 sem `-v` não executam nada; os ventos em pressão das linhas 20-24 são gerados |
-| D-06 | Alta | Umidade relativa superficial não gera saída | A chamada `umidadeRel -ns` existe, mas a lista de campos fica vazia |
-| D-07 | Alta | JSONs METAR são abertos em modo append sem separador | 12 arquivos do checkout são JSON inválido por concatenação |
+| D-16 | Baixa | Controlador termina com `exit 1` em sucesso | O código de saída não pode ser usado como sinal de sucesso; validar pelos produtos até a Fase 3 |
+| D-18/D-20 | Baixa/Média | Caminho/região sem sanitização e sem logging/lock | Uso concorrente ou caminho malformado pode causar falha silenciosa ou arquivo fora do esperado |
+| D-26 | Baixa | Figuras e GRIBs não são fechados explicitamente | Consumo de memória/file descriptors em lotes grandes |
+| D-07 | Alta (histórico) | 12 JSONs METAR antigos concatenados | Novas execuções são atômicas, mas o acervo antigo precisa de reparo/descarte |
+| — | Operacional | Retenção de 2 dias sem quota | Disco pode encher; monitore o espaço |
+
+Os riscos críticos e altos do código original (D-01 a D-08, exceto D-07 histórico) estão corrigidos nas Fases 1 e 2.
 
 ## Inventário rápido
 
 | Caminho | Papel |
 |---|---|
-| `goGribV2.sh` | Download dos GFS para `gribs/AAAAMMDD/CC/` |
-| `remove_GRIBS_antigos.sh` | Limpeza de GRIB e produtos com mais de 2 dias (com bug de virada de mês) |
-| `bash/automatizacao_controle_MET.sh` | Orquestrador dos produtos automáticos |
-| `bash/automatiza_MET.sh` | Wrapper dos produtos escalares |
-| `bash/automatiza_vento_MET.sh` | Wrapper dos produtos de vento |
-| `bash/reqs_MAN_MET.sh` | CLI posicional do fluxo manual |
+| `goGribV2.sh` | Download dos GFS para `gribs/AAAAMMDD/CC/` (congelado) |
+| `remove_GRIBS_antigos.sh` | Limpeza de GRIB e produtos do dia `hoje - 2` (corrigida na Fase 2) |
+| `bash/automatizacao_controle_MET.sh` | Orquestrador dos produtos automáticos (ainda com D-16) |
+| `bash/automatiza_MET.sh` | Wrapper dos produtos escalares, com validação |
+| `bash/automatiza_vento_MET.sh` | Wrapper dos produtos de vento, com validação |
+| `bash/reqs_MAN_MET.sh` | Wrapper fino do CLI manual; o parser é `argparse` |
 | `classes_MET/` | Núcleo de leitura, seleção, mapas e matrizes |
-| `METARpy/` | Coleta e tradução METAR; inclui vendor `PythonMETAR` |
+| `METARpy/` | Coleta e tradução METAR com escrita atômica; inclui vendors |
 | `environment/path.conf` | Diretórios de GRIB, mapas e matrizes |
 | `gribs/`, `mapasGrib/`, `matrizGrib/` | Dados operacionais (vazios neste checkout) |
+| `tests/` | Harness e testes de aceitação das Fases 0–2 |
+| `reprocessamento/` | Amostra reprocessada e validadores independentes |
 
 ## Execução resumida
 
@@ -189,7 +222,7 @@ cd /media/MET/servidor_MET/bash
 cd /media/MET/servidor_MET/METARpy
 ./automatizaMetar.sh
 
-# 5. Limpeza (executar com cautela; ver bug de virada de mês)
+# 5. Limpeza (executar com cautela; remove o dia hoje - 2)
 cd /media/MET/servidor_MET
 ./remove_GRIBS_antigos.sh
 ```

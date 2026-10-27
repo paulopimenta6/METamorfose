@@ -1,7 +1,7 @@
 # Plano de melhorias e auditoria de variáveis — servidor_MET
 
-**Status:** Fase 1 executada no worktree `METamorfose` (branch `execucao`); Fases 2–4 pendentes.
-**Data:** 23/10/2026; execução da Fase 1 registrada em 27/10/2026.
+**Status:** Fases 1 e 2 executadas no worktree `METamorfose` (branch `execucao`); Fases 3–4 pendentes.
+**Data:** 23/10/2026; execuções das Fases 1 e 2 registradas em 27/10/2026.
 **Escopo:** conclusões sobre nomenclatura e semântica das variáveis, revisão da orientação norte-sul e plano priorizado de correções do `servidor_MET`.
 
 > **Restrições obrigatórias**
@@ -9,7 +9,7 @@
 > - A aquisição GRIB permanece congelada: `goGribV2.sh`, ciclos `00/06/12/18`, previsões `f000/f006/f012/f018`, resoluções `0p25`/`1p00`, URLs e escopo não mudam.
 > - Nenhuma variável ou produto será renomeado, removido ou adicionado.
 > - Nomes de colunas, schemas e contratos existentes serão preservados, salvo decisão explícita em contrário.
-> - Este documento é um plano. A Fase 1 foi executada conforme a ordem e os critérios abaixo; o registro está em [09-fase-1-resultados.md](09-fase-1-resultados.md). As fases seguintes dependem de aprovação.
+> - Este documento é um plano. As Fases 1 e 2 foram executadas conforme a ordem e os critérios abaixo; os registros estão em [09-fase-1-resultados.md](09-fase-1-resultados.md) e [10-fase-2-resultados.md](10-fase-2-resultados.md). As fases 3–4 dependem de aprovação.
 
 ---
 
@@ -105,11 +105,11 @@ O nome `temps` é coerente com “temperatura de superfície”, mas ambíguo pa
 
 ### 3.5 `umidadeRel` — nome correto, uso inválido em superfície
 
-O mapeamento atual só tem `Relative humidity` em `isobaricInhPa` (150–1000 hPa). Não existe campo superficial mapeado para `umidadeRel`.
+O mapeamento só tem `Relative humidity` em `isobaricInhPa` (150–1000 hPa). Não existe campo superficial mapeado para `umidadeRel`.
 
-O controlador chama `umidadeRel -ns` em `bash/automatizacao_controle_MET.sh:52` e `:57`. No AUT, a lista de superfície fica vazia e nenhum produto é gerado. No MAN, o atributo de superfície não é criado e o acesso pode levantar `AttributeError`.
+O controlador original chamava `umidadeRel -ns`. No AUT, a lista de superfície ficava vazia e nenhum produto era gerado. No MAN, o atributo de superfície não era criado e o acesso podia levantar `AttributeError`.
 
-**Decisão:** manter o nome `umidadeRel`. Corrigir o uso: remover as chamadas `-ns` do controlador ou falhar com mensagem clara. `umidadeRel -n 850` continua válido.
+**Decisão:** manter o nome `umidadeRel`. **Correção aplicada na Fase 2:** o controlador usa `-n 850` e o código falha com mensagem clara para `-ns`; `umidadeRel -n 850` continua válido.
 
 ### 3.6 `nuvem`, `uSupe` e `vSupe`
 
@@ -411,18 +411,30 @@ if not (ciclo <= hora_int < proximo):
 
 **Problema:** o mapeamento de `umidadeRel` só tem `Relative humidity` em `isobaricInhPa`. Com `-ns`, o AUT não encontra campo superficial e não gera produto; o MAN pode levantar `AttributeError`.
 
-**Correção:** remover as duas chamadas `-ns` do controlador ou fazer o código falhar com mensagem clara. O nome `umidadeRel` permanece. `umidadeRel -n 850` continua funcionando.
+**Correção aplicada:** as duas chamadas `-ns` foram substituídas por `-n 850` no controlador. O nome `umidadeRel` permanece. O AUT e o MAN validam o tipo de nível antes de ler o GRIB; `-ns` falha com mensagem que indica `-n 850`, sem criar produto vazio nem `AttributeError`.
 
 **Teste:**
 
-- `umidadeRel -ns` não gera produto silenciosamente; deve ser removido do controlador ou retornar erro claro.
-- `umidadeRel -n 850` gera CSV/PNG com valores entre 0 e 100.
+- `umidadeRel -ns` retorna erro claro e não gera produto.
+- `umidadeRel -n 850` gera CSV/PNG com valores entre 0 e 100; o controlador usa esse nível.
 
-### C-07 — Ativação de `winds` (D-05) — pendente
+**Resultado (Fase 2):** concluído. `tests/test_phase2_acceptance.py` verifica a mensagem, a ausência de saída e o produto em 850 hPa.
 
-O controlador tem chamadas de `winds` sem `-ns` e um bloco duplicado de `wind` em 1000/200 hPa (`bash/automatizacao_controle_MET.sh:17-18,62-65`). Essas chamadas são no-op.
+### C-07 — Ativação de `winds` (D-05)
 
-**Decisão:** não ativar `winds` no controlador antes de C-01, C-02 e C-03 estarem corrigidos e testados. A ativação é uma decisão separada, depois da Fase 1.
+O controlador tinha chamadas de `winds` sem `-ns` e um bloco duplicado de `wind` em 1000/200 hPa (`bash/automatizacao_controle_MET.sh:17-18,62-65`). Essas chamadas eram no-op.
+
+**Decisão:** ativar `winds` somente depois de C-01, C-02 e C-03 estarem corrigidos e testados, como ocorreu na Fase 1.
+
+**Correção aplicada:** o controlador chama `winds -ns` para SP e RJ, mantém um único bloco de `wind` em 1000/200 hPa e os wrappers rejeitam chamadas sem `-v` ou sem `-n`/`-ns`. Os produtos de `winds` usam U/V reais, `hMET` em metros × 3,28084 e `angMET` em `[0, 360)`.
+
+**Teste:**
+
+- Os mapas de 20/30/40/50/80 m e as matrizes BlueSky/preditor são gerados;
+- `hMET` de 20 m ≈ 65,6 ft e de 80 m ≈ 262,5 ft;
+- não há chamada no-op nem bloco duplicado no controlador.
+
+**Resultado (Fase 2):** concluído; a validação independente compara os produtos `winds` com `pygrib` em T-07.
 
 ---
 
@@ -486,6 +498,14 @@ Itens:
 
 **Critério de saída:** T-06 a T-12 passam; METAR válido; CLI com erros claros; produtos automáticos completos.
 
+**Resultado (27/10/2026):** concluída na branch `execucao`, sobre o commit
+`9288c1f`. T-06 a T-12 estão verdes em `tests/test_phase2_acceptance.py`
+(28 testes); a suíte completa tem 154 testes; a validação independente em
+`reprocessamento/validar_fase2.py` executou 169 verificações com 0 falhas. Os
+produtos da Fase 1 foram preservados, `goGribV2.sh` continua congelado e os
+nomes de variáveis, produtos, headers e schemas não mudaram. Detalhes em
+[10-fase-2-resultados.md](10-fase-2-resultados.md).
+
 ### Fase 3 — Robustez e operação
 
 **Objetivo:** reduzir falhas silenciosas e facilitar manutenção.
@@ -531,7 +551,7 @@ Itens:
 | D-02 | Crítica | V recebe U no vento superficial | Corrigir | 1 |
 | D-03 | Crítica | `hMET` de `winds` calculado como pressão | Corrigir | 1 |
 | D-04 | Alta | Ciclo anterior na primeira hora | Corrigir | 1 |
-| D-05 | Alta | `winds` e bloco duplicado no-op | Corrigir controlador; ativar após Fase 1 | 2 |
+| D-05 | Alta | `winds` e bloco duplicado no-op | Corrigir controlador; ativar após Fase 1 (feito na Fase 2) | 2 |
 | D-06 | Alta | `umidadeRel -ns` sem produto | Corrigir uso | 2 |
 | D-07 | Alta | JSON METAR concatenado | Corrigir | 2 |
 | D-08 | Alta | Timestamp METAR com ano/mês correntes | Corrigir | 2 |
@@ -560,23 +580,23 @@ Itens:
 
 ## 8. Testes de aceitação
 
-| ID | Teste | Critério |
-|---|---|---|
-| T-01 | Orientação N-S | Ponto conhecido do GRIB confere com o CSV; mapa não espelhado; primeira linha = menor latitude |
-| T-02 | U/V | U/V puros e diagonais; coluna `vento V` correta; resultante correta |
-| T-03 | `hMET`/`halt` | 20 m → 65,6 ft; 80 m → 262,5 ft; 500 hPa inalterado |
-| T-04 | `angMET` | Quatro quadrantes em `[0, 360)` |
-| T-05 | Ciclo | Fronteiras 05:59/06:00, 11:59/12:00, 17:59/18:00, 23:59/00:00 |
-| T-06 | `umidadeRel` | `-ns` removido ou erro claro; `-n 850` funciona |
-| T-07 | `winds` | Produto gerado após ativação; mapas e matrizes presentes; sem no-op |
-| T-08 | METAR | JSON válido; sem concatenação; timestamp UTC com rollover |
-| T-09 | Intervalo MAN | `200→500` e `500→200` produzem a mesma lista; nível inválido falha claramente |
-| T-10 | Limpeza | 01/03, 02/03 e 15/03 removem o dia correto; `0p25`, `1p00` e legados |
-| T-11 | CLI | `-v chuva` e região `MN` retornam erro claro; argumento duplicado não desloca posições |
-| T-12 | Visibilidade METAR | Classificação correta quando `nuvem` está ausente ou presente |
-| T-13 | Sanitização | Caminho de saída e região não permitem traversal; arquivos no lugar esperado |
-| T-14 | Atomicidade | Falha no meio da escrita não deixa CSV/JSON parcial; lock evita execução concorrente |
-| T-15 | Recursos | Figuras e GRIBs fechados; memória estável em lote |
+| ID | Teste | Critério | Estado |
+|---|---|---|---|
+| T-01 | Orientação N-S | Ponto conhecido do GRIB confere com o CSV; mapa não espelhado; primeira linha = menor latitude | Verde (Fase 1) |
+| T-02 | U/V | U/V puros e diagonais; coluna `vento V` correta; resultante correta | Verde (Fase 1) |
+| T-03 | `hMET`/`halt` | 20 m → 65,6 ft; 80 m → 262,5 ft; 500 hPa inalterado | Verde (Fase 1) |
+| T-04 | `angMET` | Quatro quadrantes em `[0, 360)` | Verde (Fase 1) |
+| T-05 | Ciclo | Fronteiras 05:59/06:00, 11:59/12:00, 17:59/18:00, 23:59/00:00 | Verde (Fase 1) |
+| T-06 | `umidadeRel` | `-ns` falha claramente; `-n 850` funciona | Verde (Fase 2) |
+| T-07 | `winds` | Produto gerado após ativação; mapas e matrizes presentes; sem no-op | Verde (Fase 2) |
+| T-08 | METAR | JSON válido; sem concatenação; timestamp UTC com rollover | Verde (Fase 2) |
+| T-09 | Intervalo MAN | `200→500` e `500→200` produzem a mesma lista; nível inválido falha claramente | Verde (Fase 2) |
+| T-10 | Limpeza | 01/03, 02/03 e 15/03 removem o dia correto; `0p25`, `1p00` e legados | Verde (Fase 2) |
+| T-11 | CLI | `-v chuva` e região `MN` retornam erro claro; argumento duplicado não desloca posições | Verde (Fase 2) |
+| T-12 | Visibilidade METAR | Classificação correta quando `nuvem` está ausente ou presente | Verde (Fase 2) |
+| T-13 | Sanitização | Caminho de saída e região não permitem traversal; arquivos no lugar esperado | Pendente (Fase 3) |
+| T-14 | Atomicidade | Falha no meio da escrita não deixa CSV/JSON parcial; lock evita execução concorrente | Pendente (Fase 3) |
+| T-15 | Recursos | Figuras e GRIBs fechados; memória estável em lote | Pendente (Fase 3) |
 
 **Verificação transversal de contrato:** antes/depois, comparar headers e nomes de variáveis/produtos. Nenhum nome deve mudar. A coluna `lat` já é crescente; a correção deve preservar a ordem das linhas e alinhar os dados à latitude.
 
@@ -595,7 +615,7 @@ Itens:
 
 - Implementar em branch/worktree separado, se possível.
 - Reprocessar em diretório separado (`reprocessamento/`), sem sobrescrever a série antiga.
-- Rodar T-01 a T-15.
+- Rodar os testes da fase (T-01–T-05 na Fase 1; T-06–T-12 na Fase 2; T-13–T-15 na Fase 3).
 - Comparar pontos conhecidos com `pygrib` e com METAR/estações.
 
 ### 9.3 Depois
@@ -607,10 +627,11 @@ Itens:
 
 ### 9.4 Rollback
 
-- Restaurar o backup do código.
-- Restaurar a configuração.
+- Restaurar o backup do código e a configuração.
 - Voltar a apontar os consumidores para os produtos antigos.
-- Não executar `remove_GRIBS_antigos.sh` até D-10 estar corrigido.
+- Reverter o commit da fase no branch `execucao`; o baseline da Fase 0 e os produtos de `reprocessamento/` são imutáveis e servem de referência.
+- A limpeza já está corrigida (D-10), mas continua sendo `rm -rf`: testar com `MET_BASE_DIR`/`MET_HOJE` antes de executar em produção.
+- Não reverter `goGribV2.sh`; ele permanece congelado em todas as fases.
 
 ---
 
@@ -618,14 +639,15 @@ Itens:
 
 | Tema | Risco | Decisão atual |
 |---|---|---|
-| `chuvaNaoConvec` | Consumidores interpretarem como chuva não convectiva | Manter nome; documentar que é precipitação total; não alterar seletor |
-| `temps` | Consumidores esperarem temperatura do ar a 2 m | Manter nome; documentar que é temperatura de pele; não alterar seletor |
-| `winds` | Ativar produto antes das correções de U/V e `hMET` | Ativar somente após Fase 1 |
-| Header `nivel<hPa>` | Valor em metros para `winds` | Manter header; documentar; schema v2 se necessário |
-| Ordem dos CSVs | Consumidores podem assumir que a coluna `lat` é crescente, mas os dados atuais estão desalinhados | Preservar a ordem crescente e alinhar os dados; comunicar somente se a ordem mudar |
-| METAR | Chaves com espaço final e JSON concatenado | Preservar chaves; corrigir escrita; versionar se necessário |
-| `goGribV2.sh` | Alteração acidental da aquisição | Congelado; nenhuma mudança |
-| Falta de Git | Perda de histórico/rollback | Backup obrigatório antes da Fase 1 |
+| `chuvaNaoConvec` | Consumidores interpretarem como chuva não convectiva | Nome e seletor mantidos; documentado como precipitação total, inclusive o rótulo `+6` (Fase 2) |
+| `temps` | Consumidores esperarem temperatura do ar a 2 m | Nome e seletor mantidos; documentado como temperatura de pele (Fase 2) |
+| `winds` | Produto gerado com U/V ou `hMET` errados | Ativado na Fase 2 somente após as correções da Fase 1; validado contra `pygrib` |
+| Header `nivel<hPa>` | Valor em metros para `winds` | Mantido e documentado; schema v2 continua sendo decisão separada |
+| Ordem dos CSVs | Consumidores podem assumir que a coluna `lat` é crescente, mas os dados originais estavam desalinhados | Ordem crescente preservada e dados alinhados desde a Fase 1 |
+| METAR | Chaves com espaço final e arquivos históricos inválidos | Chaves preservadas; escrita atômica e UTC desde a Fase 2; acervo antigo requer reparo/descarte |
+| `goGribV2.sh` | Alteração acidental da aquisição | Congelado; SHA-256 verificado na validação da Fase 2 |
+| Git | Perda de histórico/rollback | Histórico existe desde a Fase 0; commits por fase e baseline imutável |
+| `exit 1` do controlador | Interpretar sucesso como falha | D-16 permanece na Fase 3; validar pelos produtos enquanto isso |
 
 ---
 
@@ -636,6 +658,10 @@ Itens:
 - `docs/03-dados-e-saidas.md` — catálogo, níveis, schemas e unidades.
 - `docs/04-operacao.md` — cron, comandos e runbook.
 - `docs/05-diagnostico.md` — evidências completas D-01 a D-28.
+- `docs/09-fase-1-resultados.md` — resultados e testes T-01–T-05.
+- `docs/10-fase-2-resultados.md` — resultados e testes T-06–T-12.
+- `tests/test_phase1_acceptance.py`, `tests/test_phase2_acceptance.py` — testes de aceitação.
+- `reprocessamento/validar_fase1.py`, `reprocessamento/validar_fase2.py` — validação independente.
 - `classes_MET/processamento_dados_MET.py` — dicionário de variáveis e seleção de níveis.
 - `classes_MET/gera_mapas_MET.py`, `gera_matriz_MET.py` — produtos escalares AUT.
 - `classes_MET/gera_mapas_vento_MET.py`, `gera_matriz_vento_MET.py` — vento AUT.

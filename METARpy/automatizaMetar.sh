@@ -1,23 +1,20 @@
 #!/bin/bash
+#
+# Coleta os METAR de todas as estacoes e grava um JSON bruto e um traduzido.
+# A referencia UTC e calculada uma unica vez e compartilhada com o Python,
+# garantindo que diretorio e nomes de arquivo usem o mesmo instante.
 
-data_ano=`date +"%Y"`
-data_mes=`date +"%m"`
-data_dia=`date +"%d"`
-dir="/media/MET/servidor_MET/METARpy"     
-dirMetarJson=${data_ano}${data_mes}${data_dia}${data_hora}${data_min}
+set -euo pipefail
 
-cd ${dir}
-if test -d ${dir}/${dirMetarJson}
-then 
-    echo "O diretorio existe"
-    cd ${dir}/${dirMetarJson}
-    python3 ../METARpy.py
-    python3 ../METARpy_traduzido.py
-else
-    echo "O diretorio nao existe..."
-    echo "Criando diretorio..."
-    mkdir ${dir}/${dirMetarJson}
-    cd ${dir}/${dirMetarJson}
-    python3 ../METARpy.py
-    python3 ../METARpy_traduzido.py
-fi
+REFERENCIA_UTC="${METAR_REFERENCIA_UTC:-$(date -u +%Y%m%d%H%M)}"
+export METAR_REFERENCIA_UTC="${REFERENCIA_UTC}"
+
+dir="${METAR_BASE_DIR:-/media/MET/servidor_MET/METARpy}"
+dirMetarJson="${dir}/${REFERENCIA_UTC:0:8}"
+
+mkdir -p "${dir}" "${dirMetarJson}"
+cd "${dirMetarJson}"
+
+echo "Coletando METAR com referencia UTC ${REFERENCIA_UTC}"
+python3 ../METARpy.py
+python3 ../METARpy_traduzido.py

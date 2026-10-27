@@ -1,53 +1,32 @@
-#from decodMETAR import decodMetar
-from GoMETAR import pegaMETAR
-from datetime import datetime
-import json
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""Coleta os METAR e grava o JSON bruto (um objeto por arquivo)."""
 
-#Aerodromos importantes para obter metar:
-#SP: SBGR
-#RJ: SBGL
-#CW: SBCT
-#PA: SBPA
-#BH: SBCF
-#Belem: SBBE
-#Manaus: SBBEG
-#Recife: SBRF
-#Fortaleza: SBFZ
+from __future__ import annotations
 
-dict_aerodromos={"SP": "SBGR", # Aeroporto de Guarulhos
-                 "RJ": "SBGL", # Aeroporto do Galeao
-                 "CW": "SBCT", # Aeroporto de Curitiba
-                 "PA": "SBPA", # Aeroporto de Porto Alegre
-                 "BH": "SBCF", # Aeroporto de Belo Horizonte
-                 "BE": "SBBE", # Aeroporto de Belem
-                 "MA": "SBEG",# Aeroporto de Manaus
-                 "RF": "SBRF", # Aeroporto de Recife
-                 "FZ": "SBFZ", # Aeroporto de Fortaleza
-}
+import sys
 
-def cria_json_metar(sigla, data, mens):
+from metar_common import cria_dict_metar_bruto, executa_estacoes
 
-    dict_metar={}
-    dict_metar["data"]=[]
-    dict_metar["data"].append({
-    "id_localidade ": sigla,
-    "data ": data,
-    "mensagem_metar ": mens
-    })
 
-    print(dict_metar)    
-    y=json.dumps(dict_metar)
-    arquivo = open(sigla + data + ".json", "a")
-    arquivo.write(y)
+def _cria_dict(sigla, data, cod, mensagem):
+    # Mantem a assinatura comum (sigla, data, cod, mensagem); o JSON bruto
+    # depende apenas dos tres primeiros campos relevantes.
+    return cria_dict_metar_bruto(sigla, data, mensagem)
 
-for siglaReg in dict_aerodromos:
-    codMetar=pegaMETAR(dict_aerodromos[siglaReg])
-    siglaMETAR=codMetar.imprime_aerodromo()
-    mensMETAR=codMetar.imprime_metar()  
 
-    dataMETAR=codMetar.imprime_data()
-    dataPy=datetime.now().strftime("%Y%m")
-    data=dataPy + dataMETAR[0] + dataMETAR[1] + dataMETAR[2]    
+def main(fabrica_metar=None, referencia=None, diretorio=None):
+    if fabrica_metar is None:
+        from GoMETAR import pegaMETAR as fabrica_metar
 
-    cria_json_metar(siglaMETAR, data ,mensMETAR)
+    return executa_estacoes(
+        fabrica_metar,
+        _cria_dict,
+        sufixo="",
+        referencia=referencia,
+        diretorio=diretorio,
+    )
 
+
+if __name__ == "__main__":
+    sys.exit(main())
