@@ -21,7 +21,7 @@ Gera mapas e matrizes de vento do fluxo automatico (AUT).
 Opcoes:
   -h, --help       Mostra esta ajuda.
   -v VARIAVEL      wind (nivel de pressao) ou winds (superficie).
-  -n NIVEL         Nivel de pressao em hPa (para wind).
+  -n NIVEL         Nivel de pressao em hPa (para wind, 150 a 1000).
   -ns              Nivel de superficie (para winds).
   -r REGIAO        Regiao predefinida.
   -ll LON LAT      Regiao definida por longitude e latitude.
@@ -151,7 +151,7 @@ if [ "${variavel}" = "winds" ]; then
 else
     [ "${modo_nivel}" = "pressao" ] || erro "'wind' e vento em nivel de pressao; use -n <hPa>"
     validalidade_numero "${nivel}" "nivel"
-    [ "${nivel}" -ge 1 ] && [ "${nivel}" -le 1000 ] || erro "nivel deve estar entre 1 e 1000 hPa"
+    [ "${nivel}" -ge 150 ] && [ "${nivel}" -le 1000 ] || erro "nivel deve estar entre 150 e 1000 hPa"
 fi
 
 if [ -n "${regiao}" ]; then

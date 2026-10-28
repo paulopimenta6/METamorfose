@@ -26,6 +26,7 @@ from phase0_harness import (
     run_man_bluesky,
     run_man_predi,
     run_man_wind_map,
+    run_scalar_map,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -228,6 +229,15 @@ def test_t06_wrapper_rejeita_umidade_rel_superficie(fake_python):
 
     assert resultado.returncode == 2
     assert "850" in resultado.stderr
+
+
+def test_t06_mapa_umidade_rel_850_nao_usa_rotulo_de_superficie(tmp_path):
+    _, plt = run_scalar_map(tmp_path, variable="umidadeRel", level=850)
+
+    assert plt.saved, "o mapa nao chamou savefig"
+    nome = Path(plt.saved[-1][0][0]).name
+    assert "_N850_umidadeRel_" in nome
+    assert "Nsuperficie" not in nome
 
 
 # ---------------------------------------------------------------------------
@@ -499,15 +509,27 @@ def test_t10_limpeza_remove_o_dia_correto(tmp_path, hoje, alvo):
         assert (tmp_path / diretorio / outra_data / "produto.txt").exists()
 
 
-def test_t10_data_alvo_invalida_retorna_erro(tmp_path):
+@pytest.mark.parametrize("data", ["2026-03-01", "20260231", "20260229"])
+def test_t10_data_alvo_invalida_retorna_erro(tmp_path, data):
     env = os.environ.copy()
     env["MET_BASE_DIR"] = str(tmp_path)
-    env["MET_DATA_ALVO"] = "2026-03-01"
+    env["MET_DATA_ALVO"] = data
 
     resultado = _executa(ROOT / "remove_GRIBS_antigos.sh", env=env)
 
     assert resultado.returncode == 2
     assert "data alvo invalida" in resultado.stderr
+
+
+def test_t10_data_de_referencia_invalida_retorna_erro(tmp_path):
+    env = os.environ.copy()
+    env["MET_BASE_DIR"] = str(tmp_path)
+    env["MET_HOJE"] = "20260231"
+
+    resultado = _executa(ROOT / "remove_GRIBS_antigos.sh", env=env)
+
+    assert resultado.returncode == 2
+    assert "data de referencia invalida" in resultado.stderr
 
 
 # ---------------------------------------------------------------------------
@@ -548,6 +570,48 @@ def test_t11_regiao_mn_falha_indicando_am(fake_python):
     assert resultado.returncode == 2
     assert "MN" in resultado.stderr
     assert "AM" in resultado.stderr
+
+
+@pytest.mark.parametrize(
+    "script,variavel",
+    [
+        ("automatiza_MET.sh", "temp"),
+        ("automatiza_vento_MET.sh", "wind"),
+    ],
+)
+def test_t11_wrapper_rejeita_nivel_abaixo_de_150(fake_python, script, variavel):
+    env, log = fake_python
+    resultado = _executa(BASH / script, "-v", variavel, "-n", "50", "-r", "SP", env=env)
+
+    assert resultado.returncode == 2
+    assert "150 e 1000" in resultado.stderr
+    assert not log.exists(), "o gerador nao deveria ser chamado"
+
+
+def test_t11_wrapper_aceita_nivel_150(fake_python):
+    env, log = fake_python
+    resultado = _executa(
+        BASH / "automatiza_MET.sh", "-v", "temp", "-n", "150", "-r", "SP", env=env
+    )
+
+    assert resultado.returncode == 0, resultado.stderr
+    assert log.read_text(encoding="utf-8").splitlines() == [
+        "gera_mapas_MET.py -v temp -n 150 -r SP",
+        "gera_matriz_MET.py -v temp -n 150 -r SP",
+    ]
+
+
+def test_t11_help_man_deriva_catalogo(cli_man, monkeypatch):
+    monkeypatch.setattr(cli_man, "VARIAVEIS_SUPERFICIE", ("sentinel_superficie",))
+    monkeypatch.setattr(cli_man, "VARIAVEIS_PRESSAO", ("sentinel_pressao",))
+    monkeypatch.setattr(cli_man, "VARIAVEIS_VENTO", ("vento_pressao", "vento_superficie"))
+
+    texto = cli_man.cria_parser().format_help()
+
+    assert "sentinel_superficie" in texto
+    assert "sentinel_pressao" in texto
+    assert "vento_pressao" in texto
+    assert "vento_superficie" in texto
 
 
 def test_t11_wrapper_man_nao_duplica_argumentos(fake_python, tmp_path):

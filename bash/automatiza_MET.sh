@@ -22,7 +22,7 @@ Gera mapas e matrizes do fluxo automatico (AUT) a partir dos GRIBs GFS.
 Opcoes:
   -h, --help       Mostra esta ajuda.
   -v VARIAVEL      Variavel MET (obrigatoria).
-  -n NIVEL         Nivel de pressao em hPa.
+  -n NIVEL         Nivel de pressao em hPa (150 a 1000).
   -ns              Nivel de superficie.
   -r REGIAO        Regiao predefinida.
   -ll LON LAT      Regiao definida por longitude e latitude.
@@ -172,7 +172,7 @@ fi
 
 if [ "${modo_nivel}" = "pressao" ]; then
     validalidade_numero "${nivel}" "nivel"
-    [ "${nivel}" -ge 1 ] && [ "${nivel}" -le 1000 ] || erro "nivel deve estar entre 1 e 1000 hPa"
+    [ "${nivel}" -ge 150 ] && [ "${nivel}" -le 1000 ] || erro "nivel deve estar entre 150 e 1000 hPa"
 fi
 
 if [ -n "${regiao}" ]; then

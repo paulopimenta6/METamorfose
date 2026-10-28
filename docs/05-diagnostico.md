@@ -4,7 +4,7 @@
 >
 > **Fase 1:** na branch `execucao`, **D-01, D-02, D-03, D-04 e D-12** foram corrigidos e validados com a amostra real. O resultado, os testes T-01–T-05 e o reprocessamento estão em [09-fase-1-resultados.md](09-fase-1-resultados.md).
 >
-> **Fase 2:** na mesma branch, foram corrigidos **D-05, D-06, D-07, D-08, D-09, D-10, D-13, D-14, D-15, D-17, D-24, D-25, D-27 e D-28** (C-06, C-07 e itens de produtos/CLI/METAR). Os testes T-06–T-12 estão verdes e a validação independente tem 169 verificações. O resultado está em [10-fase-2-resultados.md](10-fase-2-resultados.md). Continuam em aberto apenas os itens da Fase 3 e D-11 (congelado).
+> **Fase 2:** na mesma branch, foram corrigidos **D-05, D-06, D-07, D-08, D-09, D-10, D-13, D-14, D-15, D-17, D-24, D-25, D-27 e D-28** (C-06, C-07 e itens de produtos/CLI/METAR). Os testes T-06–T-12 estão verdes e a validação independente tem 177 verificações. O resultado está em [10-fase-2-resultados.md](10-fase-2-resultados.md). Continuam em aberto apenas os itens da Fase 3 e D-11 (congelado).
 
 ## 1. Sumário executivo
 
@@ -431,7 +431,7 @@ Executar o controlador em ambiente de teste e verificar que existem arquivos `Ca
 ### D-06 — Umidade relativa superficial não gera saída e quebra no MAN
 
 **Severidade**: Alta  
-**Status**: Corrigido na Fase 2 (C-06). O controlador usa `umidadeRel -n 850`; o AUT/MAN validam o tipo de nível e `-ns` retorna erro claro com sugestão de `-n 850`, sem `AttributeError`.
+**Status**: Corrigido na Fase 2 (C-06). O controlador usa `umidadeRel -n 850`; o AUT/MAN validam o tipo de nível e `-ns` retorna erro claro com sugestão de `-n 850`, sem `AttributeError`. O mapa preserva o nível `N850` no nome do produto; o gerador não força mais `Nsuperficie` para `umidadeRel`.
 
 #### Evidência
 
@@ -650,7 +650,7 @@ Aceitar as duas ordens e documentar que o resultado é sempre crescente.
 ### D-10 — Limpeza calcula a data errada e não remove todas as resoluções
 
 **Severidade**: Média  
-**Status**: Corrigido na Fase 2. A data alvo é `date -d "-2 days" +"%Y%m%d"`; o script remove `0p25`, `1p00`, legados e os diretórios de produtos do dia, com validação de data e retorno 0. Overrides `MET_BASE_DIR`/`MET_HOJE`/`MET_DATA_ALVO` permitem teste seguro.
+**Status**: Corrigido na Fase 2. A data alvo é `date -d "-2 days" +"%Y%m%d"`; o script remove `0p25`, `1p00`, legados e os diretórios de produtos do dia, com validação de formato e de calendário (`20260231` e `20260229` retornam 2) e retorno 0. Overrides `MET_BASE_DIR`/`MET_HOJE`/`MET_DATA_ALVO` permitem teste seguro.
 
 #### Evidência
 
@@ -954,7 +954,7 @@ elif str(autoOunao) == "False" and str(nuvem) is None and str(visibilidade) == "
 | D-25 | Baixa | `automatizaMetar.sh` usa variáveis indefinidas | `automatizaMetar.sh:7` (`data_hora`, `data_min`) | Diretório só com data; execuções do dia compartilham pasta | **Fase 2:** referência UTC única; variáveis indefinidas removidas |
 | D-26 | Baixa | Figuras e GRIBs não são fechados explicitamente | `gera_mapas_MET.py:216`; `leitura_dados_grib_MET.py:113` | Consumo de memória/file descriptors em lote | `plt.close(fig)` e `with pygrib.open(...)` (Fase 3) |
 | D-27 | Baixa | `temps` usa `Temperature`/`surface` (skin), não `2 metre temperature` | `processamento_dados_MET.py:22`; GFS tem `2 metre temperature` em `heightAboveGround` 2 | Temperatura de “superfície” pode não ser a do ar a 2 m | **Fase 2:** documentado como pele; seletor e nome mantidos |
-| D-28 | Baixa | Shell sem `set -euo pipefail` e help inconsistente | `automatiza_MET.sh:28`; `reqs_MAN_MET.sh:14-27` | Falhas silenciosas; `-v chuva` e `MN` não existem | **Fase 2:** `set -euo pipefail`, validação, help e erros claros; `chuva`/`MN` rejeitados |
+| D-28 | Baixa | Shell sem `set -euo pipefail` e help inconsistente | `automatiza_MET.sh:28`; `reqs_MAN_MET.sh:14-27` | Falhas silenciosas; `-v chuva` e `MN` não existem | **Fase 2:** `set -euo pipefail`, validação, faixa 150–1000, help e erros claros; `chuva`/`MN` rejeitados |
 
 ### Notas sobre os secundários
 
@@ -1131,13 +1131,13 @@ commit `9288c1f`. Ela cobriu os itens de produto, CLI, METAR e documentação:
 | D-24 | Janela/rótulo `+6` da chuva documentado; nome preservado | `docs/03` |
 | D-25 | Variáveis indefinidas removidas; referência UTC única no shell | `automatizaMetar.sh`; T-08 |
 | D-27 | `temps` documentado como temperatura de pele; seletor preservado | `docs/03`, `docs/08` |
-| D-28 | Wrappers com `set -euo pipefail`, validação e help; `chuva`/`MN` rejeitados | `automatiza_MET.sh`, `automatiza_vento_MET.sh`, `reqs_MAN_MET.sh`; T-11 |
+| D-28 | Wrappers com `set -euo pipefail`, validação, faixa 150–1000 e help; `chuva`/`MN` rejeitados | `automatiza_MET.sh`, `automatiza_vento_MET.sh`, `reqs_MAN_MET.sh`; T-11 |
 
 Resultados verificáveis:
 
-- `tests/test_phase2_acceptance.py`: **28 testes** T-06–T-12, todos verdes;
-- suíte completa: **154 passed**;
-- validação independente `reprocessamento/validar_fase2.py`: **169 verificações, 0 falhas**;
+- `tests/test_phase2_acceptance.py`: **36 testes** T-06–T-12, todos verdes;
+- suíte completa: **162 passed**;
+- validação independente `reprocessamento/validar_fase2.py`: **177 verificações, 0 falhas**;
 - 20 produtos da Fase 1 preservados e `goGribV2.sh` continua com o SHA-256 congelado;
 - relatório em `reprocessamento/reports/fase-2/validation.json` e
   [10-fase-2-resultados.md](10-fase-2-resultados.md).

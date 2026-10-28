@@ -500,8 +500,8 @@ Itens:
 
 **Resultado (27/10/2026):** concluída na branch `execucao`, sobre o commit
 `9288c1f`. T-06 a T-12 estão verdes em `tests/test_phase2_acceptance.py`
-(28 testes); a suíte completa tem 154 testes; a validação independente em
-`reprocessamento/validar_fase2.py` executou 169 verificações com 0 falhas. Os
+(36 testes); a suíte completa tem 162 testes; a validação independente em
+`reprocessamento/validar_fase2.py` executou 177 verificações com 0 falhas. Os
 produtos da Fase 1 foram preservados, `goGribV2.sh` continua congelado e os
 nomes de variáveis, produtos, headers e schemas não mudaram. Detalhes em
 [10-fase-2-resultados.md](10-fase-2-resultados.md).
@@ -587,12 +587,12 @@ Itens:
 | T-03 | `hMET`/`halt` | 20 m → 65,6 ft; 80 m → 262,5 ft; 500 hPa inalterado | Verde (Fase 1) |
 | T-04 | `angMET` | Quatro quadrantes em `[0, 360)` | Verde (Fase 1) |
 | T-05 | Ciclo | Fronteiras 05:59/06:00, 11:59/12:00, 17:59/18:00, 23:59/00:00 | Verde (Fase 1) |
-| T-06 | `umidadeRel` | `-ns` falha claramente; `-n 850` funciona | Verde (Fase 2) |
+| T-06 | `umidadeRel` | `-ns` falha claramente; `-n 850` funciona; mapa preserva `N850` | Verde (Fase 2) |
 | T-07 | `winds` | Produto gerado após ativação; mapas e matrizes presentes; sem no-op | Verde (Fase 2) |
 | T-08 | METAR | JSON válido; sem concatenação; timestamp UTC com rollover | Verde (Fase 2) |
 | T-09 | Intervalo MAN | `200→500` e `500→200` produzem a mesma lista; nível inválido falha claramente | Verde (Fase 2) |
-| T-10 | Limpeza | 01/03, 02/03 e 15/03 removem o dia correto; `0p25`, `1p00` e legados | Verde (Fase 2) |
-| T-11 | CLI | `-v chuva` e região `MN` retornam erro claro; argumento duplicado não desloca posições | Verde (Fase 2) |
+| T-10 | Limpeza | 01/03, 02/03 e 15/03 removem o dia correto; `0p25`, `1p00` e legados; datas de calendário inválidas falham | Verde (Fase 2) |
+| T-11 | CLI | `-v chuva` e região `MN` retornam erro claro; níveis fora de 150–1000 falham; argumento duplicado não desloca posições | Verde (Fase 2) |
 | T-12 | Visibilidade METAR | Classificação correta quando `nuvem` está ausente ou presente | Verde (Fase 2) |
 | T-13 | Sanitização | Caminho de saída e região não permitem traversal; arquivos no lugar esperado | Pendente (Fase 3) |
 | T-14 | Atomicidade | Falha no meio da escrita não deixa CSV/JSON parcial; lock evita execução concorrente | Pendente (Fase 3) |

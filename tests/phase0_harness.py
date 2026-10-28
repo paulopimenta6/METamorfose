@@ -99,6 +99,7 @@ class CapturePlt:
     def __init__(self):
         self.streamplot_calls = []
         self.barbs_calls = []
+        self.saved = []
         self.cm = SimpleNamespace(inferno=object())
 
     def figure(self, *args, **kwargs):
@@ -125,7 +126,7 @@ class CapturePlt:
         pass
 
     def savefig(self, *args, **kwargs):
-        pass
+        self.saved.append((args, kwargs))
 
 
 class FakeDirSave:

@@ -102,17 +102,18 @@ com **123 passed** e 3 `deselected`. O resultado detalhado da fase está em
   no MAN;
 - T-07: controlador ativa `winds` sem bloco duplicado; mapas e matrizes são
   gerados; produtos reais de 20/30/40/50/80 m são conferidos;
+- T-06: `umidadeRel` rejeita superfície, aceita 850 hPa e preserva `N850` no mapa;
 - T-08: referência UTC com rollover, sobrescrita atômica e ausência de
   concatenação;
 - T-09: intervalo MAN nas duas ordens, níveis iguais e limites 150–1000 hPa;
-- T-10: limpeza do dia `hoje - 2` em viradas de mês, `0p25`/`1p00`/legados e
-  diretórios de produtos;
-- T-11: `-v chuva` e `MN` rejeitados; flags fora de ordem; sem argumento
-  duplicado;
+- T-10: limpeza do dia `hoje - 2` em viradas de mês, `0p25`/`1p00`/legados,
+  diretórios de produtos e datas de calendário inválidas;
+- T-11: `-v chuva` e `MN` rejeitados; limites 150–1000 hPa; help derivado do
+  catálogo; flags fora de ordem; sem argumento duplicado;
 - T-12: visibilidade METAR com nuvem ausente/presente e valores não `9999`.
 
-A suíte tem **28 testes** (24 funções, algumas parametrizadas). A suíte completa
-termina com **154 passed**. O resultado detalhado está em
+A suíte tem **36 testes** (29 funções, algumas parametrizadas). A suíte completa
+termina com **162 passed**. O resultado detalhado está em
 [docs/10-fase-2-resultados.md](../docs/10-fase-2-resultados.md).
 
 ## Amostra real
@@ -227,7 +228,7 @@ O validador confere os invariantes (Fase 1 `ok`, 20 produtos preservados,
 baseline limpo e `goGribV2.sh` congelado), relê os produtos `winds` com
 `pygrib`, exercita os wrappers e scripts em diretórios temporários e grava
 `reprocessamento/reports/fase-2/validation.json` e `pytest.txt`. O resultado
-esperado é **169 verificações e 0 falhas**.
+esperado é **177 verificações e 0 falhas**.
 
 ## Limitações
 

@@ -116,7 +116,7 @@ Unidades efetivas:
 | `ps`, `prnm` | hPa | Pascal convertido por `/100` |
 | `nuvem` | % | Total cloud cover |
 | `chuvaConvec`, `chuvaNaoConvec` | kg m⁻² | Numericamente equivalente a mm; `chuvaNaoConvec` é precipitação **total** e o rótulo `+6` é histórico (D-13/D-24) |
-| `umidadeRel` | % | Apenas em pressão; `-ns` é rejeitado com erro claro (D-06) |
+| `umidadeRel` | % | Apenas em pressão; `-ns` é rejeitado com erro claro e o mapa usa `N850` quando chamado com `-n 850` (D-06) |
 | `u`, `v` | m s⁻¹ | Componentes do vento |
 
 Não renomear `chuvaNaoConvec` para `chuvaTotal`, mesmo que o dado seja

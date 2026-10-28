@@ -215,7 +215,7 @@ flowchart TD
     H -->|"matriz"| J["CSV"]
 ```
 
-- Para pressão, o nível pedido é “snapado” para o nível GFS mais próximo dentro de `150..1000 hPa`; valores fora da faixa são fixados em 150 ou 1000.
+- Para pressão, o nível pedido é “snapado” para o nível GFS mais próximo dentro de `150..1000 hPa`. Os wrappers AUT rejeitam valores fora dessa faixa antes de chamar o gerador; chamadas diretas ao módulo de processamento ainda escolhem o nível válido mais próximo da lista.
 - Para superfície, o nível do produto é `surface`/`superficie`, independentemente do `-n` informado.
 - Para altura, os níveis usados são `20, 30, 40, 50, 80 m`.
 - Se a variável não tiver o tipo de nível esperado, a lista fica vazia. Em alguns casos isso gera produto vazio; em outros, `IndexError`/`AttributeError`.

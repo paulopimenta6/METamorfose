@@ -130,11 +130,13 @@ def cria_intervalo_niveis(nivelminConvertido, nivelmaxConvertido):
 # =============================================================================
 
 def cria_parser():
+    # O texto de ajuda e montado a partir do catalogo para nao divergir das
+    # constantes usadas na validacao.
     epilogo = """\
 variaveis:
-  superficie : ps, prnm, temps, chuvaConvec, chuvaNaoConvec  (use -ns)
-  pressao    : temp, nuvem, umidadeRel, u, v                  (use -nhpa/-nf)
-  vento      : wind (pressao), winds (superficie, use -ns)
+  superficie : %s  (use -ns)
+  pressao    : %s  (use -nhpa/-nf)
+  vento      : %s (pressao), %s (superficie, use -ns)
 
 niveis de pressao suportados (hPa):
   %s
@@ -147,6 +149,10 @@ exemplos:
   %s -v temp -altminhpa 500 -altmaxhpa 200 -lonmin 3.75 -lonmax 6 \\
       -latmin 8 -latmax 9 -datetime 202111020006 -out /home/phpimenta/
 """ % (
+        ", ".join(VARIAVEIS_SUPERFICIE),
+        ", ".join(VARIAVEIS_PRESSAO),
+        VARIAVEIS_VENTO[0],
+        VARIAVEIS_VENTO[1],
         ", ".join(str(n) for n in NIVEIS_HPA),
         "%(prog)s",
         "%(prog)s",

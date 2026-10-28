@@ -207,7 +207,7 @@ Comportamento:
 - A data alvo é `hoje - 2 dias`, calculada com `date -d "-2 days" +"%Y%m%d"`, sem misturar ano/mês de hoje com o dia anterior.
 - Remove os GRIBs `0p25`, `1p00` e legados `gfs????????????_???.grb` do dia alvo, nos ciclos `00/06/12/18`.
 - Remove também os diretórios de produtos do dia alvo em `mapasGrib/`, `matrizGrib/`, `matrizGrib/bluesky/` e `matrizGrib/predi/`.
-- Dados de outras datas não são tocados. O retorno é 0 em sucesso e 2 para data alvo inválida.
+- Dados de outras datas não são tocados. O retorno é 0 em sucesso e 2 para data alvo ou data de referência com formato inválido ou data de calendário inexistente (por exemplo, `20260231`).
 - Overrides para teste: `MET_BASE_DIR`, `MET_HOJE` (data de referência) e `MET_DATA_ALVO` (data alvo explícita).
 - Não execute em paralelo com a geração de produtos.
 - Considere fazer backup ou listar o que será removido antes de rodar (`find ... -maxdepth ... -print`).

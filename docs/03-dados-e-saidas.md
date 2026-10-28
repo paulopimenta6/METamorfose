@@ -138,7 +138,7 @@ Observações:
 - `temps` é a temperatura de pele (`Temperature` em `surface`), não a temperatura do ar a 2 m (`2 metre temperature` em `heightAboveGround`). O nome e o seletor foram preservados (D-27).
 - A chave `chuva`, citada no help antigo, **não existe**. O CLI e os wrappers atuais respondem com uma mensagem que indica `chuvaConvec` e `chuvaNaoConvec`.
 - O dicionário também não tem `wind`/`winds`; esses nomes são tratados pelas classes de vento, que internamente usam `u`/`v` e `uSupe`/`vSupe`.
-- `umidadeRel` só existe em `isobaricInhPa`. No GFS 0.25° o campo de 2 m é `2 metre relative humidity` em `heightAboveGround` (nível 2), mas ele não é mapeado. `umidadeRel -ns` falha com mensagem clara; use, por exemplo, `-n 850` (D-06).
+- `umidadeRel` só existe em `isobaricInhPa`. No GFS 0.25° o campo de 2 m é `2 metre relative humidity` em `heightAboveGround` (nível 2), mas ele não é mapeado. `umidadeRel -ns` falha com mensagem clara; use, por exemplo, `-n 850` (D-06). O mapa resultante é gravado como `..._N850_umidadeRel_...`, sem `Nsuperficie`.
 
 ### 2.4 Níveis de pressão aceitos
 
@@ -211,7 +211,7 @@ mapasGrib/AAAAMMDD/HH/GFS_<res>_<REGIAO>_N<nivel>_<var>_<ana>_<dataDate>_<ff>.pn
 
 Atenção ao rótulo de superfície:
 
-- Mapas de `temps`, `ps` e `prnm` usam `Nsuperficie` (`gera_mapas_MET.py:158`). `umidadeRel` só é gerado em pressão.
+- Mapas de `temps`, `ps` e `prnm` usam `Nsuperficie` (`gera_mapas_MET.py:161`). `umidadeRel` só é gerado em pressão e o mapa preserva o nível pedido, por exemplo `N850`; `Nsuperficie` não é aplicado a essa variável.
 - Mapas de `chuvaConvec`/`chuvaNaoConvec` usam `Nsurface`.
 - Matrizes de `temps`, `ps` e `prnm` usam `Nsurface`, não `Nsuperficie`, porque `gera_matriz_MET.py` não faz a mesma substituição.
 - Assim, para a mesma variável, o mapa e a matriz podem ter nomes de nível diferentes.

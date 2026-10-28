@@ -404,6 +404,15 @@ def valida_t06(checks: Checks, fake: FakePython, tmp: Path):
         {"codigo": resultado.returncode, "stderr": resultado.stderr.strip()[-200:]},
     )
 
+    fonte_mapas = ler(CLASSES / "gera_mapas_MET.py")
+    checks.check(
+        "T-06: mapa de umidadeRel conserva o nível de pressão no rótulo",
+        'if variavelMET=="temps" or variavelMET=="ps" or variavelMET=="prnm":'
+        in fonte_mapas
+        and 'if variavelMET=="umidadeRel" or' not in fonte_mapas,
+        "Nsuperficie não deve ser aplicado a umidadeRel",
+    )
+
 
 # ---------------------------------------------------------------------------
 # T-07 — winds
@@ -931,6 +940,37 @@ def valida_t10(checks: Checks, tmp: Path):
         {"codigo": resultado.returncode, "stderr": resultado.stderr.strip()[-200:]},
     )
 
+    for data in ("20260231", "20260229"):
+        base = tmp / f"limpeza-data-invalida-{data}"
+        base.mkdir(parents=True, exist_ok=True)
+        env = os.environ.copy()
+        env["MET_BASE_DIR"] = str(base)
+        env["MET_DATA_ALVO"] = data
+        resultado = executa_bash(ROOT / "remove_GRIBS_antigos.sh", env=env)
+        checks.check(
+            f"T-10: data alvo {data} fora do calendário retorna 2",
+            resultado.returncode == 2
+            and "data alvo invalida" in resultado.stderr
+            and "calendario" in resultado.stderr,
+            {
+                "codigo": resultado.returncode,
+                "stderr": resultado.stderr.strip()[-200:],
+            },
+        )
+
+    base = tmp / "limpeza-referencia-invalida"
+    base.mkdir(parents=True, exist_ok=True)
+    env = os.environ.copy()
+    env["MET_BASE_DIR"] = str(base)
+    env["MET_HOJE"] = "20260231"
+    resultado = executa_bash(ROOT / "remove_GRIBS_antigos.sh", env=env)
+    checks.check(
+        "T-10: data de referência fora do calendário retorna 2",
+        resultado.returncode == 2
+        and "data de referencia invalida" in resultado.stderr,
+        {"codigo": resultado.returncode, "stderr": resultado.stderr.strip()[-200:]},
+    )
+
     fonte = ler(ROOT / "remove_GRIBS_antigos.sh")
     checks.check(
         "T-10: limpeza calcula a data com date -d -2 days",
@@ -1022,6 +1062,74 @@ def valida_t11(checks: Checks, fake: FakePython, tmp: Path):
         and "MN" in resultado.stderr
         and "AM" in resultado.stderr,
         {"codigo": resultado.returncode, "stderr": resultado.stderr.strip()[-200:]},
+    )
+
+    for script, variavel in (
+        ("automatiza_MET.sh", "temp"),
+        ("automatiza_vento_MET.sh", "wind"),
+    ):
+        fake.limpar()
+        resultado = executa_bash(
+            BASH / script,
+            "-v", variavel, "-n", "50", "-r", "SP",
+            env=fake.ambiente(),
+        )
+        checks.check(
+            f"T-11: {script} rejeita nível abaixo de 150 hPa",
+            resultado.returncode == 2
+            and "150 e 1000" in resultado.stderr
+            and fake.linhas() == [],
+            {
+                "codigo": resultado.returncode,
+                "stderr": resultado.stderr.strip()[-200:],
+                "chamadas": fake.linhas(),
+            },
+        )
+
+    fake.limpar()
+    resultado = executa_bash(
+        BASH / "automatiza_MET.sh",
+        "-v", "temp", "-n", "150", "-r", "SP",
+        env=fake.ambiente(),
+    )
+    checks.check(
+        "T-11: limite inferior de 150 hPa é aceito",
+        resultado.returncode == 0
+        and fake.linhas()
+        == [
+            "gera_mapas_MET.py -v temp -n 150 -r SP",
+            "gera_matriz_MET.py -v temp -n 150 -r SP",
+        ],
+        {
+            "codigo": resultado.returncode,
+            "stderr": resultado.stderr.strip()[-200:],
+            "chamadas": fake.linhas(),
+        },
+    )
+
+    cli = importa_cli()
+    originais = (
+        cli.VARIAVEIS_SUPERFICIE,
+        cli.VARIAVEIS_PRESSAO,
+        cli.VARIAVEIS_VENTO,
+    )
+    try:
+        cli.VARIAVEIS_SUPERFICIE = ("sentinel_superficie",)
+        cli.VARIAVEIS_PRESSAO = ("sentinel_pressao",)
+        cli.VARIAVEIS_VENTO = ("vento_pressao", "vento_superficie")
+        ajuda = cli.cria_parser().format_help()
+    finally:
+        (
+            cli.VARIAVEIS_SUPERFICIE,
+            cli.VARIAVEIS_PRESSAO,
+            cli.VARIAVEIS_VENTO,
+        ) = originais
+    checks.check(
+        "T-11: help MAN é gerado a partir do catálogo",
+        "sentinel_superficie" in ajuda
+        and "sentinel_pressao" in ajuda
+        and "vento_pressao" in ajuda
+        and "vento_superficie" in ajuda,
     )
 
     argumentos_fora_de_ordem = [

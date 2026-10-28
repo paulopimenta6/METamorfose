@@ -158,7 +158,9 @@ def gera_mapas(objGRIB, lon_lat, variavelMET, regiao, nivel):
             data=data-273.15
         if variavelMET=="ps" or variavelMET=="prnm":    
             data=data/100
-        if variavelMET=="umidadeRel" or variavelMET=="temps" or variavelMET=="ps" or variavelMET=="prnm":
+        # "temps", "ps" e "prnm" sao produtos de superficie. "umidadeRel"
+        # so existe em isobaricInhPa e deve manter o nivel de pressao no nome.
+        if variavelMET=="temps" or variavelMET=="ps" or variavelMET=="prnm":
             nivel="superficie"
  
         unidade=objMET.units

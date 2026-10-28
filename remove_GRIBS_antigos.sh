@@ -20,8 +20,10 @@ dir_matrizes_predi="${BASE_DIR}/matrizGrib/predi"
 
 calcula_data_alvo() {
     if [ -n "${MET_DATA_ALVO:-}" ]; then
+        valida_data "${MET_DATA_ALVO}" "data alvo"
         printf '%s\n' "${MET_DATA_ALVO}"
     elif [ -n "${MET_HOJE:-}" ]; then
+        valida_data "${MET_HOJE}" "data de referencia"
         date -d "${MET_HOJE} -2 days" +"%Y%m%d"
     else
         date -d "-2 days" +"%Y%m%d"
@@ -29,14 +31,24 @@ calcula_data_alvo() {
 }
 
 valida_data() {
-    case "${1}" in
+    local data="$1"
+    local rotulo="${2:-data alvo}"
+    local normalizada
+
+    case "${data}" in
         [0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9])
             ;;
         *)
-            echo "erro: data alvo invalida: '${1}' (use AAAAMMDD)" >&2
+            echo "erro: ${rotulo} invalida: '${data}' (use AAAAMMDD)" >&2
             exit 2
             ;;
     esac
+
+    if ! normalizada="$(date -d "${data}" +"%Y%m%d" 2>/dev/null)" ||
+       [ "${normalizada}" != "${data}" ]; then
+        echo "erro: ${rotulo} invalida: '${data}' (data de calendario inexistente)" >&2
+        exit 2
+    fi
 }
 
 remove_gribs_do_dia() {
@@ -60,7 +72,9 @@ remove_gribs_do_dia() {
         for tPrev in 00 06 12 18; do
             for resolucao in 0p25 1p00; do
                 arquivo="${diretorio}/${tAnalise}/gfs.t${tAnalise}z.pgrb2.${resolucao}.f0${tPrev}"
-                [ -e "${arquivo}" ] && rm -f -- "${arquivo}"
+                if [ -e "${arquivo}" ]; then
+                    rm -f -- "${arquivo}"
+                fi
             done
         done
         find "${diretorio}/${tAnalise}" -maxdepth 1 -type f \

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-27T22:30:27.269430+00:00",
+  "generated_at": "2026-10-28T00:54:32.530680+00:00",
   "purpose": "Validação independente da Fase 2 (T-06 a T-12).",
   "phase": 2,
   "sample": {
@@ -8,7 +8,7 @@
   },
   "phase1_report": "reprocessamento/reports/20261022-00",
   "status": "ok",
-  "checks": 169,
+  "checks": 177,
   "failures": 0,
   "items": [
     {
@@ -96,6 +96,11 @@
         "codigo": 2,
         "stderr": "erro: umidadeRel nao possui campo em superficie; use -n <hPa> (por exemplo, -n 850)\nuse -h para ver o menu de ajuda"
       }
+    },
+    {
+      "name": "T-06: mapa de umidadeRel conserva o nível de pressão no rótulo",
+      "status": "ok",
+      "detail": "Nsuperficie não deve ser aplicado a umidadeRel"
     },
     {
       "name": "T-07: controlador tem duas chamadas winds -ns",
@@ -722,7 +727,7 @@
     {
       "name": "T-08: script METAR cria o diretório da data UTC",
       "status": "ok",
-      "detail": "/tmp/opencode/validar-fase2.eqn6d_4p/METARpy/20260301"
+      "detail": "/tmp/opencode/validar-fase2.tb3gnd23/METARpy/20260301"
     },
     {
       "name": "T-08: script METAR chama bruto e traduzido",
@@ -1027,6 +1032,30 @@
       }
     },
     {
+      "name": "T-10: data alvo 20260231 fora do calendário retorna 2",
+      "status": "ok",
+      "detail": {
+        "codigo": 2,
+        "stderr": "erro: data alvo invalida: '20260231' (data de calendario inexistente)"
+      }
+    },
+    {
+      "name": "T-10: data alvo 20260229 fora do calendário retorna 2",
+      "status": "ok",
+      "detail": {
+        "codigo": 2,
+        "stderr": "erro: data alvo invalida: '20260229' (data de calendario inexistente)"
+      }
+    },
+    {
+      "name": "T-10: data de referência fora do calendário retorna 2",
+      "status": "ok",
+      "detail": {
+        "codigo": 2,
+        "stderr": "erro: data de referencia invalida: '20260231' (data de calendario inexistente)"
+      }
+    },
+    {
       "name": "T-10: limpeza calcula a data com date -d -2 days",
       "status": "ok",
       "detail": null
@@ -1045,7 +1074,7 @@
       "name": "T-11: wrapper MAN não duplica argumentos",
       "status": "ok",
       "detail": [
-        "/home/paulo/Documentos/meus_codigos/METamorfose/bash/../classes_MET/executa_reqs_param.py -v temp -nhpa 500 -lonmin -56 -lonmax -42 -latmin -28 -latmax -18 -datetime 202111020006 -out /tmp/opencode/validar-fase2.eqn6d_4p"
+        "/home/paulo/Documentos/meus_codigos/METamorfose/bash/../classes_MET/executa_reqs_param.py -v temp -nhpa 500 -lonmin -56 -lonmax -42 -latmin -28 -latmax -18 -datetime 202111020006 -out /tmp/opencode/validar-fase2.tb3gnd23"
       ]
     },
     {
@@ -1076,6 +1105,41 @@
         "codigo": 2,
         "stderr": "erro: regiao 'MN' nao existe; para Manaus use 'AM'\nuse -h para ver o menu de ajuda"
       }
+    },
+    {
+      "name": "T-11: automatiza_MET.sh rejeita nível abaixo de 150 hPa",
+      "status": "ok",
+      "detail": {
+        "codigo": 2,
+        "stderr": "erro: nivel deve estar entre 150 e 1000 hPa\nuse -h para ver o menu de ajuda",
+        "chamadas": []
+      }
+    },
+    {
+      "name": "T-11: automatiza_vento_MET.sh rejeita nível abaixo de 150 hPa",
+      "status": "ok",
+      "detail": {
+        "codigo": 2,
+        "stderr": "erro: nivel deve estar entre 150 e 1000 hPa\nuse -h para ver o menu de ajuda",
+        "chamadas": []
+      }
+    },
+    {
+      "name": "T-11: limite inferior de 150 hPa é aceito",
+      "status": "ok",
+      "detail": {
+        "codigo": 0,
+        "stderr": "",
+        "chamadas": [
+          "gera_mapas_MET.py -v temp -n 150 -r SP",
+          "gera_matriz_MET.py -v temp -n 150 -r SP"
+        ]
+      }
+    },
+    {
+      "name": "T-11: help MAN é gerado a partir do catálogo",
+      "status": "ok",
+      "detail": null
     },
     {
       "name": "T-11: CLI MAN aceita flags fora de ordem",
@@ -1187,7 +1251,7 @@
       "status": "ok",
       "detail": {
         "codigo": 0,
-        "resumo": "28 passed in 0.98s"
+        "resumo": "36 passed in 1.14s"
       }
     }
   ]

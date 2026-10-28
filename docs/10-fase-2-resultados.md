@@ -11,9 +11,9 @@ D-15, D-17, D-24, D-25, D-27 e D-28 do
 
 | Verificação | Resultado |
 |---|---|
-| Testes de aceitação T-06–T-12 | **28 passed** em `tests/test_phase2_acceptance.py` |
-| Suíte completa | **154 passed** em ~14,5 s |
-| Validação independente | **169 verificações, 0 falhas** |
+| Testes de aceitação T-06–T-12 | **36 passed** em `tests/test_phase2_acceptance.py` |
+| Suíte completa | **162 passed** em ~15 s |
+| Validação independente | **177 verificações, 0 falhas** |
 | Produtos da Fase 1 preservados | **20** |
 | `goGribV2.sh` | Congelado, SHA-256 `994ce16c1480b17a62b78e72761307af2000dc47819abbaf48ce042c72023ce0` |
 | Baseline da Fase 0 | Intacto no Git |
@@ -22,8 +22,8 @@ D-15, D-17, D-24, D-25, D-27 e D-28 do
 
 Relatórios brutos:
 
-- `reprocessamento/reports/fase-2/validation.json` — 169 verificações;
-- `reprocessamento/reports/fase-2/pytest.txt` — saída dos 28 testes.
+- `reprocessamento/reports/fase-2/validation.json` — 177 verificações;
+- `reprocessamento/reports/fase-2/pytest.txt` — saída dos 36 testes.
 
 ## 2. O que mudou
 
@@ -39,10 +39,13 @@ levantar `AttributeError`.
 - AUT e MAN validam o tipo de nível antes de ler o GRIB;
 - `-ns` retorna código 2 com a mensagem
   `umidadeRel não possui campo em superfície; use -n <hPa> (por exemplo, -n 850)`;
-- `-n 850` continua gerando CSV/PNG em 0–100%.
+- `-n 850` continua gerando CSV/PNG em 0–100%;
+- o mapa de `umidadeRel` preserva `N850` no nome; o gerador não força mais `Nsuperficie` para essa variável.
 
 **Arquivos:** `classes_MET/processamento_dados_MET.py`,
-`classes_MET/executa_reqs_param.py`, `bash/automatizacao_controle_MET.sh`.
+`classes_MET/executa_reqs_param.py`,
+`classes_MET/gera_mapas_MET.py`,
+`bash/automatizacao_controle_MET.sh`.
 
 ### 2.2 C-07 / D-05 — ativação de `winds`
 
@@ -107,7 +110,7 @@ nos primeiros dias do mês o alvo ficava errado. Apenas `0p25` era removido.
 - remoção de `0p25`, `1p00` e legados `gfs????????????_???.grb` do dia alvo;
 - remoção dos diretórios de produtos do mesmo dia em `mapasGrib/`,
   `matrizGrib/`, `matrizGrib/bluesky/` e `matrizGrib/predi/`;
-- validação de data e retorno 0 em sucesso, 2 para data inválida;
+- validação de formato e de calendário (`20260231`/`20260229` falham) e retorno 0 em sucesso, 2 para data inválida;
 - overrides de teste `MET_BASE_DIR`, `MET_HOJE` e `MET_DATA_ALVO`.
 
 **Arquivo:** `remove_GRIBS_antigos.sh`.
@@ -140,6 +143,8 @@ citava `chuva` e `MN`, que não existem.
 - validação de variável, coordenadas, data, nível e diretório de saída;
 - `-v chuva` é rejeitado indicando `chuvaConvec`/`chuvaNaoConvec`;
 - região `MN` é rejeitada; o MAN usa bounding box;
+- wrappers AUT rejeitam níveis fora de 150–1000 hPa;
+- o help do MAN é montado a partir do catálogo de variáveis e níveis;
 - wrappers AUT/MAN usam `set -euo pipefail`, help e mensagens de erro claras.
 
 **Arquivos:** `classes_MET/executa_reqs_param.py`,
@@ -173,16 +178,16 @@ usa uma referência UTC única e a repassa aos dois scripts.
 
 ## 3. Testes T-06 a T-12
 
-`tests/test_phase2_acceptance.py` contém 28 casos parametrizados:
+`tests/test_phase2_acceptance.py` contém 36 casos parametrizados:
 
 | Teste | Cobertura | Casos |
 |---|---|---:|
-| T-06 | `umidadeRel` rejeita superfície, aceita 850 hPa, controlador e wrapper | 5 |
+| T-06 | `umidadeRel` rejeita superfície, aceita 850 hPa, controlador, wrapper e rótulo `N850` do mapa | 6 |
 | T-07 | controlador ativa `winds`; wrapper gera mapas e matrizes; produtos reais de 20/30/40/50/80 m | 3 |
 | T-08 | rollover UTC, referência do ambiente, sobrescrita sem concatenar, script METAR | 4 |
 | T-09 | duas ordens, níveis iguais, níveis inválidos e execução da mesma lista | 3 |
-| T-10 | datas de virada de mês (parametrizado), conteúdo removido e data inválida | 4 |
-| T-11 | `chuva`, `MN`, ausência de argumento duplicado e flags fora de ordem | 4 |
+| T-10 | datas de virada de mês (parametrizado), conteúdo removido, data inválida e referência inválida | 7 |
+| T-11 | `chuva`, `MN`, limites 150–1000, help derivado do catálogo, ausência de argumento duplicado e flags fora de ordem | 8 |
 | T-12 | nuvem ausente/presente (parametrizado), valores não `9999` e JSON traduzido | 5 |
 
 Além dos testes unitários, T-07 compara os produtos `winds` da Fase 1 com
@@ -192,21 +197,20 @@ preditor: `hMET`, `angMET`, `vento_resultante`, U/V e temperatura do preditor.
 ## 4. Validação independente
 
 `reprocessamento/validar_fase2.py` não importa os testes da suíte; ele lê os
-arquivos e os produtos diretamente. Resultado: **169 verificações, 0 falhas**.
+arquivos e os produtos diretamente. Resultado: **177 verificações, 0 falhas**.
 
 Distribuição:
 
 | Grupo | Verificações |
 |---|---:|
-| T-06 | 9 |
+| T-06 | 11 |
 | T-07 (controlador, wrapper, produtos e matrizes) | 77 |
 | T-08 | 16 |
 | T-09 | 10 |
-| T-10 | 36 |
-| T-11 | 8 |
+| T-10 | 39 |
+| T-11 | 12 |
 | T-12 | 8 |
 | Invariantes (goGrib congelado, Fase 1 ok, 20 produtos, baseline limpo) | 4 |
-| Resumo do relatório | 1 |
 
 Invariantes confirmados:
 

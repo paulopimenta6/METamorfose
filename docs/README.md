@@ -97,18 +97,18 @@ Resultado detalhado: [09-fase-1-resultados.md](09-fase-1-resultados.md).
 
 A Fase 2 foi executada no mesmo worktree, sobre o commit `9288c1f`:
 
-- C-06: `umidadeRel -ns` substituído por `-n 850`; `-ns` retorna erro claro;
+- C-06: `umidadeRel -ns` substituído por `-n 850`; `-ns` retorna erro claro; mapa usa `N850`;
 - C-07: `winds -ns` ativado no controlador; bloco duplicado de 1000/200 removido;
 - D-07/D-08: JSON METAR com escrita atômica e timestamp UTC com rollover;
 - D-09: intervalo MAN aceita as duas ordens e devolve níveis crescentes;
-- D-10: limpeza usa `date -d "-2 days"` e remove `0p25`, `1p00`, legados e produtos;
+- D-10: limpeza usa `date -d "-2 days"`, remove `0p25`, `1p00`, legados e produtos, e valida calendário;
 - D-13/D-24/D-27: semântica de `chuvaNaoConvec`, rótulo `+6` e `temps` documentados sem renomear;
-- D-14/D-28: CLI MAN migrado para `argparse`; wrappers com `set -euo pipefail` e help;
+- D-14/D-28: CLI MAN migrado para `argparse`; wrappers com `set -euo pipefail`, help e faixa 150–1000 hPa;
 - D-15: chamada duplicada de `gera_matriz` removida;
 - D-17: checagem de nuvem corrigida para `is None`/`is not None`;
 - D-25: variáveis indefinidas do shell METAR removidas;
-- **154 testes verdes**, incluindo **28 testes de aceitação** T-06 a T-12;
-- validação independente com **169 verificações e 0 falhas**;
+- **162 testes verdes**, incluindo **36 testes de aceitação** T-06 a T-12;
+- validação independente com **177 verificações e 0 falhas**;
 - 20 produtos da Fase 1 preservados e `goGribV2.sh` congelado.
 
 Resultado detalhado: [10-fase-2-resultados.md](10-fase-2-resultados.md).
