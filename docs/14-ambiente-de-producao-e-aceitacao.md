@@ -23,11 +23,15 @@ registram evidência automaticamente.
 | SHA-256 de `release.json` | `26fa746b3b7017f626c2121ba19bf416e3751280180cdd0424ad2100e908d196` |
 | Arquivos inventariados | 1.141 (39 de código, 1.101 produtos, 1 de validação) |
 | Produtos | 1.098 CSVs e 3 PNGs |
-| GRIBs históricos | 12 amostras (15–17/12/2022, ciclos 00/06/12/18) |
+| GRIBs históricos | 12 amostras (15–17/12/2022, ciclo 00, f000/f006/f012/f018) |
 | Consumidores | BlueSky, preditor, planilhas |
 
 O aceite é vinculado ao SHA-256 de `release.json`. Se a release for reconstruída,
 o hash muda e o aceite anterior deixa de valer.
+
+**Estado neste host:** ambiente montado em `/home/paulo/MET/servidor_MET`,
+`bin/verificar.sh` com `falhas: 0`, `acceptance.json` pendente e nenhuma
+evidência registrada. `/media/MET/servidor_MET` não foi criado.
 
 ## Layout do ambiente
 
