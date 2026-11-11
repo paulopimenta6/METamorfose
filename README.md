@@ -48,7 +48,7 @@ localmente; o aceite dos consumidores e a promoção em produção permanecem
 pendentes. Resultados: [Fase 3](docs/11-fase-3-resultados.md) e
 [Fase 4](docs/12-fase-4-resultados.md).
 
-> Repositório privado. Não publique dados, credenciais ou produtos operacionais sem revisão.
+> Repositório público. Não publique dados, credenciais ou produtos operacionais sem revisão.
 
 ## Fase 4
 
