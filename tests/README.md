@@ -1,7 +1,7 @@
-# Testes das Fases 0, 1 e 2
+# Testes das Fases 0 a 4
 
 Este diretório contém o harness da Fase 0 e as suítes de aceitação das Fases 1
-e 2. O harness foi criado antes das correções de cálculo para transformar os
+a 4. O harness foi criado antes das correções de cálculo para transformar os
 defeitos conhecidos em contratos executáveis; as suítes das fases seguintes
 passaram a exigir o comportamento corrigido.
 
@@ -240,3 +240,14 @@ esperado é **177 verificações e 0 falhas**.
   vento vem dos CSVs e das funções que também alimentam os mapas.
 - O baseline é intencionalmente incorreto e não deve ser usado como referência
   operacional.
+
+## Fase 3
+
+Regressões operacionais e T-13–T-15: `python -m pytest -q tests/test_phase3_acceptance.py`.
+Veja [resultados e limites](../docs/11-fase-3-resultados.md).
+
+## Fase 4
+
+`python -m pytest -q tests/test_phase4_acceptance.py` verifica pacotes, hashes,
+rollback, contratos CSV, metadados e comparacao METAR na virada do dia.
+A campanha real e executada separadamente por reprocessamento/phase4.py.

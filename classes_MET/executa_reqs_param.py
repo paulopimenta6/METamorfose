@@ -396,7 +396,7 @@ def main(argv=None):
 
     # Os geradores usam controla_env, que le ../environment/path.conf. Executar
     # a partir de classes_MET mantem o contrato historico de caminho relativo.
-    os.chdir(Path(__file__).resolve().parent)
+    # Configuracao resolvida por controla_env, sem alterar o cwd.
 
     try:
         from poligono_regiao_MET import met_poligono_regiao

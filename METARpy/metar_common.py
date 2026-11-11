@@ -10,6 +10,7 @@ JSON truncado ou concatenado.
 
 from __future__ import annotations
 
+import tempfile
 import json
 import os
 import sys
@@ -204,13 +205,16 @@ def grava_json_atomico(caminho, dados):
     """Grava `dados` como JSON, sobrescrevendo o destino atomicamente."""
 
     caminho = Path(caminho)
-    temporario = caminho.with_name(caminho.name + ".tmp")
+    fd, name = tempfile.mkstemp(prefix="." + caminho.name, suffix=".tmp", dir=caminho.parent)
+    os.close(fd)
+    temporario = Path(name)
 
     try:
         with open(temporario, "w", encoding="utf-8") as arquivo:
             json.dump(dados, arquivo)
             arquivo.flush()
             os.fsync(arquivo.fileno())
+        os.chmod(temporario, caminho.stat().st_mode & 0o777 if caminho.exists() else 0o644)
         os.replace(temporario, caminho)
     except Exception:
         with suppress(FileNotFoundError):

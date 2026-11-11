@@ -23,6 +23,9 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 CLASSES = ROOT / "classes_MET"
+import sys
+sys.path.insert(0, str(CLASSES))
+from runtime_MET import atomic_text, product_operation, validate_wind, close_sources
 
 
 class DummyBasemap:
@@ -194,6 +197,10 @@ class FakeGRIB:
         self.level = level
         self.units = units
 
+    def latlons(self):
+        lon, lat = np.meshgrid(self._lon, self._lat)
+        return lat, lon
+
     def data(self, lat1=None, lat2=None, lon1=None, lon2=None):
         lat_mask = np.ones(self._lat.shape, dtype=bool)
         lon_mask = np.ones(self._lon.shape, dtype=bool)
@@ -255,6 +262,9 @@ def load_definitions(source: Path, names, extra_globals=None):
     """Executa somente as definições pedidas, sem o código de topo do módulo."""
 
     namespace = {
+        "atomic_text": atomic_text, "product_operation": product_operation,
+        "validate_wind": validate_wind, "close_sources": close_sources,
+        "save_figure": (extra_globals or {}).get("plt", None).savefig if (extra_globals or {}).get("plt") else None,
         "np": np,
         "math": math,
         "csv": csv,

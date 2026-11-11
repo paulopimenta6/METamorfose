@@ -1,5 +1,11 @@
 # 02 — Fluxos
 
+
+> **Estado após as Fases 3 e 4:** robustez operacional implementada e Fase 4
+> validada localmente. Consulte [11-fase-3-resultados.md](11-fase-3-resultados.md)
+> e [12-fase-4-resultados.md](12-fase-4-resultados.md) para comportamento atual,
+> testes, overrides e limites; descrições abaixo preservam o histórico.
+
 > **Estado:** este documento descreve os fluxos do código original em `main`.
 > As seções 4 (MAN), 5 (METAR) e 6 (limpeza) foram atualizadas para refletir as
 > Fases 1 e 2; o runbook operacional completo está em

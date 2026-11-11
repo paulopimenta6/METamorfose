@@ -7,3 +7,15 @@ baseline/samples/*.grb2
 reprocessamento/run/
 reprocessamento/.run.lock
 *.log
+
+# Arquivos de editor
+*.swp
+*.swo
+*~
+
+# Dados e releases da campanha de validacao (relatorios ficam versionados)
+reprocessamento/phase4-data/
+reprocessamento/phase4-runs/
+reprocessamento/phase4-backups/
+reprocessamento/phase4-rehearsal/
+reprocessamento/releases/

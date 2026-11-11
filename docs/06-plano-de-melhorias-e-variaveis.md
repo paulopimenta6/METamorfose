@@ -1,6 +1,12 @@
 # Plano de melhorias e auditoria de variáveis — servidor_MET
 
-**Status:** Fases 1 e 2 executadas no worktree `METamorfose` (branch `execucao`); Fases 3–4 pendentes.
+
+> **Estado após as Fases 3 e 4:** robustez operacional implementada e Fase 4
+> validada localmente. Consulte [11-fase-3-resultados.md](11-fase-3-resultados.md)
+> e [12-fase-4-resultados.md](12-fase-4-resultados.md) para comportamento atual,
+> testes, overrides e limites; descrições abaixo preservam o histórico.
+
+**Status:** Fases 1 e 2 executadas no worktree `METamorfose` (branch `execucao`); Fase 3 implementada (documento 11); Fase 4 implementada e validada localmente; aceite externo e producao pendentes (documento 12).
 **Data:** 23/10/2026; execuções das Fases 1 e 2 registradas em 27/10/2026.
 **Escopo:** conclusões sobre nomenclatura e semântica das variáveis, revisão da orientação norte-sul e plano priorizado de correções do `servidor_MET`.
 
@@ -523,6 +529,14 @@ Itens:
 
 **Critério de saída:** T-13 a T-15 passam; runbook atualizado; nenhuma falha silenciosa conhecida.
 
+**Resultado (27/10/2026):** concluída na branch `execucao`. T-13 a T-15 estão
+verdes em `tests/test_phase3_acceptance.py` (23 regressões); a suíte da época
+tinha **182 testes locais aprovados** e 3 de rede excluídos. A amostra real
+preservou 13 CSVs e 7 PNGs byte a byte. O controlador retorna 0 somente em
+sucesso e 75 em concorrência; a escrita é atômica por arquivo, com locks e logs
+no stderr, mas sem manifesto/`run_id` por execução. O runbook foi atualizado.
+Detalhes em [11-fase-3-resultados.md](11-fase-3-resultados.md).
+
 ### Fase 4 — Reprocessamento, validação e rollout
 
 **Objetivo:** colocar as correções em produção com segurança.
@@ -540,6 +554,13 @@ Itens:
 - Manter rollback: código e produtos antigos preservados; novos produtos em diretório separado até aprovação.
 
 **Critério de saída:** validação aprovada; produtos novos promovidos; rollback documentado.
+
+**Resultado local (28/10/2026):** campanha real de 15–17/12/2022 com f000, f006,
+f012 e f018, 1.098 CSVs e 3 PNGs verificados, release candidata e ensaio de
+promoção/rollback concluídos. A suíte local tem **205 testes aprovados**. O
+aceite dos consumidores BlueSky/preditor/planilhas e a promoção em produção
+continuam pendentes. Detalhes em
+[12-fase-4-resultados.md](12-fase-4-resultados.md).
 
 ---
 
@@ -594,9 +615,9 @@ Itens:
 | T-10 | Limpeza | 01/03, 02/03 e 15/03 removem o dia correto; `0p25`, `1p00` e legados; datas de calendário inválidas falham | Verde (Fase 2) |
 | T-11 | CLI | `-v chuva` e região `MN` retornam erro claro; níveis fora de 150–1000 falham; argumento duplicado não desloca posições | Verde (Fase 2) |
 | T-12 | Visibilidade METAR | Classificação correta quando `nuvem` está ausente ou presente | Verde (Fase 2) |
-| T-13 | Sanitização | Caminho de saída e região não permitem traversal; arquivos no lugar esperado | Pendente (Fase 3) |
-| T-14 | Atomicidade | Falha no meio da escrita não deixa CSV/JSON parcial; lock evita execução concorrente | Pendente (Fase 3) |
-| T-15 | Recursos | Figuras e GRIBs fechados; memória estável em lote | Pendente (Fase 3) |
+| T-13 | Sanitização | Caminho de saída e região não permitem traversal; arquivos no lugar esperado | Verde (Fase 3; documento 11) |
+| T-14 | Atomicidade | Falha no meio da escrita não deixa CSV/JSON parcial; lock evita execução concorrente | Verde (Fase 3; documento 11) |
+| T-15 | Recursos | Figuras e GRIBs fechados; memória estável em lote | Verde (Fase 3; documento 11) |
 
 **Verificação transversal de contrato:** antes/depois, comparar headers e nomes de variáveis/produtos. Nenhum nome deve mudar. A coluna `lat` já é crescente; a correção deve preservar a ordem das linhas e alinhar os dados à latitude.
 
@@ -647,7 +668,7 @@ Itens:
 | METAR | Chaves com espaço final e arquivos históricos inválidos | Chaves preservadas; escrita atômica e UTC desde a Fase 2; acervo antigo requer reparo/descarte |
 | `goGribV2.sh` | Alteração acidental da aquisição | Congelado; SHA-256 verificado na validação da Fase 2 |
 | Git | Perda de histórico/rollback | Histórico existe desde a Fase 0; commits por fase e baseline imutável |
-| `exit 1` do controlador | Interpretar sucesso como falha | D-16 permanece na Fase 3; validar pelos produtos enquanto isso |
+| `exit 1` do controlador | Interpretar sucesso como falha | Corrigido na Fase 3: retorna 0 só em sucesso, propaga o primeiro erro real e retorna 75 em concorrência (D-16) |
 
 ---
 
@@ -660,8 +681,12 @@ Itens:
 - `docs/05-diagnostico.md` — evidências completas D-01 a D-28.
 - `docs/09-fase-1-resultados.md` — resultados e testes T-01–T-05.
 - `docs/10-fase-2-resultados.md` — resultados e testes T-06–T-12.
+- `docs/11-fase-3-resultados.md` — robustez, testes T-13–T-15 e limites.
+- `docs/12-fase-4-resultados.md` — campanha real, release/rollback e pendências.
 - `tests/test_phase1_acceptance.py`, `tests/test_phase2_acceptance.py` — testes de aceitação.
+- `tests/test_phase3_acceptance.py`, `tests/test_phase4_acceptance.py` — regressões e contratos das Fases 3/4.
 - `reprocessamento/validar_fase1.py`, `reprocessamento/validar_fase2.py` — validação independente.
+- `reprocessamento/phase4.py`, `reprocessamento/release_phase4.py` — campanha e release/rollback da Fase 4.
 - `classes_MET/processamento_dados_MET.py` — dicionário de variáveis e seleção de níveis.
 - `classes_MET/gera_mapas_MET.py`, `gera_matriz_MET.py` — produtos escalares AUT.
 - `classes_MET/gera_mapas_vento_MET.py`, `gera_matriz_vento_MET.py` — vento AUT.
@@ -760,3 +785,9 @@ if int(self.prev_ana[i]) <= int(self.hora) <= int(self.prev_ana[j]):
 "data ": data,
 "mensagem_metar ": mens
 ```
+
+## Estado da Fase 4
+
+A implementacao e a validacao local estao em [12-fase-4-resultados.md](12-fase-4-resultados.md).
+O rollout real e o aceite dos consumidores externos ainda estao pendentes.
+Os nomes, headers, unidades e o downloader permanecem preservados.

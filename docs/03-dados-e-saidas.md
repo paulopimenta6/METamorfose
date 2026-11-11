@@ -1,5 +1,11 @@
 # 03 — Dados e saídas
 
+
+> **Estado após as Fases 3 e 4:** robustez operacional implementada e Fase 4
+> validada localmente. Consulte [11-fase-3-resultados.md](11-fase-3-resultados.md)
+> e [12-fase-4-resultados.md](12-fase-4-resultados.md) para comportamento atual,
+> testes, overrides e limites; descrições abaixo preservam o histórico.
+
 Este documento descreve os dados de entrada, as variáveis suportadas, os níveis, as regiões, os padrões de nomes e os schemas de saída.
 
 > **Estado:** este documento descreve o código original em `main`, **antes** da
@@ -507,3 +513,9 @@ Recomenda-se executar uma validação de sanidade após qualquer correção:
 3. Conferir `hMET` para 20/30/40/50/80 m.
 4. Validar todos os JSONs com `json.load`.
 5. Conferir o ciclo usado no início de cada janela de 6 horas.
+
+## Estado da Fase 4
+
+A implementacao e a validacao local estao em [12-fase-4-resultados.md](12-fase-4-resultados.md).
+O rollout real e o aceite dos consumidores externos ainda estao pendentes.
+Os nomes, headers, unidades e o downloader permanecem preservados.

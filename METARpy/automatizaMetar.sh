@@ -5,6 +5,11 @@
 # garantindo que diretorio e nomes de arquivo usem o mesmo instante.
 
 set -euo pipefail
+LOCK_DIR="${MET_LOCK_DIR:-${TMPDIR:-/tmp}/metamorfose-${UID}}"
+mkdir -p "${LOCK_DIR}"
+exec 9>"${LOCK_DIR}/automatizaMetar.lock"
+flock -n 9 || { echo "erro: execucao concorrente de automatizaMetar" >&2; exit 75; }
+
 
 REFERENCIA_UTC="${METAR_REFERENCIA_UTC:-$(date -u +%Y%m%d%H%M)}"
 export METAR_REFERENCIA_UTC="${REFERENCIA_UTC}"

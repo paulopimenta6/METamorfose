@@ -5,6 +5,7 @@ Created on Thu Aug 19 23:27:01 2021
 
 @author: phpimenta
 """
+from runtime_MET import atomic_text, save_figure, product_operation, validate_wind
 
 from regioes_predefinidas_MET import regioes_predefinidas
 from ponto_regiao_MET import met_ponto_regiao
@@ -30,19 +31,19 @@ def criaResultanteKnot(data_u, data_v):
     vResult=np.empty(data_u.shape)
     vResult=np.sqrt(np.power(data_u,2) + np.power(data_v,2))
     vResultKnot=vResult*1.943
-    return vResultKnot 
-    
+    return vResultKnot
+
 def criaAngAzMET(data_u, data_v):
     angAzResult=np.empty(data_u.shape)
     angAzResult=(((180/np.pi)*(np.arctan2((data_u),(data_v)))))
-    return angAzResult 
+    return angAzResult
 
 def criaAngMET(data_u, data_v):
     angResult=np.empty(data_u.shape)
     angResult=(((180/np.pi)*(np.arctan2((-data_u),(-data_v)))) + 360) % 360
-    return angResult 
+    return angResult
 
-def converte_altitude(pres):    
+def converte_altitude(pres):
     #retorna a altitude em feet a partir da pressao em hPa
     p0=1013.25
     h_alt = (1 - (pres/p0)**0.190284) * 145366.45
@@ -54,10 +55,11 @@ def calcula_hmet(nivel, eh_vento_superficie):
     if eh_vento_superficie:
         return float(nivel) * 3.28084
     return converte_altitude(nivel)
-    
+
+@product_operation
 def geraMatriz_Vento_Resu(u_objGRIB, v_objGRIB, lon_lat, regNome, nivel, eh_vento_superficie):
 
-#Gerador de vento para o BlueSky    
+#Gerador de vento para o BlueSky
 # =============================================================================
 # from bluesky.traffic.windsim import WindSim
 # wind = WindSim()
@@ -69,38 +71,40 @@ def geraMatriz_Vento_Resu(u_objGRIB, v_objGRIB, lon_lat, regNome, nivel, eh_vent
 # winddir 	deg 	wind direction
 # windspd 	kt 	wind speed
 # link1: https://github.com/TUDelft-CNS-ATM/bluesky/wiki/windsim
-# link2: https://www.weather.gov/media/epz/wxcalc/pressureAltitude.pdf (tranformando hPa de altitude em ft)     
+# link2: https://www.weather.gov/media/epz/wxcalc/pressureAltitude.pdf (tranformando hPa de altitude em ft)
 # =============================================================================
 
+    validate_wind(u_objGRIB, v_objGRIB)
+    nivel = u_objGRIB[0].level
     hora_grib=["00", "06", "12", "18"]
     data_horario=time.localtime()
     mes=data_horario.tm_mon
     dia=data_horario.tm_mday
     hora=data_horario.tm_hour
-    
+
     i=0
     j=i+1
-    
-    while i<=(len(hora_grib)-2):           
+
+    while i<=(len(hora_grib)-2):
         if int(hora_grib[i])<=hora<int(hora_grib[j]):
             hh_analise=hora_grib[i]
         i=i+1
         j=j+1
-        
+
     if hora>=int(hora_grib[len(hora_grib)-1]):
-        hh_analise=hora_grib[len(hora_grib)-1]    
-    
+        hh_analise=hora_grib[len(hora_grib)-1]
+
     if int(dia)<10:
         dia="0"+str(dia)
     if int(mes)<10:
         mes="0"+str(mes)
-    
+
     lons1=lon_lat[0][0]
     lons2=lon_lat[0][1]
     lats1=lon_lat[1][0]
     lats2=lon_lat[1][1]
 
-    if 0<=lons1<180 and 0<=lons2<180:
+    if 0<=lons1<=180 and 0<=lons2<=180:
         flag=1
 
     if -180<=lons1<0 and -180<=lons2<0:
@@ -108,119 +112,122 @@ def geraMatriz_Vento_Resu(u_objGRIB, v_objGRIB, lon_lat, regNome, nivel, eh_vent
         lons2=lons2+360
         flag=2
 
-    if -180<=lons1<0 and 0<=lons2<180:
+    if -180<=lons1<0 and 0<=lons2<=180:
         flag=3
 
     for i in range(len(u_objGRIB)):
+        if hasattr(u_objGRIB[i], "dataTime"):
+            hh_analise = "%02d" % (int(u_objGRIB[i].dataTime) // 100)
         ft=u_objGRIB[i].forecastTime
         if ft<12:
             ft='0'+str(ft)
-                
-        f = open(dir_save.imprime_dirMatrizesBluesky() + "GFS_" + str(u_objGRIB[i].iDirectionIncrementInDegrees) + "_" + "matriz_lat_lon_alt_angMET_VentoResult" + "_" + str(regNome).upper() + "_" + "N" + str(nivel) + "_" + hh_analise + "_" + str(u_objGRIB[i].dataDate) + "_" + str(ft)  + '.csv', 'w', newline='', encoding='utf-8')
-        w = csv.writer(f)          
-        
-        if flag==1 or flag==2:
-            map = Basemap(projection='mill', lat_0=0, lon_0=0)
-            data_U, lat_u, lon_u = u_objGRIB[i].data(lat1=lats1,lat2=lats2,lon1=lons1,lon2=lons2)
-            data_V, lat_v, lon_v = v_objGRIB[i].data(lat1=lats1,lat2=lats2,lon1=lons1,lon2=lons2)
-            
-            if flag==2:
-                lon_u=lon_u-360
-                lon_v=lon_v-360 
-            data_U=data_U[::-1,:]
-            data_V=data_V[::-1,:]
-            lon_u=lon_u[0,:]
-            lat_u=lat_u[:,0]
-            lat_u=lat_u[::-1]  
-            lon,lat=np.meshgrid(lon_u ,lat_u)        
 
-        if flag==3:
-            lons1_ini=lons1+360          
-            lons2_ini=360
-            lons1_fim=0          
-            lons2_fim=lons2
+        with atomic_text(dir_save.imprime_dirMatrizesBluesky() + "GFS_" + str(u_objGRIB[i].iDirectionIncrementInDegrees) + "_" + "matriz_lat_lon_alt_angMET_VentoResult" + "_" + str(regNome).upper() + "_" + "N" + str(nivel) + "_" + hh_analise + "_" + str(u_objGRIB[i].dataDate) + "_" + str(ft)  + '.csv', 'w', newline='', encoding='utf-8') as f:
+            w = csv.writer(f)
 
-            data_U_ini, lat_u_ini, lon_u_ini = u_objGRIB[i].data(lat1=lats1,lat2=lats2,lon1=lons1_ini,lon2=lons2_ini)
-            data_V_ini, lat_v_ini, lon_v_ini = v_objGRIB[i].data(lat1=lats1,lat2=lats2,lon1=lons1_ini,lon2=lons2_ini)
+            if flag==1 or flag==2:
+                data_U, lat_u, lon_u = u_objGRIB[i].data(lat1=lats1,lat2=lats2,lon1=lons1,lon2=lons2)
+                data_V, lat_v, lon_v = v_objGRIB[i].data(lat1=lats1,lat2=lats2,lon1=lons1,lon2=lons2)
 
-            data_U_ini=data_U_ini[::-1,:]
-            data_V_ini=data_V_ini[::-1,:]
-            lon_u_ini=lon_u_ini[0,:]
-            lon_u_ini=lon_u_ini-360
-            lat_u_ini=lat_u_ini[:,0]
-            lat_u_ini=lat_u_ini[::-1]          
+                if flag==2:
+                    lon_u=lon_u-360
+                    lon_v=lon_v-360
+                data_U=data_U[::-1,:]
+                data_V=data_V[::-1,:]
+                lon_u=lon_u[0,:]
+                lat_u=lat_u[:,0]
+                lat_u=lat_u[::-1]
+                lon,lat=np.meshgrid(lon_u ,lat_u)
 
-            data_U_fim, lat_u_fim, lon_u_fim = u_objGRIB[i].data(lat1=lats1,lat2=lats2,lon1=lons1_fim,lon2=lons2_fim)
-            data_V_fim, lat_v_fim, lon_v_fim = v_objGRIB[i].data(lat1=lats1,lat2=lats2,lon1=lons1_fim,lon2=lons2_fim)
+            if flag==3:
+                lons1_ini=lons1+360
+                lons2_ini=360
+                lons1_fim=0
+                lons2_fim=lons2
 
-            data_U_fim=data_U_fim[::-1,:]
-            data_V_fim=data_V_fim[::-1,:]
-            lon_u_fim=lon_u_fim[0,:]            
-            lat_u_fim=lat_u_fim[:,0]
-            lat_u_fim=lat_u_fim[::-1]        
+                data_U_ini, lat_u_ini, lon_u_ini = u_objGRIB[i].data(lat1=lats1,lat2=lats2,lon1=lons1_ini,lon2=lons2_ini)
+                data_V_ini, lat_v_ini, lon_v_ini = v_objGRIB[i].data(lat1=lats1,lat2=lats2,lon1=lons1_ini,lon2=lons2_ini)
 
-            #latitude nao muda em momento algum, pois sua variacao nao precisa de correcao
-            lat=lat_u_ini
-            lon=np.append(lon_u_ini, lon_u_fim)
-            lon,lat=np.meshgrid(lon ,lat)
- 
-            data_U=np.zeros((data_U_ini.shape[0],data_U_ini.shape[1]+data_U_fim.shape[1]))
-            data_V=np.zeros((data_V_ini.shape[0],data_V_ini.shape[1]+data_V_fim.shape[1])) 
-           
-            if data_U_ini.shape[0]==data_U_fim.shape[0]:
-                for i in range(0,data_U_ini.shape[0]):
-                    data_U[i,:]=np.append(data_U_ini[i,:],data_U_fim[i,:])
+                data_U_ini=data_U_ini[::-1,:]
+                data_V_ini=data_V_ini[::-1,:]
+                lon_u_ini=lon_u_ini[0,:]
+                lon_u_ini=lon_u_ini-360
+                lat_u_ini=lat_u_ini[:,0]
+                lat_u_ini=lat_u_ini[::-1]
 
-            if data_V_ini.shape[0]==data_V_fim.shape[0]:
-                for i in range(0,data_V_ini.shape[0]):
-                    data_V[i,:]=np.append(data_V_ini[i,:],data_V_fim[i,:])                
-   
-    
-        linha=data_U.shape[0]
-        coluna=data_U.shape[1]   
-        vento_resultante=criaResultanteKnot(data_U, data_V)        
-        angMET=criaAngMET(data_U, data_V)
-        hMET=calcula_hmet(nivel, eh_vento_superficie)
+                data_U_fim, lat_u_fim, lon_u_fim = u_objGRIB[i].data(lat1=lats1,lat2=lats2,lon1=lons1_fim,lon2=lons2_fim)
+                data_V_fim, lat_v_fim, lon_v_fim = v_objGRIB[i].data(lat1=lats1,lat2=lats2,lon1=lons1_fim,lon2=lons2_fim)
 
-        w.writerow([ "lat", "lon", "hMET", "angMET", "vento_resultante" ])
-        for i in range(linha):
-            for j in range(coluna):
-            #comentando a linha que escreve a matriz                   
-            #print("%f %f %f %f %f" %(lat[ii,jj], lon[ii,jj], hMET, angMET[ii,jj], vento_resultante[ii,jj]))
-                w.writerow([ lat[i,j], lon[i,j], hMET, angMET[i,j], vento_resultante[i,j] ])
-        
-        f.close()
+                data_U_fim=data_U_fim[::-1,:]
+                data_V_fim=data_V_fim[::-1,:]
+                lon_u_fim=lon_u_fim[0,:]
+                lat_u_fim=lat_u_fim[:,0]
+                lat_u_fim=lat_u_fim[::-1]
 
+                #latitude nao muda em momento algum, pois sua variacao nao precisa de correcao
+                lat=lat_u_ini
+                lon=np.append(lon_u_ini, lon_u_fim)
+                lon,lat=np.meshgrid(lon ,lat)
+
+                data_U=np.zeros((data_U_ini.shape[0],data_U_ini.shape[1]+data_U_fim.shape[1]))
+                data_V=np.zeros((data_V_ini.shape[0],data_V_ini.shape[1]+data_V_fim.shape[1]))
+
+                if data_U_ini.shape[0]==data_U_fim.shape[0]:
+                    for i in range(0,data_U_ini.shape[0]):
+                        data_U[i,:]=np.append(data_U_ini[i,:],data_U_fim[i,:])
+
+                if data_V_ini.shape[0]==data_V_fim.shape[0]:
+                    for i in range(0,data_V_ini.shape[0]):
+                        data_V[i,:]=np.append(data_V_ini[i,:],data_V_fim[i,:])
+
+
+            linha=data_U.shape[0]
+            coluna=data_U.shape[1]
+            vento_resultante=criaResultanteKnot(data_U, data_V)
+            angMET=criaAngMET(data_U, data_V)
+            hMET=calcula_hmet(nivel, eh_vento_superficie)
+
+            w.writerow([ "lat", "lon", "hMET", "angMET", "vento_resultante" ])
+            for i in range(linha):
+                for j in range(coluna):
+                #comentando a linha que escreve a matriz
+                #print("%f %f %f %f %f" %(lat[ii,jj], lon[ii,jj], hMET, angMET[ii,jj], vento_resultante[ii,jj]))
+                    w.writerow([ lat[i,j], lon[i,j], hMET, angMET[i,j], vento_resultante[i,j] ])
+
+
+@product_operation
 def geraMatriz_Vento_UVT_predi(u_objGRIB, v_objGRIB, t_objGRIB, lon_lat, regNome, nivel):
+    validate_wind(u_objGRIB, v_objGRIB, t_objGRIB)
+    nivel = u_objGRIB[0].level
     hora_grib=["00", "06", "12", "18"]
     data_horario=time.localtime()
     mes=data_horario.tm_mon
     dia=data_horario.tm_mday
     hora=data_horario.tm_hour
-    
+
     i=0
     j=i+1
-    
-    while i<=(len(hora_grib)-2):           
+
+    while i<=(len(hora_grib)-2):
         if int(hora_grib[i])<=hora<int(hora_grib[j]):
             hh_analise=hora_grib[i]
         i=i+1
         j=j+1
-        
+
     if hora>=int(hora_grib[len(hora_grib)-1]):
-        hh_analise=hora_grib[len(hora_grib)-1]    
-    
+        hh_analise=hora_grib[len(hora_grib)-1]
+
     if int(dia)<10:
         dia="0"+str(dia)
     if int(mes)<10:
-        mes="0"+str(mes)   
-    
+        mes="0"+str(mes)
+
     lons1=lon_lat[0][0]
     lons2=lon_lat[0][1]
     lats1=lon_lat[1][0]
     lats2=lon_lat[1][1]
 
-    if 0<=lons1<180 and 0<=lons2<180:
+    if 0<=lons1<=180 and 0<=lons2<=180:
         flag=1
 
     if -180<=lons1<0 and -180<=lons2<0:
@@ -228,116 +235,116 @@ def geraMatriz_Vento_UVT_predi(u_objGRIB, v_objGRIB, t_objGRIB, lon_lat, regNome
         lons2=lons2+360
         flag=2
 
-    if -180<=lons1<0 and 0<=lons2<180:
+    if -180<=lons1<0 and 0<=lons2<=180:
         flag=3
 
     for i in range(len(u_objGRIB)):
+        if hasattr(u_objGRIB[i], "dataTime"):
+            hh_analise = "%02d" % (int(u_objGRIB[i].dataTime) // 100)
 
         ft=u_objGRIB[i].forecastTime
         if ft<12:
             ft='0'+str(ft)
-      
-        f = open(dir_save.imprime_dirMatrizesPredi() + "GFS_" + str(u_objGRIB[i].iDirectionIncrementInDegrees) + "_" + "matriz_lat_lon_Vento_UVT_Predi" + "_" + str(regNome).upper()  + "_" + "N" +str(nivel) + "_" + str(hh_analise) + "_" + str(u_objGRIB[i].dataDate) + "_" + str(ft)  + '.csv', 'w', newline='', encoding='utf-8')
-        w = csv.writer(f)
-        
-        if flag==1 or flag==2:
-            map = Basemap(projection='mill', lat_0=0, lon_0=0)
-            data_U, lat_u, lon_u = u_objGRIB[i].data(lat1=lats1,lat2=lats2,lon1=lons1,lon2=lons2)
-            data_V, lat_v, lon_v = v_objGRIB[i].data(lat1=lats1,lat2=lats2,lon1=lons1,lon2=lons2)    
-            data_T, lat_t, lon_t = t_objGRIB[i].data(lat1=lats1,lat2=lats2,lon1=lons1,lon2=lons2)
-            if flag==2:
-                lon_u=lon_u-360
-                lon_v=lon_v-360
-        
-            data_U=data_U[::-1,:]
-            data_V=data_V[::-1,:]
-            data_T=data_T[::-1,:]
-            lon_u=lon_u[0,:]
-            lat_u=lat_u[:,0]
-            lat_u=lat_u[::-1]
-            lon,lat=np.meshgrid(lon_u ,lat_u)
-            
-        if flag==3:
-            lons1_ini=lons1+360          
-            lons2_ini=360
-            lons1_fim=0          
-            lons2_fim=lons2
 
-            data_U_ini, lat_u_ini, lon_u_ini = u_objGRIB[i].data(lat1=lats1,lat2=lats2,lon1=lons1_ini,lon2=lons2_ini)
-            data_V_ini, lat_v_ini, lon_v_ini = v_objGRIB[i].data(lat1=lats1,lat2=lats2,lon1=lons1_ini,lon2=lons2_ini)
-            data_T_ini, lat_t_ini, lon_t_ini = t_objGRIB[i].data(lat1=lats1,lat2=lats2,lon1=lons1_ini,lon2=lons2_ini) 
+        with atomic_text(dir_save.imprime_dirMatrizesPredi() + "GFS_" + str(u_objGRIB[i].iDirectionIncrementInDegrees) + "_" + "matriz_lat_lon_Vento_UVT_Predi" + "_" + str(regNome).upper()  + "_" + "N" +str(nivel) + "_" + str(hh_analise) + "_" + str(u_objGRIB[i].dataDate) + "_" + str(ft)  + '.csv', 'w', newline='', encoding='utf-8') as f:
+            w = csv.writer(f)
 
-            data_U_ini=data_U_ini[::-1,:]
-            data_V_ini=data_V_ini[::-1,:]
-            data_T_ini=data_T_ini[::-1,:]
-            lon_u_ini=lon_u_ini[0,:]
-            lon_u_ini=lon_u_ini-360
-            lat_u_ini=lat_u_ini[:,0]
-            lat_u_ini=lat_u_ini[::-1]          
+            if flag==1 or flag==2:
+                data_U, lat_u, lon_u = u_objGRIB[i].data(lat1=lats1,lat2=lats2,lon1=lons1,lon2=lons2)
+                data_V, lat_v, lon_v = v_objGRIB[i].data(lat1=lats1,lat2=lats2,lon1=lons1,lon2=lons2)
+                data_T, lat_t, lon_t = t_objGRIB[i].data(lat1=lats1,lat2=lats2,lon1=lons1,lon2=lons2)
+                if flag==2:
+                    lon_u=lon_u-360
+                    lon_v=lon_v-360
 
-            data_U_fim, lat_u_fim, lon_u_fim = u_objGRIB[i].data(lat1=lats1,lat2=lats2,lon1=lons1_fim,lon2=lons2_fim)
-            data_V_fim, lat_v_fim, lon_v_fim = v_objGRIB[i].data(lat1=lats1,lat2=lats2,lon1=lons1_fim,lon2=lons2_fim)
-            data_T_fim, lat_t_fim, lon_t_fim = t_objGRIB[i].data(lat1=lats1,lat2=lats2,lon1=lons1_fim,lon2=lons2_fim) 
+                data_U=data_U[::-1,:]
+                data_V=data_V[::-1,:]
+                data_T=data_T[::-1,:]
+                lon_u=lon_u[0,:]
+                lat_u=lat_u[:,0]
+                lat_u=lat_u[::-1]
+                lon,lat=np.meshgrid(lon_u ,lat_u)
 
-            data_U_fim=data_U_fim[::-1,:]
-            data_V_fim=data_V_fim[::-1,:]
-            data_T_fim=data_T_fim[::-1,:]
-            lon_u_fim=lon_u_fim[0,:]            
-            lat_u_fim=lat_u_fim[:,0]
-            lat_u_fim=lat_u_fim[::-1]        
+            if flag==3:
+                lons1_ini=lons1+360
+                lons2_ini=360
+                lons1_fim=0
+                lons2_fim=lons2
 
-            #latitude nao muda em momento algum, pois sua variacao nao precisa de correcao
-            lat=lat_u_ini
-            lon=np.append(lon_u_ini, lon_u_fim)
-            lon,lat=np.meshgrid(lon ,lat)
- 
-            data_U=np.zeros((data_U_ini.shape[0],data_U_ini.shape[1]+data_U_fim.shape[1]))
-            data_V=np.zeros((data_V_ini.shape[0],data_V_ini.shape[1]+data_V_fim.shape[1]))
-            #a variavel "t" de temperatura foi incluida!   
-            data_T=np.zeros((data_T_ini.shape[0],data_T_ini.shape[1]+data_T_fim.shape[1])) 
-           
-            if data_U_ini.shape[0]==data_U_fim.shape[0]:
-                for i in range(0,data_U_ini.shape[0]):
-                    data_U[i,:]=np.append(data_U_ini[i,:],data_U_fim[i,:])
+                data_U_ini, lat_u_ini, lon_u_ini = u_objGRIB[i].data(lat1=lats1,lat2=lats2,lon1=lons1_ini,lon2=lons2_ini)
+                data_V_ini, lat_v_ini, lon_v_ini = v_objGRIB[i].data(lat1=lats1,lat2=lats2,lon1=lons1_ini,lon2=lons2_ini)
+                data_T_ini, lat_t_ini, lon_t_ini = t_objGRIB[i].data(lat1=lats1,lat2=lats2,lon1=lons1_ini,lon2=lons2_ini)
 
-            if data_V_ini.shape[0]==data_V_fim.shape[0]:
-                for i in range(0,data_V_ini.shape[0]):
-                    data_V[i,:]=np.append(data_V_ini[i,:],data_V_fim[i,:])
+                data_U_ini=data_U_ini[::-1,:]
+                data_V_ini=data_V_ini[::-1,:]
+                data_T_ini=data_T_ini[::-1,:]
+                lon_u_ini=lon_u_ini[0,:]
+                lon_u_ini=lon_u_ini-360
+                lat_u_ini=lat_u_ini[:,0]
+                lat_u_ini=lat_u_ini[::-1]
 
-            if data_T_ini.shape[0]==data_T_fim.shape[0]:
-                for i in range(0,data_T_ini.shape[0]):
-                    data_T[i,:]=np.append(data_T_ini[i,:],data_T_fim[i,:])
-                    
-  
-        linha=data_U.shape[0]
-        coluna=data_U.shape[1]
-        w.writerow([ "lat", "lon", "vento U", "vento V", "temp" ])
-        for i in range(linha):
-            for j in range(coluna):
-                #comentando a linha que escreve a matriz de dados MET                
-                #print("%f %f %f %f %f" %( lat[ii,jj], lon[ii,jj], data_UU[ii,jj], data_VV[ii,jj], data_T[ii,jj] ))
-                w.writerow([ lat[i,j], lon[i,j], data_U[i,j], data_V[i,j], data_T[i,j] ])
-        
-        f.close()
+                data_U_fim, lat_u_fim, lon_u_fim = u_objGRIB[i].data(lat1=lats1,lat2=lats2,lon1=lons1_fim,lon2=lons2_fim)
+                data_V_fim, lat_v_fim, lon_v_fim = v_objGRIB[i].data(lat1=lats1,lat2=lats2,lon1=lons1_fim,lon2=lons2_fim)
+                data_T_fim, lat_t_fim, lon_t_fim = t_objGRIB[i].data(lat1=lats1,lat2=lats2,lon1=lons1_fim,lon2=lons2_fim)
+
+                data_U_fim=data_U_fim[::-1,:]
+                data_V_fim=data_V_fim[::-1,:]
+                data_T_fim=data_T_fim[::-1,:]
+                lon_u_fim=lon_u_fim[0,:]
+                lat_u_fim=lat_u_fim[:,0]
+                lat_u_fim=lat_u_fim[::-1]
+
+                #latitude nao muda em momento algum, pois sua variacao nao precisa de correcao
+                lat=lat_u_ini
+                lon=np.append(lon_u_ini, lon_u_fim)
+                lon,lat=np.meshgrid(lon ,lat)
+
+                data_U=np.zeros((data_U_ini.shape[0],data_U_ini.shape[1]+data_U_fim.shape[1]))
+                data_V=np.zeros((data_V_ini.shape[0],data_V_ini.shape[1]+data_V_fim.shape[1]))
+                #a variavel "t" de temperatura foi incluida!
+                data_T=np.zeros((data_T_ini.shape[0],data_T_ini.shape[1]+data_T_fim.shape[1]))
+
+                if data_U_ini.shape[0]==data_U_fim.shape[0]:
+                    for i in range(0,data_U_ini.shape[0]):
+                        data_U[i,:]=np.append(data_U_ini[i,:],data_U_fim[i,:])
+
+                if data_V_ini.shape[0]==data_V_fim.shape[0]:
+                    for i in range(0,data_V_ini.shape[0]):
+                        data_V[i,:]=np.append(data_V_ini[i,:],data_V_fim[i,:])
+
+                if data_T_ini.shape[0]==data_T_fim.shape[0]:
+                    for i in range(0,data_T_ini.shape[0]):
+                        data_T[i,:]=np.append(data_T_ini[i,:],data_T_fim[i,:])
+
+
+            linha=data_U.shape[0]
+            coluna=data_U.shape[1]
+            w.writerow([ "lat", "lon", "vento U", "vento V", "temp" ])
+            for i in range(linha):
+                for j in range(coluna):
+                    #comentando a linha que escreve a matriz de dados MET
+                    #print("%f %f %f %f %f" %( lat[ii,jj], lon[ii,jj], data_UU[ii,jj], data_VV[ii,jj], data_T[ii,jj] ))
+                    w.writerow([ lat[i,j], lon[i,j], data_U[i,j], data_V[i,j], data_T[i,j] ])
+
 
 def geraMatrizVentoSup(lon_lat, varReg):
-    
+
     # =============================================================================
     # ventos e temperatura para o preditor
     # Para situacoes proximo a superficie
     # var impressas: <lat[deg]> <lon[deg]> <u[m**s-1]> <v[m**s-1]> <t[K]>
-    # Passar como parametro o nivel de superficie... 
-    
-    varNivelVentoSup=[20, 30, 40, 50, 80]
-    t_comp_supe=processamento_dados_met_AUT("temps").define_lista_var_com_nivel_superficie()    
+    # Passar como parametro o nivel de superficie...
 
-    for varNivel_sup in varNivelVentoSup: 
+    varNivelVentoSup=[20, 30, 40, 50, 80]
+    t_comp_supe=processamento_dados_met_AUT("temps").define_lista_var_com_nivel_superficie()
+
+    for varNivel_sup in varNivelVentoSup:
         u_comp_supe=processamento_dados_met_AUT("uSupe", varNivel_sup).define_lista_var_com_altitude()
         v_comp_supe=processamento_dados_met_AUT("vSupe", varNivel_sup).define_lista_var_com_altitude()
 
         geraMatriz_Vento_Resu(u_comp_supe, v_comp_supe, lon_lat, varReg, varNivel_sup, True)
         geraMatriz_Vento_UVT_predi(u_comp_supe, v_comp_supe, t_comp_supe, lon_lat, varReg, varNivel_sup)
- 
+
 
 varMET, varNivel, varRegiao = parse_param(sys.argv).imprime_parse()
 
@@ -346,43 +353,45 @@ if (type(varRegiao) is tuple):
     print("varRegiao: ")
     print(varRegiao)
     varRegiao=list(varRegiao)
-    lon=int(varRegiao[0])
-    lat=int(varRegiao[1])
-    if (type(varRegiao) is list):    
+    lon=float(varRegiao[0])
+    lon = int(lon) if lon.is_integer() else lon
+    lat=float(varRegiao[1])
+    lat = int(lat) if lat.is_integer() else lat
+    if (type(varRegiao) is list):
         ptos=met_ponto_regiao(lon, lat)
         lonslats=ptos.imprime_longitude_latitude()
         print("Usando a classe ponto_regiao_MET")
         print(lonslats)
         varRegiaoNome=str("lon") + str(lon) + "_" + str("lat") + str(lat)
-        
+
 if (type(varRegiao) is str):
     ptos=regioes_predefinidas(varRegiao)
     lonslats=ptos.imprime_regiao()
     print("Usando a classe regioes_predefinidas_MET")
     print(lonslats)
-    varRegiaoNome=str(varRegiao)        
+    varRegiaoNome=str(varRegiao)
 
 
-if varMET=="wind":    
+if varMET=="wind":
     # =============================================================================
-    # Calculando a altitude em ft 
+    # Calculando a altitude em ft
     # =============================================================================
     u_comp=processamento_dados_met_AUT("u", varNivel).define_lista_var_com_nivel_pressao()
     v_comp=processamento_dados_met_AUT("v", varNivel).define_lista_var_com_nivel_pressao()
     t_comp=processamento_dados_met_AUT("temp", varNivel).define_lista_var_com_nivel_pressao()
     # =============================================================================
     # ventos para BlueSky
-    # var impressas: <lat[deg]> <lon[deg]> <alt[feet]> <angMET[deg]> <VResul[m**s-1]> 
+    # var impressas: <lat[deg]> <lon[deg]> <alt[feet]> <angMET[deg]> <VResul[m**s-1]>
     geraMatriz_Vento_Resu(u_comp, v_comp, lonslats, varRegiaoNome, varNivel, False)
     # =============================================================================
     # =============================================================================
     # ventos e temperatura para o preditor
-    # Para situacoes no nivel escolhido pelo usuario ou automacao 
+    # Para situacoes no nivel escolhido pelo usuario ou automacao
     geraMatriz_Vento_UVT_predi(u_comp, v_comp, t_comp, lonslats, varRegiaoNome, varNivel)
     # =============================================================================
 if varMET=="winds":
     # =============================================================================
     # Gerando as matrizes proximas da superfície
-    # O nivel de altura considerado é a altura em relacao ao solo    
+    # O nivel de altura considerado é a altura em relacao ao solo
     geraMatrizVentoSup(lonslats, varRegiaoNome)
 # =============================================================================

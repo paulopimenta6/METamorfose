@@ -1,5 +1,11 @@
 # 01 — Arquitetura
 
+
+> **Estado após as Fases 3 e 4:** robustez operacional implementada e Fase 4
+> validada localmente. Consulte [11-fase-3-resultados.md](11-fase-3-resultados.md)
+> e [12-fase-4-resultados.md](12-fase-4-resultados.md) para comportamento atual,
+> testes, overrides e limites; descrições abaixo preservam o histórico.
+
 > **Estado:** este documento descreve a arquitetura e o comportamento do código
 > original em `main`. As correções das Fases 1 e 2 estão resumidas em
 > [09-fase-1-resultados.md](09-fase-1-resultados.md) e

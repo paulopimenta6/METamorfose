@@ -1,0 +1,17 @@
+{
+  "release_sha256": "26fa746b3b7017f626c2121ba19bf416e3751280180cdd0424ad2100e908d196",
+  "approved": false,
+  "consumers": [
+    "BlueSky",
+    "preditor",
+    "planilhas"
+  ],
+  "evidence": {
+    "BlueSky": null,
+    "preditor": null,
+    "planilhas": null
+  },
+  "approved_by": null,
+  "accepted_at_utc": null,
+  "note": "Preencher somente apos validar esta release nos consumidores reais. Este arquivo nao constitui aceite."
+}

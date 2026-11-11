@@ -5,6 +5,7 @@ Created on Mon Aug 23 07:15:27 2021
 
 @author: phpimenta
 """
+from runtime_MET import atomic_text, save_figure, product_operation, validate_wind
 import matplotlib
 from matplotlib import rc
 matplotlib.use('Agg')
@@ -23,8 +24,11 @@ dir_save=controla_dirs_MET()
 
 varNivelProxSupe=[20, 30, 40, 50, 80]
 
+@product_operation
 def gera_mapas_vento(u_objGRIB, v_objGRIB, lon_lat, regNome, nivel):
 
+    validate_wind(u_objGRIB, v_objGRIB)
+    nivel = u_objGRIB[0].level
     hora_grib=["00", "06", "12", "18"]
     data_horario=time.localtime()
     ano=data_horario.tm_year
@@ -32,30 +36,30 @@ def gera_mapas_vento(u_objGRIB, v_objGRIB, lon_lat, regNome, nivel):
     dia=data_horario.tm_mday
     hora=data_horario.tm_hour
     minuto=data_horario.tm_min
-    
+
     i=0
     j=i+1
-    
-    while i<=(len(hora_grib)-2):           
+
+    while i<=(len(hora_grib)-2):
         if int(hora_grib[i])<=hora<int(hora_grib[j]):
             hh_analise=hora_grib[i]
         i=i+1
         j=j+1
-        
+
     if hora>=int(hora_grib[len(hora_grib)-1]):
-        hh_analise=hora_grib[len(hora_grib)-1]    
-    
+        hh_analise=hora_grib[len(hora_grib)-1]
+
     if int(dia)<10:
         dia="0"+str(dia)
     if int(mes)<10:
-        mes="0"+str(mes)   
-    
+        mes="0"+str(mes)
+
     lons1=lon_lat[0][0]
     lons2=lon_lat[0][1]
     lats1=lon_lat[1][0]
     lats2=lon_lat[1][1]
 
-    if 0<=lons1<180 and 0<=lons2<180:
+    if 0<=lons1<=180 and 0<=lons2<=180:
         flag=1
 
     if -180<=lons1<0 and -180<=lons2<0:
@@ -63,23 +67,25 @@ def gera_mapas_vento(u_objGRIB, v_objGRIB, lon_lat, regNome, nivel):
         lons2=lons2+360
         flag=2
 
-    if -180<=lons1<0 and 0<=lons2<180:
-        lons1_ini=lons1+360          
+    if -180<=lons1<0 and 0<=lons2<=180:
+        lons1_ini=lons1+360
         lons2_ini=360
-        lons1_fim=0          
+        lons1_fim=0
         lons2_fim=lons2
         flag=3
-    
-    for i in range(len(u_objGRIB)):
-        
-        ft=u_objGRIB[i].forecastTime
+
+    for forecast_index in range(len(u_objGRIB)):
+        if hasattr(u_objGRIB[forecast_index], "dataTime"):
+            hh_analise = "%02d" % (int(u_objGRIB[forecast_index].dataTime) // 100)
+
+        ft=u_objGRIB[forecast_index].forecastTime
         if ft<12:
             ft='0'+str(ft)
-    
+
         if flag==1 or flag==2:
             map = Basemap(projection='mill', lat_0=0, lon_0=0)
-            data_U, lat_u, lon_u = u_objGRIB[i].data(lat1=lats1,lat2=lats2,lon1=lons1,lon2=lons2)
-            data_V, lat_v, lon_v = v_objGRIB[i].data(lat1=lats1,lat2=lats2,lon1=lons1,lon2=lons2)
+            data_U, lat_u, lon_u = u_objGRIB[forecast_index].data(lat1=lats1,lat2=lats2,lon1=lons1,lon2=lons2)
+            data_V, lat_v, lon_v = v_objGRIB[forecast_index].data(lat1=lats1,lat2=lats2,lon1=lons1,lon2=lons2)
             if flag==2:
                 lon_u=lon_u-360
                 lon_v=lon_v-360
@@ -88,34 +94,34 @@ def gera_mapas_vento(u_objGRIB, v_objGRIB, lon_lat, regNome, nivel):
             lon_u=lon_u[0,:]
             lat_u=lat_u[:,0]
             lat_u=lat_u[::-1]
-            
+
         if flag==3:
-            data_U_ini, lat_u_ini, lon_u_ini = u_objGRIB[i].data(lat1=lats1,lat2=lats2,lon1=lons1_ini,lon2=lons2_ini)
-            data_V_ini, lat_v_ini, lon_v_ini = v_objGRIB[i].data(lat1=lats1,lat2=lats2,lon1=lons1_ini,lon2=lons2_ini)
+            data_U_ini, lat_u_ini, lon_u_ini = u_objGRIB[forecast_index].data(lat1=lats1,lat2=lats2,lon1=lons1_ini,lon2=lons2_ini)
+            data_V_ini, lat_v_ini, lon_v_ini = v_objGRIB[forecast_index].data(lat1=lats1,lat2=lats2,lon1=lons1_ini,lon2=lons2_ini)
 
             data_U_ini=data_U_ini[::-1,:]
             data_V_ini=data_V_ini[::-1,:]
             lon_u_ini=lon_u_ini[0,:]
             lon_u_ini=lon_u_ini-360
             lat_u_ini=lat_u_ini[:,0]
-            lat_u_ini=lat_u_ini[::-1]          
+            lat_u_ini=lat_u_ini[::-1]
 
-            data_U_fim, lat_u_fim, lon_u_fim = u_objGRIB[i].data(lat1=lats1,lat2=lats2,lon1=lons1_fim,lon2=lons2_fim)
-            data_V_fim, lat_v_fim, lon_v_fim = v_objGRIB[i].data(lat1=lats1,lat2=lats2,lon1=lons1_fim,lon2=lons2_fim)
+            data_U_fim, lat_u_fim, lon_u_fim = u_objGRIB[forecast_index].data(lat1=lats1,lat2=lats2,lon1=lons1_fim,lon2=lons2_fim)
+            data_V_fim, lat_v_fim, lon_v_fim = v_objGRIB[forecast_index].data(lat1=lats1,lat2=lats2,lon1=lons1_fim,lon2=lons2_fim)
 
             data_U_fim=data_U_fim[::-1,:]
             data_V_fim=data_V_fim[::-1,:]
-            lon_u_fim=lon_u_fim[0,:]            
+            lon_u_fim=lon_u_fim[0,:]
             lat_u_fim=lat_u_fim[:,0]
-            lat_u_fim=lat_u_fim[::-1]        
+            lat_u_fim=lat_u_fim[::-1]
 
             #latitude nao muda em momento algum, pois sua variacao nao precisa de correcao
             lat_u=lat_u_ini
             lon_u=np.append(lon_u_ini, lon_u_fim)
             lon_v=lon_u
             data_U=np.zeros((data_U_ini.shape[0],data_U_ini.shape[1]+data_U_fim.shape[1]))
-            data_V=np.zeros((data_V_ini.shape[0],data_V_ini.shape[1]+data_V_fim.shape[1])) 
-           
+            data_V=np.zeros((data_V_ini.shape[0],data_V_ini.shape[1]+data_V_fim.shape[1]))
+
             if data_U_ini.shape[0]==data_U_fim.shape[0]:
                 for i in range(0,data_U_ini.shape[0]):
                     data_U[i,:]=np.append(data_U_ini[i,:],data_U_fim[i,:])
@@ -124,34 +130,34 @@ def gera_mapas_vento(u_objGRIB, v_objGRIB, lon_lat, regNome, nivel):
                 for i in range(0,data_V_ini.shape[0]):
                     data_V[i,:]=np.append(data_V_ini[i,:],data_V_fim[i,:])
 ###
-        
+
         lons,lats=np.meshgrid(lon_u ,lat_u)
-        
+
         lon_min=lons.min()
         lon_max=lons.max()
         lat_min=lats.min()
-        lat_max=lats.max()  
-        
+        lat_max=lats.max()
+
         m = Basemap(projection='cyl',
-            llcrnrlat=lat_min, 
+            llcrnrlat=lat_min,
             urcrnrlat=lat_max,
             llcrnrlon=lon_min,
             urcrnrlon=lon_max,
             resolution='i')
-        
+
         fig1=plt.figure(figsize=(18, 16))
         ax=fig1.add_axes([0.1,0.1,0.7,0.7])
         clevs=np.arange(960,1061,5)
         x,y=m(lons, lats)
-        
+
         meridianinterval=np.arange(lon_min,lon_max,4)
-        parallelsinterval=np.arange(lat_min,lat_max)    
+        parallelsinterval=np.arange(lat_min,lat_max)
         m.drawparallels(parallelsinterval,labels=[1,0,0,0], color='k',linewidth=.3)
         m.drawmeridians(meridianinterval,labels=[0,0,0,1],color='k',linewidth=.3)
 
         if nivel>500 or nivel<=80:
-            speed = np.sqrt(data_U**2+data_V**2)            
-            strm=plt.streamplot(lons,lats,data_U,data_V,color=speed,linewidth = 1, cmap=plt.cm.inferno, density=5, arrowstyle='->', arrowsize = 1.5) 
+            speed = np.sqrt(data_U**2+data_V**2)
+            strm=plt.streamplot(lons,lats,data_U,data_V,color=speed,linewidth = 1, cmap=plt.cm.inferno, density=5, arrowstyle='->', arrowsize = 1.5)
             cb=plt.colorbar(strm.lines)
             cb.ax.set_ylabel("Vento m/s", fontsize = 14)
         else:
@@ -171,15 +177,15 @@ def gera_mapas_vento(u_objGRIB, v_objGRIB, lon_lat, regNome, nivel):
         except:
             pass
 
-        m.drawcountries(linewidth=0.25)        
+        m.drawcountries(linewidth=0.25)
         m.drawcountries()
         m.drawstates()
-     
-        #sera 12 temporariamente e nao str(hh_analise) 
-        plt.title("GFS " + str(u_objGRIB[i].iDirectionIncrementInDegrees) + " - " + str(regNome).upper() + " - Vento [m/s]" + " - Nivel: " + str(nivel)  + " Analise: " + str(hh_analise) + " Data: " + str(u_objGRIB[i].dataDate) + " Prev: " + str(ft), weight="normal", fontsize=12)
-        #Usar diretorio para salvar imagens        
-        plt.savefig(dir_save.imprime_dirMapas() + "GFS_" + str(u_objGRIB[i].iDirectionIncrementInDegrees) + "_" + str(regNome).upper() + "_" + "N" + str(nivel) + "_" + "CampoVento" + "_" + hh_analise + "_" + str(u_objGRIB[i].dataDate) + "_" + str(ft) + ".png",bbox_inches='tight')
-            
+
+        #sera 12 temporariamente e nao str(hh_analise)
+        plt.title("GFS " + str(u_objGRIB[forecast_index].iDirectionIncrementInDegrees) + " - " + str(regNome).upper() + " - Vento [m/s]" + " - Nivel: " + str(nivel)  + " Analise: " + str(hh_analise) + " Data: " + str(u_objGRIB[forecast_index].dataDate) + " Prev: " + str(ft), weight="normal", fontsize=12)
+        #Usar diretorio para salvar imagens
+        save_figure(dir_save.imprime_dirMapas() + "GFS_" + str(u_objGRIB[forecast_index].iDirectionIncrementInDegrees) + "_" + str(regNome).upper() + "_" + "N" + str(nivel) + "_" + "CampoVento" + "_" + hh_analise + "_" + str(u_objGRIB[forecast_index].dataDate) + "_" + str(ft) + ".png",bbox_inches='tight')
+
 varMET, varNivel, varRegiao = parse_param(sys.argv).imprime_parse() #Ajustar a aquisicao de variaveis...
 
 print("Aqui impresso as variaveis com o novo parseamento: ")
@@ -190,9 +196,11 @@ if (type(varRegiao) is tuple):
     print("varRegiao: ")
     print(varRegiao)
     varRegiao=list(varRegiao)
-    lon=int(varRegiao[0])
-    lat=int(varRegiao[1])
-    if (type(varRegiao) is list):    
+    lon=float(varRegiao[0])
+    lon = int(lon) if lon.is_integer() else lon
+    lat=float(varRegiao[1])
+    lat = int(lat) if lat.is_integer() else lat
+    if (type(varRegiao) is list):
         ptos=met_ponto_regiao(lon, lat)
         lonslats=ptos.imprime_longitude_latitude()
         print("Usando a classe ponto_regiao_MET")
@@ -207,8 +215,8 @@ if (type(varRegiao) is str):
     varRegiaoNome=str(varRegiao)
 
 # =============================================================================
-# Leitura do grib dentro da lib pygrib 
-# Geracao de Mapas 
+# Leitura do grib dentro da lib pygrib
+# Geracao de Mapas
 # =============================================================================
 
 if varMET=="wind":
@@ -216,7 +224,7 @@ if varMET=="wind":
     v_comp=processamento_dados_met_AUT("v", varNivel).define_lista_var_com_nivel_pressao()
     gera_mapas_vento(u_comp, v_comp, lonslats, varRegiaoNome, varNivel)
 if varMET=="winds" and varNivel=="surface":
-    for nivelQuaseSupe in varNivelProxSupe: 
+    for nivelQuaseSupe in varNivelProxSupe:
         u_comp=processamento_dados_met_AUT("uSupe", nivelQuaseSupe).define_lista_var_com_altitude()
         v_comp=processamento_dados_met_AUT("vSupe", nivelQuaseSupe).define_lista_var_com_altitude()
         gera_mapas_vento(u_comp, v_comp, lonslats, varRegiaoNome, nivelQuaseSupe)

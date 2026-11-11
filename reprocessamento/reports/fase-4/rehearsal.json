@@ -1,0 +1,30 @@
+{
+  "status": "ok",
+  "first": {
+    "action": "rehearsal",
+    "previous": null,
+    "current": "releases/74db959f739ad4c37afa",
+    "at": "2026-10-28T03:05:37.967544+00:00"
+  },
+  "second": {
+    "action": "rehearsal",
+    "previous": "releases/74db959f739ad4c37afa",
+    "current": "releases/26fa746b3b7017f626c2",
+    "at": "2026-10-28T03:05:41.181951+00:00"
+  },
+  "rollback": {
+    "action": "rollback",
+    "previous": "releases/26fa746b3b7017f626c2",
+    "current": "releases/74db959f739ad4c37afa",
+    "at": "2026-10-28T03:05:42.086199+00:00"
+  },
+  "old_preserved": true,
+  "new_preserved": true,
+  "candidate": "/home/paulo/Documentos/meus_codigos/METamorfose/reprocessamento/releases/phase4-candidate",
+  "candidate_sha256": "26fa746b3b7017f626c2121ba19bf416e3751280180cdd0424ad2100e908d196",
+  "backup": "/home/paulo/Documentos/meus_codigos/METamorfose/reprocessamento/phase4-backups/before-local-rehearsal.tar.gz",
+  "backup_sha256": "4d9cfb0d60f6dec85ea3333473d15801f77eb194ae66f4c9ab545e1778ba409f",
+  "production_promoted": false,
+  "external_consumers_validated": false,
+  "note": "Duas snapshots do mesmo candidato validado, com IDs distintos; ensaio mecanico local, sem serie de producao disponivel."
+}

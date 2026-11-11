@@ -1,0 +1,6 @@
+# Ambiente validado; instalar a partir da raiz do projeto.
+numpy==2.3.5
+matplotlib==3.10.0
+basemap==2.0.0
+pygrib==2.1.8
+./METARpy/PythonMETAR-1.0.0.1

@@ -1,5 +1,11 @@
 # servidor_MET — documentação técnica
 
+
+> **Estado após as Fases 3 e 4:** robustez operacional implementada e Fase 4
+> validada localmente. Consulte [11-fase-3-resultados.md](11-fase-3-resultados.md)
+> e [12-fase-4-resultados.md](12-fase-4-resultados.md) para comportamento atual,
+> testes, overrides e limites; descrições abaixo preservam o histórico.
+
 Documentação do sistema batch `servidor_MET`, produzida a partir do código e dos dados presentes neste diretório em **19/10/2026** e atualizada após as Fases 0, 1 e 2.
 
 > **Escopo e limites desta entrega**
@@ -7,7 +13,8 @@ Documentação do sistema batch `servidor_MET`, produzida a partir do código e 
 > - Formato: somente Markdown. Os diagramas usam blocos Mermaid e não geram imagens.
 > - Os documentos 01–08 descrevem o código original em `main`, **antes** das correções da Fase 1. As seções de estado e os documentos 09/10 registram o que mudou na branch `execucao`.
 > - A Fase 1 foi executada no worktree `METamorfose`, branch `execucao`; o resultado está em [09-fase-1-resultados.md](09-fase-1-resultados.md). A Fase 2 está em [10-fase-2-resultados.md](10-fase-2-resultados.md). O checkout principal e `/media/MET` permanecem sem as correções.
-> - O diagnóstico descreve o comportamento original, inclusive os defeitos. As correções das Fases 1 e 2 já foram implementadas e validadas na branch `execucao`; os itens da Fase 3 continuam recomendações.
+> - O diagnóstico descreve o comportamento original, inclusive os defeitos. As correções das Fases 1 e 2 já foram implementadas e validadas na branch `execucao`; a Fase 3 está no documento 11 e a Fase 4, validada localmente, no documento 12.
+> - O aceite dos consumidores externos (BlueSky, preditor e planilhas) e a promoção em produção ainda não foram realizados.
 > - O diretório `gribs/`, `mapasGrib/` e `matrizGrib/` deste checkout está vazio; a documentação dos produtos GFS foi feita pelo código, pelos scripts e por uma amostra real de GFS 0.25°. Os dados METAR históricos estão presentes.
 
 ## O que é o sistema
@@ -54,6 +61,9 @@ O sistema **não é** um serviço HTTP/API, não usa banco de dados, fila, cache
 | [08-contratos-e-consumidores.md](08-contratos-e-consumidores.md) | Contratos de CSV/JSON, headers, unidades, ordem das linhas e consumidores |
 | [09-fase-1-resultados.md](09-fase-1-resultados.md) | Correções C-05/C-03/C-01/C-02/C-04, testes T-01–T-05, reprocessamento e validação independente |
 | [10-fase-2-resultados.md](10-fase-2-resultados.md) | Correções C-06/C-07 e D-05–D-28 da Fase 2, testes T-06–T-12 e validação independente |
+| [11-fase-3-resultados.md](11-fase-3-resultados.md) | Robustez operacional, D-16/D-18–D-23/D-26, testes T-13–T-15 e limites |
+| [12-fase-4-resultados.md](12-fase-4-resultados.md) | Campanha real, validação de contratos, release/rollback e pendências externas |
+| [13-comunicacao-consumidores.md](13-comunicacao-consumidores.md) | Mudanças de contrato para comunicar aos consumidores |
 
 ## Fase 0 — preparação
 
@@ -167,20 +177,26 @@ A lista completa, com evidências e recomendações, está em [05-diagnostico.md
 | 0 | Backup, baseline, harness e Git | Concluída |
 | 1 | D-01, D-02, D-03, D-04, D-12 (C-01–C-05) | Concluída e validada |
 | 2 | D-05, D-06, D-07, D-08, D-09, D-10, D-13, D-14, D-15, D-17, D-24, D-25, D-27, D-28 | Concluída e validada |
-| 3 | D-16, D-18, D-19, D-20, D-21, D-22, D-23, D-26 | Pendente |
-| 4 | Reprocessamento amplo, validação com consumidores e rollout | Pendente |
+| 3 | D-16, D-18, D-19, D-20, D-21, D-22, D-23, D-26 e auditoria | Implementada; ver documento 11 |
+| 4 | Reprocessamento e ensaio de release | Validado localmente; aceite externo/producao pendentes |
+
+Fase 3: **182 testes locais aprovados**, 3 testes de remotos excluídos;
+13 CSVs e 7 PNGs reais preservados byte a byte. Ver [documento 11](11-fase-3-resultados.md).
+A Fase 4 foi validada localmente com **205 testes** e uma campanha real de
+15–17/12/2022; ver [documento 12](12-fase-4-resultados.md).
 
 Riscos que ainda exigem atenção operacional:
 
-| ID | Severidade | Achado | Efeito prático |
-|---|---|---|---|
-| D-16 | Baixa | Controlador termina com `exit 1` em sucesso | O código de saída não pode ser usado como sinal de sucesso; validar pelos produtos até a Fase 3 |
-| D-18/D-20 | Baixa/Média | Caminho/região sem sanitização e sem logging/lock | Uso concorrente ou caminho malformado pode causar falha silenciosa ou arquivo fora do esperado |
-| D-26 | Baixa | Figuras e GRIBs não são fechados explicitamente | Consumo de memória/file descriptors em lotes grandes |
-| D-07 | Alta (histórico) | 12 JSONs METAR antigos concatenados | Novas execuções são atômicas, mas o acervo antigo precisa de reparo/descarte |
-| — | Operacional | Retenção de 2 dias sem quota | Disco pode encher; monitore o espaço |
+- Fase 4: aceite dos consumidores BlueSky/preditor/planilhas e promoção em
+  produção pendentes; as previsões reais f006/f012/f018 já foram validadas
+  localmente.
+- 12 JSONs históricos inválidos preservados; a escrita nova é atômica.
+- Retenção remove o dia alvo; não há quota/alerta de disco.
+- Locks locais exigem `MET_LOCK_DIR` comum; não há coordenação distribuída.
+- O downloader congelado não participa dos locks da geração.
 
-Os riscos críticos e altos do código original (D-01 a D-08, exceto D-07 histórico) estão corrigidos nas Fases 1 e 2.
+Os defeitos operacionais D-16/D-18/D-20/D-26 foram tratados na Fase 3;
+consulte [resultados e limites](11-fase-3-resultados.md).
 
 ## Inventário rápido
 
@@ -188,7 +204,7 @@ Os riscos críticos e altos do código original (D-01 a D-08, exceto D-07 histó
 |---|---|
 | `goGribV2.sh` | Download dos GFS para `gribs/AAAAMMDD/CC/` (congelado) |
 | `remove_GRIBS_antigos.sh` | Limpeza de GRIB e produtos do dia `hoje - 2` (corrigida na Fase 2) |
-| `bash/automatizacao_controle_MET.sh` | Orquestrador dos produtos automáticos (ainda com D-16) |
+| `bash/automatizacao_controle_MET.sh` | Orquestrador dos produtos automáticos (retorna 0 só em sucesso; 75 em concorrência) |
 | `bash/automatiza_MET.sh` | Wrapper dos produtos escalares, com validação |
 | `bash/automatiza_vento_MET.sh` | Wrapper dos produtos de vento, com validação |
 | `bash/reqs_MAN_MET.sh` | Wrapper fino do CLI manual; o parser é `argparse` |
@@ -196,7 +212,7 @@ Os riscos críticos e altos do código original (D-01 a D-08, exceto D-07 histó
 | `METARpy/` | Coleta e tradução METAR com escrita atômica; inclui vendors |
 | `environment/path.conf` | Diretórios de GRIB, mapas e matrizes |
 | `gribs/`, `mapasGrib/`, `matrizGrib/` | Dados operacionais (vazios neste checkout) |
-| `tests/` | Harness e testes de aceitação das Fases 0–2 |
+| `tests/` | Harness e testes de aceitação das Fases 0–4 |
 | `reprocessamento/` | Amostra reprocessada e validadores independentes |
 
 ## Execução resumida
@@ -244,3 +260,9 @@ cd /media/MET/servidor_MET
 - `PythonMETAR` não está instalado no ambiente auditado; `METARpy/python-metar-master` é um vendor alternativo, mas `GoMETAR.py` importa o pacote `PythonMETAR`.
 - Não foi possível confirmar o agendador real, o fuso horário do servidor nem as premissas dos consumidores BlueSky/preditor.
 - As conclusões sobre orientação de grade foram verificadas com uma amostra real de GFS 0.25° do NOMADS e com a API `pygrib` (ver D-01 em [05-diagnostico.md](05-diagnostico.md)).
+
+## Estado da Fase 4
+
+A implementacao e a validacao local estao em [12-fase-4-resultados.md](12-fase-4-resultados.md).
+O rollout real e o aceite dos consumidores externos ainda estao pendentes.
+Os nomes, headers, unidades e o downloader permanecem preservados.

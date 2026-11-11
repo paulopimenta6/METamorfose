@@ -1,5 +1,11 @@
 # 08 — Contratos e consumidores
 
+
+> **Estado após as Fases 3 e 4:** robustez operacional implementada e Fase 4
+> validada localmente. Consulte [11-fase-3-resultados.md](11-fase-3-resultados.md)
+> e [12-fase-4-resultados.md](12-fase-4-resultados.md) para comportamento atual,
+> testes, overrides e limites; descrições abaixo preservam o histórico.
+
 Este documento inventaria os contratos de saída que os consumidores já usam e
 que **não devem ser quebrados** pelas correções de cálculo. Ele foi escrito a
 partir do código, dos produtos do baseline e dos schemas descritos em
@@ -440,7 +446,16 @@ Os contratos da Fase 2 também estão verdes em
 - O JSON METAR bruto mantém as chaves com espaço final; a escrita nova é atômica
   e UTC, mas os 12 arquivos históricos inválidos não são reparados
   automaticamente (D-07/D-08).
-- Ainda pendente para a Fase 3: `exit 1` do controlador (D-16), sanitização de
+- Fase 3 implementada: `exit 1` do controlador (D-16), sanitização de
   caminho/região (D-18), limpeza de artefatos (D-19), logging/lock (D-20),
   `ponto_regiao` (D-21), `varMET` global (D-22), `controla_env` (D-23) e
-  fechamento de figuras/GRIB (D-26).
+  fechamento de figuras/GRIB (D-26). Os locks ficam fora dos produtos e os logs
+  de operação saem no stderr; não há manifesto/`run_id` por execução, apenas o
+  manifesto do baseline. A publicação é atômica por arquivo, não por lote
+  inteiro. Ver [11-fase-3-resultados.md](11-fase-3-resultados.md).
+
+## Estado da Fase 4
+
+A implementacao e a validacao local estao em [12-fase-4-resultados.md](12-fase-4-resultados.md).
+O rollout real e o aceite dos consumidores externos ainda estao pendentes.
+Os nomes, headers, unidades e o downloader permanecem preservados.

@@ -1,10 +1,17 @@
 # 05 — Diagnóstico de bugs e recomendações
 
+
+> **Estado após as Fases 3 e 4:** robustez e correções da auditoria implementadas.
+> Consulte [11-fase-3-resultados.md](11-fase-3-resultados.md) para comportamento
+> operacional e [12-fase-4-resultados.md](12-fase-4-resultados.md) para a
+> validação local, release/rollback e pendências externas; as descrições abaixo
+> preservam o histórico.
+
 > **Aviso de uso**: os produtos GFS gerados pelo código **original** (`main`) não devem ser usados como referência geográfica sem antes corrigir **D-01**. Os produtos de vento superficial não devem ser usados sem corrigir **D-02** e **D-03**. Os JSONs METAR históricos marcados como inválidos em **D-07** não devem ser consumidos por parsers estritos; novas execuções já gravam atomicamente.
 >
 > **Fase 1:** na branch `execucao`, **D-01, D-02, D-03, D-04 e D-12** foram corrigidos e validados com a amostra real. O resultado, os testes T-01–T-05 e o reprocessamento estão em [09-fase-1-resultados.md](09-fase-1-resultados.md).
 >
-> **Fase 2:** na mesma branch, foram corrigidos **D-05, D-06, D-07, D-08, D-09, D-10, D-13, D-14, D-15, D-17, D-24, D-25, D-27 e D-28** (C-06, C-07 e itens de produtos/CLI/METAR). Os testes T-06–T-12 estão verdes e a validação independente tem 177 verificações. O resultado está em [10-fase-2-resultados.md](10-fase-2-resultados.md). Continuam em aberto apenas os itens da Fase 3 e D-11 (congelado).
+> **Fase 2:** na mesma branch, foram corrigidos **D-05, D-06, D-07, D-08, D-09, D-10, D-13, D-14, D-15, D-17, D-24, D-25, D-27 e D-28** (C-06, C-07 e itens de produtos/CLI/METAR). Os testes T-06–T-12 estão verdes e a validação independente tem 177 verificações. O resultado está em [10-fase-2-resultados.md](10-fase-2-resultados.md). Na sequência, a Fase 3 implementou D-16, D-18–D-23 e D-26 (documento 11); D-11 permanece congelado.
 
 ## 1. Sumário executivo
 
@@ -998,6 +1005,11 @@ D-05 veio depois de D-02/D-03 (Fase 1), evitando gerar vento superficial errado 
 
 ### Fase 3 — Médios (3–5 dias)
 
+> **Planejamento histórico:** a divisão abaixo é a proposta original do
+> diagnóstico e não corresponde à execução final. O escopo executado está em
+> [06-plano-de-melhorias-e-variaveis.md](06-plano-de-melhorias-e-variaveis.md) e
+> [11-fase-3-resultados.md](11-fase-3-resultados.md).
+
 | Ordem | Achado | Ação |
 |---:|---|---|
 | 1 | D-09 | Intervalo nos dois sentidos |
@@ -1037,14 +1049,18 @@ D-11, D-15, D-16, D-17, D-18, D-19, D-21 a D-28.
 | T-12 | CLI MAN | Chamadas válidas geram arquivos; inválidas retornam erro claro |
 | T-13 | Idempotência | Duas execuções iguais não corrompem nem duplicam arquivos |
 | T-14 | Regressão | Conjunto de produtos de referência permanece estável após correções |
+| T-15 | Recursos | Figuras e GRIBs fechados; memória estável em lote |
 
-**Estado após a Fase 2:** T-01 a T-05 estão em
+**Estado após a Fase 3:** T-01 a T-05 estão em
 `tests/test_phase1_acceptance.py`; T-06 a T-12 foram implementados em
-`tests/test_phase2_acceptance.py` e estão verdes. O reprocessamento da Fase 1 e
+`tests/test_phase2_acceptance.py`; T-13 a T-15 estão em
+`tests/test_phase3_acceptance.py`, todos verdes. O reprocessamento da Fase 1 e
 os produtos de `winds` foram validados de forma independente com `pygrib`.
-T-13 e T-14 continuam pendentes (Fases 3/4). Ver
-[09-fase-1-resultados.md](09-fase-1-resultados.md) e
-[10-fase-2-resultados.md](10-fase-2-resultados.md).
+A Fase 4 foi implementada e validada localmente, com aceite externo e promoção
+em produção pendentes. Ver [09-fase-1-resultados.md](09-fase-1-resultados.md),
+[10-fase-2-resultados.md](10-fase-2-resultados.md),
+[11-fase-3-resultados.md](11-fase-3-resultados.md) e
+[12-fase-4-resultados.md](12-fase-4-resultados.md).
 
 ### Exemplo de verificação de orientação
 
@@ -1074,7 +1090,7 @@ with open("GFS_0.25_SP_Nsurface_temps_00_..._00.csv") as f:
 ### Definição de pronto
 
 - Nenhum achado Crítico ou Alto em aberto.
-- Todos os testes T-01 a T-14 passando.
+- Todos os testes T-01 a T-15 passando.
 - Produtos de referência regenerados e comparados.
 - 7 dias de execução em paralelo sem divergência.
 - Documentação e help atualizados.
@@ -1142,8 +1158,12 @@ Resultados verificáveis:
 - relatório em `reprocessamento/reports/fase-2/validation.json` e
   [10-fase-2-resultados.md](10-fase-2-resultados.md).
 
-Continuam em aberto, por serem Fase 3: **D-16** (`exit 1` no controlador),
+Na sequência, a Fase 3 implementou **D-16** (retorno real do controlador),
 **D-18** (sanitização de caminho/região), **D-19** (artefatos e empacotamento),
-**D-20** (logging/lock/idempotência), **D-21/D-22/D-23** (robustez de
-`ponto_regiao`/`controla_env`) e **D-26** (fechamento de figuras/GRIB). **D-11**
-permanece fora de escopo porque `goGribV2.sh` está congelado.
+**D-20** (logging, lock, escrita atômica e idempotência), **D-21/D-22/D-23**
+(robustez de `ponto_regiao`/`controla_env`) e **D-26** (fechamento de
+figuras/GRIB); T-13–T-15 estão verdes. A Fase 4 foi implementada e validada
+localmente; o aceite dos consumidores e a promoção em produção permanecem
+pendentes. Ver [11-fase-3-resultados.md](11-fase-3-resultados.md) e
+[12-fase-4-resultados.md](12-fase-4-resultados.md). **D-11** permanece fora de
+escopo porque `goGribV2.sh` está congelado.

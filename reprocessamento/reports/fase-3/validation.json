@@ -1,0 +1,49 @@
+{
+  "generated_at": "2026-10-28T02:08:59.354702+00:00",
+  "base_commit": "e8f17d8",
+  "phase": 3,
+  "status": "ok",
+  "pytest": {
+    "passed": 182,
+    "deselected": 3,
+    "phase3_cases": 23
+  },
+  "real_sample": {
+    "date": "20261022",
+    "cycle": "00",
+    "forecast": "f000",
+    "csv_byte_identical": 13,
+    "png_byte_identical": 7,
+    "remaining_figures": 0
+  },
+  "downloader_sha256": "994ce16c1480b17a62b78e72761307af2000dc47819abbaf48ce042c72023ce0",
+  "source_sha256": {
+    "classes_MET/gera_mapas_vento_MET.py": "db70213c623a021c76193a32944da3854a97cb586feea66b07d8195413a082ef",
+    "classes_MET/ponto_regiao_MET.py": "250848887659d0af545313b6152dfc4a70de916ceec634c632a1296033126060",
+    "classes_MET/gera_mapas_MAN_MET.py": "b4c33d8ad69cee93aa40c8733fc4ab4e4bdfac257fb91c568b08a220a2f8c1e0",
+    "classes_MET/processamento_dados_MET.py": "4cde7066bb3eb82a4c7b2be4d797d50ac8d50e755cd5c2fd6a9ad67b311cbde6",
+    "classes_MET/gera_matriz_MAN_MET.py": "51e4574f27c42007242a55dba785465dfb8d6e82ed9cda8857d821260093a64c",
+    "classes_MET/leitura_dados_grib_MET.py": "fadf0a3f8b04e402e02d9ea9a3e9adb0d29aecb4e5b25d2aa759805fcbe1e3c5",
+    "classes_MET/gera_matriz_vento_MET.py": "e03edff44e9ddd24186f9cb033b119fa58a17b65f383312d177ff848f854954c",
+    "classes_MET/gera_mapas_MET.py": "f3e4472eaacf9b0b63ebfa69dee021e39a646a97d87729d1c45115f19b7a78e5",
+    "classes_MET/poligono_regiao_MET.py": "7797a097f2c0ad6a62a81bdd52ed19575d9611a9dc5fe9da18f29006df5cc35d",
+    "classes_MET/gera_matriz_vento_MAN_MET.py": "7a3f03e4965d6005a46bc7b016a7f532522cba51fcae19b4ae32c443fa498fd7",
+    "classes_MET/parse_param_MET.py": "4154ab31dec28cb2719104000897a1a3b7d76055f0e65b0785964b1f7dafe15f",
+    "classes_MET/controla_env.py": "920e2f512a4961c3131bc5b98d72b624a6cdbc280ce266a542563c6aed737f69",
+    "classes_MET/regioes_predefinidas_MET.py": "06d92eb85d48caf3a7a8a464185d582b8bca1c0e93c6524d121c2b89db09d3fb",
+    "classes_MET/runtime_MET.py": "58792b227b06b442928f8948fcbbdb07290ff51deb8ffdca03fa24eb34f8e208",
+    "classes_MET/gera_mapas_vento_MAN_MET.py": "63f9ac4621f3f333c3e6ae220d447e5a19f3e4c2a4d959ff257e4e92e6f674b6",
+    "classes_MET/gera_matriz_MET.py": "96ccb9892f751cea040c9d7c2d5fc471d9196227c10bc8de9c6e48d99781a210",
+    "classes_MET/executa_reqs_param.py": "99f64340ba2780e8d326ac53e71922346fd863ee609e5309efb6f7cb86984f17",
+    "METARpy/GoMETAR.py": "f24755e6c651143effa51246c3fa39e9c029f56c277d367b0dbce4b0f5f89ef6",
+    "METARpy/metar_common.py": "c8b085d47977067dcd19730edbc8dde2dbae6f6acb2964af52978421e7e48e84",
+    "METARpy/METARpy.py": "5bfd38255782714551172f7fd633d190cac9627b1d80fe69aab41a2b2a18e2c6",
+    "METARpy/METARpy_traduzido.py": "1c5b2bef1361770f02f94b982b4c67fad3a424d0d875a8127c176dd633f35ddb"
+  },
+  "limitations": [
+    "Fase 4 pendente",
+    "Sem validacao de previsoes futuras ou coleta METAR ao vivo",
+    "Sem rollout de producao",
+    "3 testes de remotos Git nao executados"
+  ]
+}

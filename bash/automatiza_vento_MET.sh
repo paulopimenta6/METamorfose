@@ -5,6 +5,13 @@
 # antes de executar o Python. Qualquer erro retorna codigo diferente de zero.
 
 set -euo pipefail
+LOCK_DIR="${MET_LOCK_DIR:-${TMPDIR:-/tmp}/metamorfose-${UID}}"
+mkdir -p "${LOCK_DIR}"
+exec 8>"${LOCK_DIR}/products.lock"
+flock -n -s 8 || { echo "erro: geracao/limpeza em andamento" >&2; exit 75; }
+exec 9>"${LOCK_DIR}/automatiza_vento_MET.lock"
+flock -n 9 || { echo "erro: execucao concorrente de automatiza_vento_MET" >&2; exit 75; }
+
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CLASSES_DIR="${SCRIPT_DIR}/../classes_MET"

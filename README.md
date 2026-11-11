@@ -43,7 +43,15 @@ Resumo das fases:
 
 ## Status
 
-Fase 0 concluída: snapshot, backup, amostra GFS, baseline, harness e suíte de
-aceitação automatizada. A Fase 1 (correções de cálculo) ainda não foi iniciada.
+Fases 0–4 implementadas no worktree METamorfose. A Fase 4 foi validada
+localmente; o aceite dos consumidores e a promoção em produção permanecem
+pendentes. Resultados: [Fase 3](docs/11-fase-3-resultados.md) e
+[Fase 4](docs/12-fase-4-resultados.md).
 
 > Repositório privado. Não publique dados, credenciais ou produtos operacionais sem revisão.
+
+## Fase 4
+
+Reprocessamento historico real, validacao de contratos e ferramentas de release/rollback
+implementados. O aceite dos consumidores e a promocao de producao continuam pendentes.
+Ver [resultados e procedimento](docs/12-fase-4-resultados.md).

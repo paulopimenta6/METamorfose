@@ -10,6 +10,13 @@
 #   MET_DATA_ALVO data alvo explicita AAAAMMDD (sobrepoe MET_HOJE)
 
 set -euo pipefail
+LOCK_DIR="${MET_LOCK_DIR:-${TMPDIR:-/tmp}/metamorfose-${UID}}"
+mkdir -p "${LOCK_DIR}"
+exec 8>"${LOCK_DIR}/products.lock"
+flock -n -x 8 || { echo "erro: geracao/limpeza em andamento" >&2; exit 75; }
+exec 9>"${LOCK_DIR}/remove_GRIBS_antigos.lock"
+flock -n 9 || { echo "erro: execucao concorrente de remove_GRIBS_antigos" >&2; exit 75; }
+
 
 BASE_DIR="${MET_BASE_DIR:-/media/MET/servidor_MET}"
 dir_gribs="${BASE_DIR}/gribs"
