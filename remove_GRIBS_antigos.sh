@@ -1,118 +1,129 @@
 #!/bin/bash
+#
+# Remove os GRIBs e produtos de uma data alvo (hoje - 2 dias).
+# Remove as resolucoes 0p25 e 1p00, os arquivos legados e os diretorios de
+# mapas/matrizes da mesma data. Dados de outras datas nao sao tocados.
+#
+# Variaveis de ambiente (opcionais, usadas em testes):
+#   MET_BASE_DIR  diretorio base do servidor (padrao /media/MET/servidor_MET)
+#   MET_HOJE      data de referencia AAAAMMDD (padrao: hoje)
+#   MET_DATA_ALVO data alvo explicita AAAAMMDD (sobrepoe MET_HOJE)
 
-dir="/media/MET/servidor_MET/gribs"
-dir_mapas="/media/MET/servidor_MET/mapasGrib"
-dir_matrizes="/media/MET/servidor_MET/matrizGrib"
-dir_matrizes_bluesky="/media/MET/servidor_MET/matrizGrib/bluesky"
-dir_matrizes_predi="/media/MET/servidor_MET/matrizGrib/predi"
+set -euo pipefail
+LOCK_DIR="${MET_LOCK_DIR:-${TMPDIR:-/tmp}/metamorfose-${UID}}"
+mkdir -p "${LOCK_DIR}"
+exec 8>"${LOCK_DIR}/products.lock"
+flock -n -x 8 || { echo "erro: geracao/limpeza em andamento" >&2; exit 75; }
+exec 9>"${LOCK_DIR}/remove_GRIBS_antigos.lock"
+flock -n 9 || { echo "erro: execucao concorrente de remove_GRIBS_antigos" >&2; exit 75; }
 
-data_ano=`date +"%Y"`
-data_mes=`date +"%m"`
-#data_dia=`date +"%d"`
-data_dia_anterior=`date -d "-2 days" +"%d"`
 
-#data_completa="${data_ano}""${data_mes}""${data_dia}" 
-data_final_anterior=${data_ano}${data_mes}${data_dia_anterior}
+BASE_DIR="${MET_BASE_DIR:-/media/MET/servidor_MET}"
+dir_gribs="${BASE_DIR}/gribs"
+dir_mapas="${BASE_DIR}/mapasGrib"
+dir_matrizes="${BASE_DIR}/matrizGrib"
+dir_matrizes_bluesky="${BASE_DIR}/matrizGrib/bluesky"
+dir_matrizes_predi="${BASE_DIR}/matrizGrib/predi"
 
-#diretorios de arquivos a serem removidos
-data_final_anterior_mapas=${dir_mapas}/${data_final_anterior}
-data_final_anterior_matrizes=${dir_matrizes}/${data_final_anterior}
-data_final_anterior_matrizes_bluesky=${dir_matrizes_bluesky}/${data_final_anterior}
-data_final_anterior_matrizes_predi=${dir_matrizes_predi}/${data_final_anterior}
+calcula_data_alvo() {
+    if [ -n "${MET_DATA_ALVO:-}" ]; then
+        valida_data "${MET_DATA_ALVO}" "data alvo"
+        printf '%s\n' "${MET_DATA_ALVO}"
+    elif [ -n "${MET_HOJE:-}" ]; then
+        valida_data "${MET_HOJE}" "data de referencia"
+        date -d "${MET_HOJE} -2 days" +"%Y%m%d"
+    else
+        date -d "-2 days" +"%Y%m%d"
+    fi
+}
 
-echo "==============================================================="
-echo "    verificando gribs    "
-echo "Verificando a data anterior..." ${data_final_anterior}
+valida_data() {
+    local data="$1"
+    local rotulo="${2:-data alvo}"
+    local normalizada
 
-cd ${dir}
-if test -d "${data_final_anterior}"
-then 
-    echo "Os arquivos do diretorio ${data_final_anterior} existem e as analises de 0.25 serao removidas..."
-    cd ${data_final_anterior}
-    echo "diretorios com as analises de 0.25 no interior: " 
-    ls
-    for tAnalise in 00 06 12 18
-    do
-        if test -d "${tAnalise}"
-        then    
-            for tPrev in 00 06 12 18
-            do
-                if test -e ${tAnalise}/"gfs.t"${tAnalise}"z.pgrb2.0p25.f0"${tPrev}
-                then 
-                    rm ${tAnalise}/"gfs.t"${tAnalise}"z.pgrb2.0p25.f0"${tPrev}
-                fi 
+    case "${data}" in
+        [0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9])
+            ;;
+        *)
+            echo "erro: ${rotulo} invalida: '${data}' (use AAAAMMDD)" >&2
+            exit 2
+            ;;
+    esac
+
+    if ! normalizada="$(date -d "${data}" +"%Y%m%d" 2>/dev/null)" ||
+       [ "${normalizada}" != "${data}" ]; then
+        echo "erro: ${rotulo} invalida: '${data}' (data de calendario inexistente)" >&2
+        exit 2
+    fi
+}
+
+remove_gribs_do_dia() {
+    local data_alvo="$1"
+    local diretorio="${dir_gribs}/${data_alvo}"
+    local tAnalise tPrev resolucao arquivo
+
+    echo "==============================================================="
+    echo "    verificando gribs    "
+    echo "Data alvo: ${data_alvo}"
+
+    if [ ! -d "${diretorio}" ]; then
+        echo "O diretorio nao existe: ${diretorio}"
+        return 0
+    fi
+
+    echo "Removendo GRIBs 0p25, 1p00 e legados de ${diretorio}"
+
+    for tAnalise in 00 06 12 18; do
+        [ -d "${diretorio}/${tAnalise}" ] || continue
+        for tPrev in 00 06 12 18; do
+            for resolucao in 0p25 1p00; do
+                arquivo="${diretorio}/${tAnalise}/gfs.t${tAnalise}z.pgrb2.${resolucao}.f0${tPrev}"
+                if [ -e "${arquivo}" ]; then
+                    rm -f -- "${arquivo}"
+                fi
             done
-        fi       
+        done
+        find "${diretorio}/${tAnalise}" -maxdepth 1 -type f \
+            -name 'gfs????????????_???.grb' -delete
     done
-else
-    echo "O diretorio nao existe..."
-    echo "Diretorios existentes contendo GRIBS: "
-    ls    
-fi
-echo "==============================================================="
 
-echo "==============================================================="
-echo "    verificando mapas    "
-echo "Verificando a data anterior..." ${data_final_anterior}
+    find "${diretorio}" -maxdepth 1 -type f \
+        -name 'gfs????????????_???.grb' -delete
 
-cd ${dir_mapas}
-if test -d "${data_final_anterior_mapas}"
-then 
-    echo "Os arquivos de mapas do diretorio ${data_final_anterior} existem e serao removidas..."
-    rm -r ${data_final_anterior_mapas}
-else
-    echo "O diretorio nao existe..."
-    echo "Diretorios existentes de mapas: "
-    ls    
-fi
-echo "==============================================================="
+    echo "==============================================================="
+}
 
-echo "==============================================================="
-echo "    verificando matrizes    "
-echo "Verificando a data anterior..." ${data_final_anterior}
+remove_diretorio() {
+    local rotulo="$1"
+    local caminho="$2"
 
-cd ${dir_matrizes}
-if test -d "${data_final_anterior_matrizes}"
-then 
-    echo "Os arquivos de matrizes do diretorio ${data_final_anterior} existem e serao removidas..."
-    rm -r ${data_final_anterior_matrizes}
-else
-    echo "O diretorio nao existe..."
-    echo "Diretorios existentes de matrizes: "
-    ls    
-fi
-echo "==============================================================="
+    echo "==============================================================="
+    echo "    verificando ${rotulo}    "
+    echo "Data alvo: ${caminho##*/}"
 
-echo "==============================================================="
-echo "    verificando matrizes bluesky    "
-echo "Verificando a data anterior..." ${data_final_anterior}
+    if [ -d "${caminho}" ]; then
+        echo "Removendo ${caminho}"
+        rm -rf -- "${caminho}"
+    else
+        echo "O diretorio nao existe: ${caminho}"
+    fi
 
-cd ${dir_matrizes_bluesky}
-if test -d "${data_final_anterior_matrizes_bluesky}"
-then 
-    echo "Os arquivos de matrizes bluesky do diretorio ${data_final_anterior} existem e serao removidas..."
-    rm -r ${data_final_anterior_matrizes_bluesky}
-else
-    echo "O diretorio nao existe..."
-    echo "Diretorios existentes de matrizes bluesky: "
-    ls    
-fi
-echo "==============================================================="
+    echo "==============================================================="
+}
 
-echo "==============================================================="
-echo "    verificando matrizes predi    "
-echo "Verificando a data anterior..." ${data_final_anterior}
+main() {
+    local data_alvo
+    data_alvo="$(calcula_data_alvo)"
+    valida_data "${data_alvo}"
 
-cd ${dir_matrizes_predi}
-if test -d "${data_final_anterior_matrizes_predi}"
-then 
-    echo "Os arquivos de matrizes predi do diretorio ${data_final_anterior} existem e serao removidas..."
-    rm -r ${data_final_anterior_matrizes_predi}
-else
-    echo "O diretorio nao existe..."
-    echo "Diretorios existentes de matrizes predi: "
-    ls    
-fi
-echo "==============================================================="
+    remove_gribs_do_dia "${data_alvo}"
+    remove_diretorio "mapas" "${dir_mapas}/${data_alvo}"
+    remove_diretorio "matrizes" "${dir_matrizes}/${data_alvo}"
+    remove_diretorio "matrizes bluesky" "${dir_matrizes_bluesky}/${data_alvo}"
+    remove_diretorio "matrizes predi" "${dir_matrizes_predi}/${data_alvo}"
 
-exit 1
+    return 0
+}
+
+main "$@"

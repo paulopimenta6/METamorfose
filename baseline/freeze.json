@@ -1,0 +1,17 @@
+{
+  "frozen_at": "2026-10-23T07:27:09-03:00",
+  "reason": "Fase 0: a aquisição GRIB não pode ser alterada durante as correções de cálculo.",
+  "files": {
+    "goGribV2.sh": {
+      "sha256": "994ce16c1480b17a62b78e72761307af2000dc47819abbaf48ce042c72023ce0",
+      "bytes": 4291
+    }
+  },
+  "invariants": {
+    "cycles": ["00", "06", "12", "18"],
+    "forecasts": ["f000", "f006", "f012", "f018"],
+    "resolutions": ["0p25", "1p00"],
+    "source": "https://nomads.ncep.noaa.gov/pub/data/nccf/com/gfs/prod/",
+    "note": "Nenhuma alteração de URL, ciclos, previsões, resoluções ou escopo."
+  }
+}

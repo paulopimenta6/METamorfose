@@ -1,21 +1,27 @@
 #!/bin/bash
+set -euo pipefail
+LOCK_DIR="${MET_LOCK_DIR:-${TMPDIR:-/tmp}/metamorfose-${UID}}"
+mkdir -p "${LOCK_DIR}"
+exec 9>"${LOCK_DIR}/automatizacao_controle_MET.lock"
+flock -n 9 || { echo "erro: execucao concorrente de automatizacao_controle_MET" >&2; exit 75; }
+
 
 #/media/utrecht/12382BE468602ECF/goGrib/bash/automatizacao_matrizes.sh
-dir_principal="/media/MET/servidor_MET/"
+dir_principal="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/"
 dir_bash="bash"
 
 data_ano=`date +"%Y"`
 data_mes=`date +"%m"`
 data_dia=`date +"%d"`
 
-cd ${dir_principal}${dir_bash}
+cd "${dir_principal}${dir_bash}"
 
 #Criar estrutura de diretorio para abrigar os dados de acordo com a localizacao
 #############################
-# matrizes e mapas de vento # 
+# matrizes e mapas de vento #
 #############################
-./automatiza_vento_MET.sh "-v" "winds" "-r" "SP"
-./automatiza_vento_MET.sh "-v" "winds" "-r" "RJ" 
+./automatiza_vento_MET.sh "-v" "winds" "-ns" "-r" "SP"
+./automatiza_vento_MET.sh "-v" "winds" "-ns" "-r" "RJ"
 
 ./automatiza_vento_MET.sh "-v" "wind" "-n" "1000" "-r" "SP"
 ./automatiza_vento_MET.sh "-v" "wind" "-n" "1000" "-r" "RJ"
@@ -44,32 +50,24 @@ cd ${dir_principal}${dir_bash}
 ./automatiza_MET.sh "-v" "prnm" "-ns" "-r" "RJ"
 
 ######################################
-#     nuvem e umidade relativa       # 
+#     nuvem e umidade relativa       #
 ######################################
 ./automatiza_MET.sh "-v" "nuvem" "-n" "700" "-r" "SP"
 ./automatiza_MET.sh "-v" "nuvem" "-n" "500" "-r" "SP"
 ./automatiza_MET.sh "-v" "nuvem" "-n" "200" "-r" "SP"
-./automatiza_MET.sh "-v" "umidadeRel" "-ns" "-r" "SP"
+./automatiza_MET.sh "-v" "umidadeRel" "-n" "850" "-r" "SP"
 
 ./automatiza_MET.sh "-v" "nuvem" "-n" "700" "-r" "RJ"
 ./automatiza_MET.sh "-v" "nuvem" "-n" "500" "-r" "RJ"
 ./automatiza_MET.sh "-v" "nuvem" "-n" "200" "-r" "RJ"
-./automatiza_MET.sh "-v" "umidadeRel" "-ns" "-r" "RJ"
+./automatiza_MET.sh "-v" "umidadeRel" "-n" "850" "-r" "RJ"
 
 #############################
-# matrizes e mapas de vento # 
-#############################
-./automatiza_vento_MET.sh "-n" "1000" "-r" "SP"
-./automatiza_vento_MET.sh "-n" "200" "-r" "SP"
-./automatiza_vento_MET.sh "-n" "1000" "-r" "RJ"
-./automatiza_vento_MET.sh "-n" "200" "-r" "RJ"
-
-#############################
-# matrizes e mapas de chuva # 
+# matrizes e mapas de chuva #
 #############################
 ./automatiza_MET.sh "-v" "chuvaConvec" "-ns" "-r" "SP"
 ./automatiza_MET.sh "-v" "chuvaConvec" "-ns" "-r" "RJ"
 ./automatiza_MET.sh "-v" "chuvaNaoConvec" "-ns" "-r" "SP"
 ./automatiza_MET.sh "-v" "chuvaNaoConvec" "-ns" "-r" "RJ"
 
-exit 1
+exit 0

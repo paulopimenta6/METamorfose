@@ -1,0 +1,379 @@
+{
+  "generated_at": "2026-10-23T10:36:30.563618+00:00",
+  "source": {
+    "url": "https://nomads.ncep.noaa.gov/pub/data/nccf/com/gfs/prod/gfs.20261022/00/atmos/gfs.t00z.pgrb2.0p25.f000",
+    "index_url": "https://nomads.ncep.noaa.gov/pub/data/nccf/com/gfs/prod/gfs.20261022/00/atmos/gfs.t00z.pgrb2.0p25.f000.idx",
+    "date": "20261022",
+    "cycle": "00",
+    "resolution": "0p25",
+    "forecast_hour": "000",
+    "full_bytes": 489780434
+  },
+  "file": {
+    "path": "baseline/samples/gfs.20261022.00.0p25.subset.grb2",
+    "bytes": 14852876,
+    "sha256": "7adc84c35743c9fe4884756b938f38c8a18a5278d3b30bb945a300adde908a90"
+  },
+  "selection": [
+    {
+      "idx_index": 1,
+      "name": "PRMSL",
+      "level": "mean sea level",
+      "forecast": "anl",
+      "start": 0,
+      "end": 865843,
+      "bytes": 865844,
+      "sha256": "0d919d271387dd60c368707967f952f0fddfada84a251bc6f9eaa6a03a2362f8"
+    },
+    {
+      "idx_index": 462,
+      "name": "TMP",
+      "level": "850 mb",
+      "forecast": "anl",
+      "start": 329862634,
+      "end": 330702868,
+      "bytes": 840235,
+      "sha256": "38cfd11b0ee45144756ad0218b87e49cd7207c95d8310400aefba02901466364"
+    },
+    {
+      "idx_index": 463,
+      "name": "RH",
+      "level": "850 mb",
+      "forecast": "anl",
+      "start": 330702869,
+      "end": 331576349,
+      "bytes": 873481,
+      "sha256": "92c2d4c6f5c301d43cb7b9459dcb024ce3017af6ecee55e937957fe3e0e721ba"
+    },
+    {
+      "idx_index": 464,
+      "name": "TCDC",
+      "level": "850 mb",
+      "forecast": "anl",
+      "start": 331576350,
+      "end": 332057466,
+      "bytes": 481117,
+      "sha256": "54c4c272a32f83cfc60f1cf9654563151632c8d89f528f56c27ebb1d47b92899"
+    },
+    {
+      "idx_index": 468,
+      "name": "UGRD",
+      "level": "850 mb",
+      "forecast": "anl",
+      "start": 335678732,
+      "end": 336238731,
+      "bytes": 560000,
+      "sha256": "8de9f810b821d31ffae42d4d7a8e64df8d0dcb76f90440a52557787420314aac"
+    },
+    {
+      "idx_index": 469,
+      "name": "VGRD",
+      "level": "850 mb",
+      "forecast": "anl",
+      "start": 336238732,
+      "end": 336809096,
+      "bytes": 570365,
+      "sha256": "a9e5d78c6b8a495ddd6f06cd174c5162f9cf34965cac0fa92c98c0ad62268071"
+    },
+    {
+      "idx_index": 563,
+      "name": "TMP",
+      "level": "surface",
+      "forecast": "anl",
+      "start": 398460965,
+      "end": 399032279,
+      "bytes": 571315,
+      "sha256": "50dbb930691fcd5002a4c1ec3289bfa36d073c3c9fea745308e1df1fcfce0d98"
+    },
+    {
+      "idx_index": 580,
+      "name": "TMP",
+      "level": "2 m above ground",
+      "forecast": "anl",
+      "start": 405615040,
+      "end": 406485844,
+      "bytes": 870805,
+      "sha256": "3fb3ca4428520bcf57a359744e09ca0d5e08bb5b64ad5e53d1e0f74d978143a6"
+    },
+    {
+      "idx_index": 585,
+      "name": "UGRD",
+      "level": "10 m above ground",
+      "forecast": "anl",
+      "start": 409552590,
+      "end": 410514154,
+      "bytes": 961565,
+      "sha256": "d05d13ab9992139db17925c39193e11d0b55de286ab519932b8e655a908c48f8"
+    },
+    {
+      "idx_index": 586,
+      "name": "VGRD",
+      "level": "10 m above ground",
+      "forecast": "anl",
+      "start": 410514155,
+      "end": 411454083,
+      "bytes": 939929,
+      "sha256": "6d7f5e7f753a13d254b00200cb465cf6cb2a9f60b81d5d248f7b501396492978"
+    },
+    {
+      "idx_index": 629,
+      "name": "UGRD",
+      "level": "20 m above ground",
+      "forecast": "anl",
+      "start": 440606516,
+      "end": 441567017,
+      "bytes": 960502,
+      "sha256": "9c1aeb1ddb0abc8f055559a92a3e27b43e2677e30a275b0961176abb8795676f"
+    },
+    {
+      "idx_index": 630,
+      "name": "VGRD",
+      "level": "20 m above ground",
+      "forecast": "anl",
+      "start": 441567018,
+      "end": 442509202,
+      "bytes": 942185,
+      "sha256": "542e183b25e435c273e827937155f525390636b8a4ad8e603b687bb4761023b1"
+    },
+    {
+      "idx_index": 631,
+      "name": "UGRD",
+      "level": "30 m above ground",
+      "forecast": "anl",
+      "start": 442509203,
+      "end": 443479397,
+      "bytes": 970195,
+      "sha256": "7e0d914482fe9fdbf407267ab97fb741d4ceeee233e8ecd497f3f841bb2c5a72"
+    },
+    {
+      "idx_index": 632,
+      "name": "VGRD",
+      "level": "30 m above ground",
+      "forecast": "anl",
+      "start": 443479398,
+      "end": 444435333,
+      "bytes": 955936,
+      "sha256": "06684a80d153434bdb65502163599d6a3bb15f1a4d49e10941820fc977928649"
+    },
+    {
+      "idx_index": 633,
+      "name": "UGRD",
+      "level": "40 m above ground",
+      "forecast": "anl",
+      "start": 444435334,
+      "end": 445021426,
+      "bytes": 586093,
+      "sha256": "eadbd6e46dea597b51cb61e83b7d5042ac7cc11002acead853dd7eb90b53fe58"
+    },
+    {
+      "idx_index": 634,
+      "name": "VGRD",
+      "level": "40 m above ground",
+      "forecast": "anl",
+      "start": 445021427,
+      "end": 445594883,
+      "bytes": 573457,
+      "sha256": "166c1e473ab75a935571e2e9a5c09e2762ee3b92b5fa509034cbf5389ce51f60"
+    },
+    {
+      "idx_index": 635,
+      "name": "UGRD",
+      "level": "50 m above ground",
+      "forecast": "anl",
+      "start": 445594884,
+      "end": 446182290,
+      "bytes": 587407,
+      "sha256": "ae61f8f2115587a2cdd2aefa6d3809c4d02c98dc7fd789e97a48962314d5e8e1"
+    },
+    {
+      "idx_index": 636,
+      "name": "VGRD",
+      "level": "50 m above ground",
+      "forecast": "anl",
+      "start": 446182291,
+      "end": 446757897,
+      "bytes": 575607,
+      "sha256": "4758f8a0bdf23de57f6cbfa51c18f988499eb0a1d8ceaf441eedf2d8820de243"
+    },
+    {
+      "idx_index": 640,
+      "name": "UGRD",
+      "level": "80 m above ground",
+      "forecast": "anl",
+      "start": 449621429,
+      "end": 450209713,
+      "bytes": 588285,
+      "sha256": "6425437ea328d050fe2df762b79b4904e53d5253cf0d7abd0d7d8f54c31bac59"
+    },
+    {
+      "idx_index": 641,
+      "name": "VGRD",
+      "level": "80 m above ground",
+      "forecast": "anl",
+      "start": 450209714,
+      "end": 450788266,
+      "bytes": 578553,
+      "sha256": "1cd328e7738b5332f2be8398d261085d9abcc86348c1cc05fb22fc5f2d37adc5"
+    }
+  ],
+  "validation": {
+    "message_count": 20,
+    "messages": [
+      {
+        "name": "Pressure reduced to MSL",
+        "typeOfLevel": "meanSea",
+        "level": 0,
+        "dataDate": 20261022,
+        "forecastTime": 0
+      },
+      {
+        "name": "Temperature",
+        "typeOfLevel": "isobaricInhPa",
+        "level": 850,
+        "dataDate": 20261022,
+        "forecastTime": 0
+      },
+      {
+        "name": "Relative humidity",
+        "typeOfLevel": "isobaricInhPa",
+        "level": 850,
+        "dataDate": 20261022,
+        "forecastTime": 0
+      },
+      {
+        "name": "Total Cloud Cover",
+        "typeOfLevel": "isobaricInhPa",
+        "level": 850,
+        "dataDate": 20261022,
+        "forecastTime": 0
+      },
+      {
+        "name": "U component of wind",
+        "typeOfLevel": "isobaricInhPa",
+        "level": 850,
+        "dataDate": 20261022,
+        "forecastTime": 0
+      },
+      {
+        "name": "V component of wind",
+        "typeOfLevel": "isobaricInhPa",
+        "level": 850,
+        "dataDate": 20261022,
+        "forecastTime": 0
+      },
+      {
+        "name": "Temperature",
+        "typeOfLevel": "surface",
+        "level": 0,
+        "dataDate": 20261022,
+        "forecastTime": 0
+      },
+      {
+        "name": "2 metre temperature",
+        "typeOfLevel": "heightAboveGround",
+        "level": 2,
+        "dataDate": 20261022,
+        "forecastTime": 0
+      },
+      {
+        "name": "10 metre U wind component",
+        "typeOfLevel": "heightAboveGround",
+        "level": 10,
+        "dataDate": 20261022,
+        "forecastTime": 0
+      },
+      {
+        "name": "10 metre V wind component",
+        "typeOfLevel": "heightAboveGround",
+        "level": 10,
+        "dataDate": 20261022,
+        "forecastTime": 0
+      },
+      {
+        "name": "U component of wind",
+        "typeOfLevel": "heightAboveGround",
+        "level": 20,
+        "dataDate": 20261022,
+        "forecastTime": 0
+      },
+      {
+        "name": "V component of wind",
+        "typeOfLevel": "heightAboveGround",
+        "level": 20,
+        "dataDate": 20261022,
+        "forecastTime": 0
+      },
+      {
+        "name": "U component of wind",
+        "typeOfLevel": "heightAboveGround",
+        "level": 30,
+        "dataDate": 20261022,
+        "forecastTime": 0
+      },
+      {
+        "name": "V component of wind",
+        "typeOfLevel": "heightAboveGround",
+        "level": 30,
+        "dataDate": 20261022,
+        "forecastTime": 0
+      },
+      {
+        "name": "U component of wind",
+        "typeOfLevel": "heightAboveGround",
+        "level": 40,
+        "dataDate": 20261022,
+        "forecastTime": 0
+      },
+      {
+        "name": "V component of wind",
+        "typeOfLevel": "heightAboveGround",
+        "level": 40,
+        "dataDate": 20261022,
+        "forecastTime": 0
+      },
+      {
+        "name": "U component of wind",
+        "typeOfLevel": "heightAboveGround",
+        "level": 50,
+        "dataDate": 20261022,
+        "forecastTime": 0
+      },
+      {
+        "name": "V component of wind",
+        "typeOfLevel": "heightAboveGround",
+        "level": 50,
+        "dataDate": 20261022,
+        "forecastTime": 0
+      },
+      {
+        "name": "U component of wind",
+        "typeOfLevel": "heightAboveGround",
+        "level": 80,
+        "dataDate": 20261022,
+        "forecastTime": 0
+      },
+      {
+        "name": "V component of wind",
+        "typeOfLevel": "heightAboveGround",
+        "level": 80,
+        "dataDate": 20261022,
+        "forecastTime": 0
+      }
+    ]
+  },
+  "reference_point": {
+    "lat": -23.55,
+    "lon_0_360": 313.37,
+    "lon_180": -46.63,
+    "values": {
+      "Temperature_850": 286.3202734375,
+      "U_850": -4.85838623046875,
+      "V_850": 1.6511474609375,
+      "Temperature_surface": 290.1187255859375,
+      "U_20m": -2.184248046875,
+      "V_20m": 1.82025390625,
+      "Pressure_MSL": 102170.475
+    }
+  },
+  "note": "Amostra parcial montada com mensagens GRIB2 completas via .idx + HTTP Range. Não é um arquivo operacional do goGribV2.sh."
+}

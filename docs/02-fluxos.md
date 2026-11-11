@@ -1,5 +1,16 @@
 # 02 — Fluxos
 
+
+> **Estado após as Fases 3 e 4:** robustez operacional implementada e Fase 4
+> validada localmente. Consulte [11-fase-3-resultados.md](11-fase-3-resultados.md)
+> e [12-fase-4-resultados.md](12-fase-4-resultados.md) para comportamento atual,
+> testes, overrides e limites; descrições abaixo preservam o histórico.
+
+> **Estado:** este documento descreve os fluxos do código original em `main`.
+> As seções 4 (MAN), 5 (METAR) e 6 (limpeza) foram atualizadas para refletir as
+> Fases 1 e 2; o runbook operacional completo está em
+> [04-operacao.md](04-operacao.md).
+
 Este documento descreve os quatro fluxos operacionais do `servidor_MET`:
 
 1. ingestão de GFS;
@@ -189,7 +200,7 @@ Resultado observado:
 | 18:00–18:59 | **12** | **18** | Produto rotulado 18 com dado de 12 |
 | 19:00–23:59 | 18 | 18 | Correto |
 
-O rótulo é calculado separadamente em `gera_mapas_MET.py:69-76`, `gera_matriz_MET.py:35-42` e nos equivalentes de vento, usando a comparação correta (`<=` no início, `<` no fim). Por isso o nome do arquivo pode dizer `06` enquanto o GRIB usado é de `00`. Esse é o bug D-04.
+O rótulo é calculado separadamente em `gera_mapas_MET.py:69-76`, `gera_matriz_MET.py:35-42` e nos equivalentes de vento. A tabela acima descreve o **código original** (D-04); na Fase 1 a seleção passou a usar intervalo semiaberto e caminho absoluto, e as linhas 06:00/12:00/18:00 passaram a usar o ciclo novo. Se a seleção regredir, o nome do arquivo pode dizer `06` enquanto o GRIB usado é de `00`.
 
 ### 3.4 Seleção de variável e nível
 
@@ -210,7 +221,7 @@ flowchart TD
     H -->|"matriz"| J["CSV"]
 ```
 
-- Para pressão, o nível pedido é “snapado” para o nível GFS mais próximo dentro de `150..1000 hPa`; valores fora da faixa são fixados em 150 ou 1000.
+- Para pressão, o nível pedido é “snapado” para o nível GFS mais próximo dentro de `150..1000 hPa`. Os wrappers AUT rejeitam valores fora dessa faixa antes de chamar o gerador; chamadas diretas ao módulo de processamento ainda escolhem o nível válido mais próximo da lista.
 - Para superfície, o nível do produto é `surface`/`superficie`, independentemente do `-n` informado.
 - Para altura, os níveis usados são `20, 30, 40, 50, 80 m`.
 - Se a variável não tiver o tipo de nível esperado, a lista fica vazia. Em alguns casos isso gera produto vazio; em outros, `IndexError`/`AttributeError`.
@@ -249,9 +260,10 @@ flowchart TD
     GEN --> OUT[("diretório -out")]
 ```
 
-### 4.2 Sintaxe posicional
+### 4.2 Sintaxe com `argparse`
 
-O wrapper **não aceita flags em qualquer ordem**. A ordem esperada é:
+Desde a Fase 2, o wrapper é fino e o parser é `argparse`. As flags podem vir em
+qualquer ordem:
 
 ```text
 reqs_MAN_MET.sh \
@@ -260,18 +272,18 @@ reqs_MAN_MET.sh \
   -latmin <lat> -latmax <lat> \
   <nivel> \
   -datetime <AAAAMMDD+AAP> \
-  -out <diretorio/>
+  -out <diretorio>
 ```
 
-Onde `<nivel>` é um dos blocos:
+Onde `<nivel>` é **exatamente um** dos blocos:
 
-| Bloco | Posições | Significado |
-|---|---|---|
-| `-nhpa 500` | 11-12 | Nível de pressão em hPa |
-| `-nf 18000` | 11-12 | Altitude em pés, convertida para hPa |
-| `-ns` | 11 | Superfície |
-| `-altminhpa 500 -altmaxhpa 200` | 11-14 | Intervalo em hPa (atenção: o exemplo usa min > max) |
-| `-altminfeet 50000 -altmaxfeet 20000` | 11-14 | Intervalo em pés, convertido para hPa |
+| Bloco | Significado |
+|---|---|
+| `-ns` | Superfície |
+| `-nhpa 500` | Nível de pressão em hPa (150–1000) |
+| `-nf 18000` | Altitude em pés, convertida para hPa |
+| `-altminhpa 200 -altmaxhpa 500` | Intervalo em hPa (qualquer ordem) |
+| `-altminfeet 20000 -altmaxfeet 50000` | Intervalo em pés, convertido para hPa |
 
 Exemplo de nível único:
 
@@ -296,44 +308,57 @@ Exemplo de superfície:
   -out /tmp/saida/
 ```
 
-Exemplo de intervalo (a ordem `min > max` é a que funciona no código atual):
+Exemplo de intervalo (as duas ordens produzem a mesma lista crescente):
 
 ```bash
 ./reqs_MAN_MET.sh \
   -v temp \
   -lonmin -56 -lonmax -42 -latmin -28 -latmax -18 \
-  -altminhpa 500 -altmaxhpa 200 \
+  -altminhpa 200 -altmaxhpa 500 \
   -datetime 202212170000 \
   -out /tmp/saida/
 ```
 
 ### 4.3 Parsing e validação
 
-`parse_param.imprime_parse_MAN()` (`classes_MET/parse_param_MET.py:88-226`):
+`executa_reqs_param.py` usa `argparse` e valida:
 
-- lê `-v`, coordenadas, nível, data e saída;
-- converte `-nf`/`-altminfeet`/`-altmaxfeet` para hPa com `converte_feet_to_hPa`;
-- define `flag=1` para superfície (`nivel` é string), `flag=2` para nível único, `flag=3` para intervalo;
-- retorna uma tupla de tamanho variável conforme o flag.
+- variável contra o catálogo (`chuva` é rejeitado com indicação de
+  `chuvaConvec`/`chuvaNaoConvec`);
+- coordenadas e bounding box (`lonmin < lonmax`, `latmin < latmax`);
+- data com 12 dígitos (`AAAAMMDD` + `AA` + `PP`);
+- exatamente um modo de nível, com pressão entre 150 e 1000 hPa;
+- diretório `-out` existente e com permissão de escrita;
+- `umidadeRel` apenas em pressão e variáveis superficiais com `-ns`.
+
+O parser define `flag=1` para superfície, `flag=2` para nível único e `flag=3`
+para intervalo. `cria_intervalo_niveis` ordena os extremos e devolve níveis
+crescentes.
 
 `executa_reqs_param.py` então:
 
-- valida o polígono com `met_poligono_regiao` (`:119`, `:132`, `:146`);
-- extrai data/ciclo com `validada_data` (`:120`, `:133`, `:147`);
-- para `wind`/`winds`, chama mapas e matrizes (`:155-168`);
-- para variáveis escalares, chama mapas e matrizes (`:170-183`);
-- no flag 3 de vento, **as matrizes estão comentadas** (`:168`): só há mapas.
+- valida o polígono com `met_poligono_regiao`;
+- extrai data/ciclo com `validada_data`;
+- para `wind`/`winds`, chama mapas e matrizes;
+- para variáveis escalares, chama mapas e matrizes;
+- no modo de intervalo de vento, gera **somente mapas** (comportamento
+  histórico preservado).
 
 ### 4.4 Limitações do MAN
 
-- A data precisa ter exatamente 12 dígitos (`AAAAMMDD` + `AA` + `PP`). Oito dígitos deixam `ano`/`mes`/`dia` sem definição e geram `UnboundLocalError`.
-- O polígono exige `lonmin < lonmax` e `latmin < latmax`; caso contrário `cria_poligono()` retorna `None` e o unpack em `executa_reqs_param.py` falha.
-- O intervalo exige que o mínimo seja maior que o máximo na chamada atual; caso contrário, `idx_nivel_min`/`idx_nivel_max` não são definidos (`:85-98`).
-- O diretório `-out` não é criado pelo código e deve terminar com `/`; caso contrário o prefixo é concatenado ao nome do arquivo.
-- A região no nome do arquivo é uma string com espaços e dois-pontos (`LonMin:... LonMax:...`), o que exige cuidado em shell.
-- O wrapper duplica o quarto argumento em todas as chamadas Python (`reqs_MAN_MET.sh:166,195,243,288`). Isso não quebra o parser atual porque o valor extra é ignorado, mas é frágil.
-- O help diz que nível vazio significa superfície, mas o wrapper só executa com `-ns`; sem nível, nenhum Python é chamado.
-- O MAN não usa `-r`; usa bounding box. A região `MN` citada no help do AUT não existe no dicionário de regiões (a chave de Manaus é `AM`).
+- A data precisa ter exatamente 12 dígitos (`AAAAMMDD` + `AA` + `PP`); o parser
+  rejeita o formato incorreto com código 2.
+- O polígono exige `lonmin < lonmax` e `latmin < latmax`; caso contrário
+  `cria_poligono()` retorna `None` e o fluxo falha.
+- Os dois extremos do intervalo podem vir em qualquer ordem; níveis iguais
+  produzem um único elemento e valores fora de 150–1000 hPa são rejeitados.
+- O diretório `-out` precisa existir e ter permissão de escrita; a barra final é
+  normalizada.
+- A região no nome do arquivo é uma string com espaços e dois-pontos
+  (`LonMin:... LonMax:...`), o que exige cuidado em shell.
+- O MAN não usa `-r`; usa bounding box. A região `MN` citada no help antigo não
+  existe; a chave de Manaus é `AM`.
+- Regiões e caminhos ainda não são sanitizados contra traversal (D-18, Fase 3).
 
 ## 5. Fluxo METAR
 
@@ -350,19 +375,19 @@ sequenceDiagram
     participant J as JSON
 
     S->>A: executa
-    A->>A: data local YYYYMMDD
+    A->>A: referência UTC YYYYMMDDHHMM
     A->>A: cria/entra em METARpy/YYYYMMDD
     A->>R: python3 METARpy.py
     R->>G: pegaMETAR(ICAO)
     G->>N: consulta METAR
     N-->>G: texto METAR
     G-->>R: objeto Metar
-    R->>J: append JSON bruto
+    R->>J: grava .tmp e os.replace (bruto)
     A->>T: python3 METARpy_traduzido.py
     T->>G: nova consulta NOAA
     G->>N: consulta METAR novamente
     N-->>G: texto METAR (pode ser outra observação)
-    T->>J: append JSON traduzido
+    T->>J: grava .tmp e os.replace (traduzido)
 ```
 
 ### 5.2 Estações
@@ -385,13 +410,17 @@ O comentário em `METARpy.py:13` diz `SBBEG`, mas o dicionário usa `SBEG`. O va
 
 ### 5.3 Nome e conteúdo dos arquivos
 
-O shell monta o diretório assim (`METARpy/automatizaMetar.sh:3-7`):
+O shell monta o diretório a partir de uma referência UTC única
+(`METAR_REFERENCIA_UTC`, ou `date -u`):
 
 ```text
-METARpy/<data_ano><data_mes><data_dia>/
+METARpy/<AAAA><MM><DD>/
 ```
 
-As variáveis `data_hora` e `data_min` são usadas na linha 7, mas **não são definidas** no script. O resultado é um diretório apenas com a data (`AAAAMMDD`), não com hora/minuto. Várias execuções no mesmo dia compartilham o mesmo diretório.
+As antigas variáveis `data_hora`/`data_min`, que não eram definidas, foram
+removidas na Fase 2. A data do diretório e o timestamp do arquivo usam a mesma
+referência, inclusive na virada de mês/ano (D-08). Várias execuções no mesmo dia
+compartilham o diretório, mas cada estação + timestamp tem seu próprio arquivo.
 
 Os arquivos são nomeados pela estação e pelo timestamp da observação:
 
@@ -455,8 +484,9 @@ O JSON traduzido tem a forma:
 ### 5.4 Problemas estruturais do fluxo
 
 - **Duas consultas independentes**: `METARpy.py` e `METARpy_traduzido.py` chamam `pegaMETAR` separadamente. Se a NOAA atualizar a observação entre as duas chamadas, o JSON bruto e o traduzido podem ter METARs diferentes.
-- **Append sem separador**: ambos abrem em modo `"a"` e escrevem um JSON completo sem nova linha/separador (`METARpy.py:40`, `METARpy_traduzido.py:80`). Execuções repetidas no mesmo minuto concatenam objetos e geram JSON inválido.
-- **Data da observação**: o timestamp usa o ano/mês atuais e o dia/hora/minuto do METAR (`METARpy.py:49-50`, `METARpy_traduzido.py:89-90`). Na virada do mês, uma observação do dia 31 pode ser gravada no mês seguinte.
+- **Escrita atômica**: desde a Fase 2, cada JSON é gravado em `.tmp` com `"w"`, `flush`/`fsync` e `os.replace` (`metar_common.grava_json_atomico`). Reexecuções no mesmo minuto sobrescrevem o arquivo em vez de concatenar.
+- **Data da observação**: o timestamp é resolvido contra uma referência UTC única, com rollover de mês/ano. Observações do dia 31 perto da virada não caem mais no mês seguinte.
+- **Acervo histórico**: os 12 JSONs concatenados anteriores à correção continuam no diretório e precisam ser reparados ou ignorados pelo consumidor.
 - **Sem reconciliação**: não há verificação de que o arquivo bruto e o traduzido correspondem à mesma observação, nem de que o JSON é válido após a escrita.
 
 ## 6. Ciclo de vida dos dados
@@ -473,21 +503,24 @@ flowchart LR
     D --> G
     E --> G
     F --> G
-    G --> H["tentativa de remoção<br/>data local -2 dias"]
+    G --> H["remoção do dia alvo<br/>hoje - 2 dias"]
 ```
 
-A retenção pretendida é de dois dias. O script calcula o dia com `date -d "-2 days" +%d`, mas combina com o **ano e mês correntes** (`remove_GRIBS_antigos.sh:9-15`). Nos dois primeiros dias de cada mês, a data formada é uma data futura do mês corrente ou um dia inexistente, e a limpeza não remove os dados antigos. O script também remove apenas GRIBs `0p25`; os `1p00` e legados permanecem.
+A retenção pretendida é de dois dias. Desde a Fase 2, o script calcula a data
+alvo com `date -d "-2 days" +"%Y%m%d"` e remove `0p25`, `1p00`, legados e os
+diretórios de produtos do mesmo dia. Overrides `MET_BASE_DIR`, `MET_HOJE` e
+`MET_DATA_ALVO` permitem testar sem tocar na produção.
 
 ## 7. Resumo das diferenças de comportamento
 
 | Situação | AUT | MAN |
 |---|---|---|
 | Sem GRIB para a data | Lista vazia; erro posterior | Erro no `pygrib`/lista vazia |
-| Hora exata do ciclo | Usa ciclo anterior na primeira hora (D-04) | Ciclo vem da data; não infere |
-| Vento superficial | Não é gerado pelo controlador; se chamado, mapas e matriz do preditor usam V=U; matriz BlueSky usa V correto, mas altitude errada | Gerado se `-v winds -ns`; V correto; altitude errada no BlueSky |
-| Umidade superficial | Sem saída | Falha com `-ns` |
-| Precipitação | `chuvaNaoConvec` é total | Mesmo mapeamento |
-| Saída | Diretórios fixos | `-out` |
-| Código de saída | Controlador sempre `1` | Depende do Python; sem tratamento amigável |
+| Hora exata do ciclo | Intervalo semiaberto desde a Fase 1 | Ciclo vem da data; não infere |
+| Vento superficial | `winds -ns` gerado desde a Fase 2; U/V e `hMET` corrigidos na Fase 1 | Gerado se `-v winds -ns`; mesmas correções |
+| Umidade superficial | Não existe; `-ns` é rejeitado | `-ns` falha com indicação de `-nhpa 850` |
+| Precipitação | `chuvaNaoConvec` é total; rótulo `+6` documentado | Mesmo mapeamento |
+| Saída | Diretórios fixos | `-out` validado |
+| Código de saída | Controlador ainda sempre `1` (D-16) | `argparse` retorna 2 para chamadas inválidas |
 
 Para detalhes de schemas, variáveis, níveis e regiões, consulte [03-dados-e-saidas.md](03-dados-e-saidas.md). Para os bugs e prioridades, consulte [05-diagnostico.md](05-diagnostico.md).

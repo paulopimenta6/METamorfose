@@ -1,0 +1,1258 @@
+{
+  "generated_at": "2026-10-28T00:54:32.530680+00:00",
+  "purpose": "Validação independente da Fase 2 (T-06 a T-12).",
+  "phase": 2,
+  "sample": {
+    "path": "baseline/samples/gfs.20261022.00.0p25.subset.grb2",
+    "sha256": "7adc84c35743c9fe4884756b938f38c8a18a5278d3b30bb945a300adde908a90"
+  },
+  "phase1_report": "reprocessamento/reports/20261022-00",
+  "status": "ok",
+  "checks": 177,
+  "failures": 0,
+  "items": [
+    {
+      "name": "invariante: goGribV2.sh congelado",
+      "status": "ok",
+      "detail": "994ce16c1480b17a62b78e72761307af2000dc47819abbaf48ce042c72023ce0"
+    },
+    {
+      "name": "invariante: validação da Fase 1 continua ok",
+      "status": "ok",
+      "detail": {
+        "status": "ok",
+        "checks": 158
+      }
+    },
+    {
+      "name": "invariante: 20 produtos da Fase 1 preservados",
+      "status": "ok",
+      "detail": 20
+    },
+    {
+      "name": "invariante: baseline sem alterações no Git",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-06: controlador tem duas chamadas de umidadeRel",
+      "status": "ok",
+      "detail": [
+        "./automatiza_MET.sh \"-v\" \"umidadeRel\" \"-n\" \"850\" \"-r\" \"SP\"",
+        "./automatiza_MET.sh \"-v\" \"umidadeRel\" \"-n\" \"850\" \"-r\" \"RJ\""
+      ]
+    },
+    {
+      "name": "T-06: nenhuma chamada umidadeRel usa -ns",
+      "status": "ok",
+      "detail": [
+        "./automatiza_MET.sh \"-v\" \"umidadeRel\" \"-n\" \"850\" \"-r\" \"SP\"",
+        "./automatiza_MET.sh \"-v\" \"umidadeRel\" \"-n\" \"850\" \"-r\" \"RJ\""
+      ]
+    },
+    {
+      "name": "T-06: chamadas usam -n 850",
+      "status": "ok",
+      "detail": [
+        "./automatiza_MET.sh \"-v\" \"umidadeRel\" \"-n\" \"850\" \"-r\" \"SP\"",
+        "./automatiza_MET.sh \"-v\" \"umidadeRel\" \"-n\" \"850\" \"-r\" \"RJ\""
+      ]
+    },
+    {
+      "name": "T-06: classe rejeita umidadeRel em superfície com mensagem clara",
+      "status": "ok",
+      "detail": "umidadeRel não possui campo em superfície; use -n <hPa> (por exemplo, -n 850)"
+    },
+    {
+      "name": "T-06: classe aceita umidadeRel em 850 hPa",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-06: CLI MAN rejeita umidadeRel -ns",
+      "status": "ok",
+      "detail": {
+        "codigo": 2,
+        "stderr": "                   [-altminfeet ALTMINFEET] [-altmaxfeet ALTMAXFEET]\n                       -datetime DATETIME -out OUT\nreqs_MAN_MET.sh: error: umidadeRel nao possui campo em superficie; use -nhpa 850"
+      }
+    },
+    {
+      "name": "T-06: wrapper AUT aceita umidadeRel -n 850",
+      "status": "ok",
+      "detail": ""
+    },
+    {
+      "name": "T-06: wrapper AUT entrega mapas e matrizes",
+      "status": "ok",
+      "detail": [
+        "gera_mapas_MET.py -v umidadeRel -n 850 -r SP",
+        "gera_matriz_MET.py -v umidadeRel -n 850 -r SP"
+      ]
+    },
+    {
+      "name": "T-06: wrapper AUT rejeita umidadeRel -ns",
+      "status": "ok",
+      "detail": {
+        "codigo": 2,
+        "stderr": "erro: umidadeRel nao possui campo em superficie; use -n <hPa> (por exemplo, -n 850)\nuse -h para ver o menu de ajuda"
+      }
+    },
+    {
+      "name": "T-06: mapa de umidadeRel conserva o nível de pressão no rótulo",
+      "status": "ok",
+      "detail": "Nsuperficie não deve ser aplicado a umidadeRel"
+    },
+    {
+      "name": "T-07: controlador tem duas chamadas winds -ns",
+      "status": "ok",
+      "detail": [
+        "./automatiza_vento_MET.sh \"-v\" \"winds\" \"-ns\" \"-r\" \"SP\"",
+        "./automatiza_vento_MET.sh \"-v\" \"winds\" \"-ns\" \"-r\" \"RJ\""
+      ]
+    },
+    {
+      "name": "T-07: controlador cobre SP e RJ",
+      "status": "ok",
+      "detail": [
+        "./automatiza_vento_MET.sh \"-v\" \"winds\" \"-ns\" \"-r\" \"SP\"",
+        "./automatiza_vento_MET.sh \"-v\" \"winds\" \"-ns\" \"-r\" \"RJ\""
+      ]
+    },
+    {
+      "name": "T-07: chamadas no-op de vento foram removidas",
+      "status": "ok",
+      "detail": [
+        "./automatiza_vento_MET.sh \"-v\" \"winds\" \"-ns\" \"-r\" \"SP\"",
+        "./automatiza_vento_MET.sh \"-v\" \"winds\" \"-ns\" \"-r\" \"RJ\"",
+        "./automatiza_vento_MET.sh \"-v\" \"wind\" \"-n\" \"1000\" \"-r\" \"SP\"",
+        "./automatiza_vento_MET.sh \"-v\" \"wind\" \"-n\" \"1000\" \"-r\" \"RJ\"",
+        "./automatiza_vento_MET.sh \"-v\" \"wind\" \"-n\" \"200\" \"-r\" \"SP\"",
+        "./automatiza_vento_MET.sh \"-v\" \"wind\" \"-n\" \"200\" \"-r\" \"RJ\""
+      ]
+    },
+    {
+      "name": "T-07: wind 1000 hPa aparece duas vezes",
+      "status": "ok",
+      "detail": [
+        "./automatiza_vento_MET.sh \"-v\" \"winds\" \"-ns\" \"-r\" \"SP\"",
+        "./automatiza_vento_MET.sh \"-v\" \"winds\" \"-ns\" \"-r\" \"RJ\"",
+        "./automatiza_vento_MET.sh \"-v\" \"wind\" \"-n\" \"1000\" \"-r\" \"SP\"",
+        "./automatiza_vento_MET.sh \"-v\" \"wind\" \"-n\" \"1000\" \"-r\" \"RJ\"",
+        "./automatiza_vento_MET.sh \"-v\" \"wind\" \"-n\" \"200\" \"-r\" \"SP\"",
+        "./automatiza_vento_MET.sh \"-v\" \"wind\" \"-n\" \"200\" \"-r\" \"RJ\""
+      ]
+    },
+    {
+      "name": "T-07: wind 200 hPa aparece duas vezes",
+      "status": "ok",
+      "detail": [
+        "./automatiza_vento_MET.sh \"-v\" \"winds\" \"-ns\" \"-r\" \"SP\"",
+        "./automatiza_vento_MET.sh \"-v\" \"winds\" \"-ns\" \"-r\" \"RJ\"",
+        "./automatiza_vento_MET.sh \"-v\" \"wind\" \"-n\" \"1000\" \"-r\" \"SP\"",
+        "./automatiza_vento_MET.sh \"-v\" \"wind\" \"-n\" \"1000\" \"-r\" \"RJ\"",
+        "./automatiza_vento_MET.sh \"-v\" \"wind\" \"-n\" \"200\" \"-r\" \"SP\"",
+        "./automatiza_vento_MET.sh \"-v\" \"wind\" \"-n\" \"200\" \"-r\" \"RJ\""
+      ]
+    },
+    {
+      "name": "T-07: wrapper de vento executa sem erro",
+      "status": "ok",
+      "detail": ""
+    },
+    {
+      "name": "T-07: wrapper entrega mapas e matrizes de winds",
+      "status": "ok",
+      "detail": [
+        "gera_mapas_vento_MET.py -v winds -ns -r SP",
+        "gera_matriz_vento_MET.py -v winds -ns -r SP"
+      ]
+    },
+    {
+      "name": "T-07: mapa de winds N20 presente e não vazio",
+      "status": "ok",
+      "detail": "reprocessamento/reports/20261022-00/mapas/GFS_0.25_SP_N20_CampoVento_00_20261022_00.png"
+    },
+    {
+      "name": "T-07: header BlueSky N20",
+      "status": "ok",
+      "detail": [
+        "lat",
+        "lon",
+        "hMET",
+        "angMET",
+        "vento_resultante"
+      ]
+    },
+    {
+      "name": "T-07 BlueSky N20: lat alinhada e crescente",
+      "status": "ok",
+      "detail": [
+        -28.0,
+        -18.0
+      ]
+    },
+    {
+      "name": "T-07 BlueSky N20: lon alinhada",
+      "status": "ok",
+      "detail": [
+        -56.0,
+        -42.0
+      ]
+    },
+    {
+      "name": "T-07 BlueSky N20: coluna hMET",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-07 BlueSky N20: coluna angMET",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-07 BlueSky N20: coluna vento_resultante",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-07: header preditor N20",
+      "status": "ok",
+      "detail": [
+        "lat",
+        "lon",
+        "vento U",
+        "vento V",
+        "temp"
+      ]
+    },
+    {
+      "name": "T-07 preditor N20: lat alinhada e crescente",
+      "status": "ok",
+      "detail": [
+        -28.0,
+        -18.0
+      ]
+    },
+    {
+      "name": "T-07 preditor N20: lon alinhada",
+      "status": "ok",
+      "detail": [
+        -56.0,
+        -42.0
+      ]
+    },
+    {
+      "name": "T-07 preditor N20: coluna vento U",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-07 preditor N20: coluna vento V",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-07 preditor N20: coluna temp",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-07: preditor N20 usa U e V distintos",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-07: mapa de winds N30 presente e não vazio",
+      "status": "ok",
+      "detail": "reprocessamento/reports/20261022-00/mapas/GFS_0.25_SP_N30_CampoVento_00_20261022_00.png"
+    },
+    {
+      "name": "T-07: header BlueSky N30",
+      "status": "ok",
+      "detail": [
+        "lat",
+        "lon",
+        "hMET",
+        "angMET",
+        "vento_resultante"
+      ]
+    },
+    {
+      "name": "T-07 BlueSky N30: lat alinhada e crescente",
+      "status": "ok",
+      "detail": [
+        -28.0,
+        -18.0
+      ]
+    },
+    {
+      "name": "T-07 BlueSky N30: lon alinhada",
+      "status": "ok",
+      "detail": [
+        -56.0,
+        -42.0
+      ]
+    },
+    {
+      "name": "T-07 BlueSky N30: coluna hMET",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-07 BlueSky N30: coluna angMET",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-07 BlueSky N30: coluna vento_resultante",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-07: header preditor N30",
+      "status": "ok",
+      "detail": [
+        "lat",
+        "lon",
+        "vento U",
+        "vento V",
+        "temp"
+      ]
+    },
+    {
+      "name": "T-07 preditor N30: lat alinhada e crescente",
+      "status": "ok",
+      "detail": [
+        -28.0,
+        -18.0
+      ]
+    },
+    {
+      "name": "T-07 preditor N30: lon alinhada",
+      "status": "ok",
+      "detail": [
+        -56.0,
+        -42.0
+      ]
+    },
+    {
+      "name": "T-07 preditor N30: coluna vento U",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-07 preditor N30: coluna vento V",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-07 preditor N30: coluna temp",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-07: preditor N30 usa U e V distintos",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-07: mapa de winds N40 presente e não vazio",
+      "status": "ok",
+      "detail": "reprocessamento/reports/20261022-00/mapas/GFS_0.25_SP_N40_CampoVento_00_20261022_00.png"
+    },
+    {
+      "name": "T-07: header BlueSky N40",
+      "status": "ok",
+      "detail": [
+        "lat",
+        "lon",
+        "hMET",
+        "angMET",
+        "vento_resultante"
+      ]
+    },
+    {
+      "name": "T-07 BlueSky N40: lat alinhada e crescente",
+      "status": "ok",
+      "detail": [
+        -28.0,
+        -18.0
+      ]
+    },
+    {
+      "name": "T-07 BlueSky N40: lon alinhada",
+      "status": "ok",
+      "detail": [
+        -56.0,
+        -42.0
+      ]
+    },
+    {
+      "name": "T-07 BlueSky N40: coluna hMET",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-07 BlueSky N40: coluna angMET",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-07 BlueSky N40: coluna vento_resultante",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-07: header preditor N40",
+      "status": "ok",
+      "detail": [
+        "lat",
+        "lon",
+        "vento U",
+        "vento V",
+        "temp"
+      ]
+    },
+    {
+      "name": "T-07 preditor N40: lat alinhada e crescente",
+      "status": "ok",
+      "detail": [
+        -28.0,
+        -18.0
+      ]
+    },
+    {
+      "name": "T-07 preditor N40: lon alinhada",
+      "status": "ok",
+      "detail": [
+        -56.0,
+        -42.0
+      ]
+    },
+    {
+      "name": "T-07 preditor N40: coluna vento U",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-07 preditor N40: coluna vento V",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-07 preditor N40: coluna temp",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-07: preditor N40 usa U e V distintos",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-07: mapa de winds N50 presente e não vazio",
+      "status": "ok",
+      "detail": "reprocessamento/reports/20261022-00/mapas/GFS_0.25_SP_N50_CampoVento_00_20261022_00.png"
+    },
+    {
+      "name": "T-07: header BlueSky N50",
+      "status": "ok",
+      "detail": [
+        "lat",
+        "lon",
+        "hMET",
+        "angMET",
+        "vento_resultante"
+      ]
+    },
+    {
+      "name": "T-07 BlueSky N50: lat alinhada e crescente",
+      "status": "ok",
+      "detail": [
+        -28.0,
+        -18.0
+      ]
+    },
+    {
+      "name": "T-07 BlueSky N50: lon alinhada",
+      "status": "ok",
+      "detail": [
+        -56.0,
+        -42.0
+      ]
+    },
+    {
+      "name": "T-07 BlueSky N50: coluna hMET",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-07 BlueSky N50: coluna angMET",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-07 BlueSky N50: coluna vento_resultante",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-07: header preditor N50",
+      "status": "ok",
+      "detail": [
+        "lat",
+        "lon",
+        "vento U",
+        "vento V",
+        "temp"
+      ]
+    },
+    {
+      "name": "T-07 preditor N50: lat alinhada e crescente",
+      "status": "ok",
+      "detail": [
+        -28.0,
+        -18.0
+      ]
+    },
+    {
+      "name": "T-07 preditor N50: lon alinhada",
+      "status": "ok",
+      "detail": [
+        -56.0,
+        -42.0
+      ]
+    },
+    {
+      "name": "T-07 preditor N50: coluna vento U",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-07 preditor N50: coluna vento V",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-07 preditor N50: coluna temp",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-07: preditor N50 usa U e V distintos",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-07: mapa de winds N80 presente e não vazio",
+      "status": "ok",
+      "detail": "reprocessamento/reports/20261022-00/mapas/GFS_0.25_SP_N80_CampoVento_00_20261022_00.png"
+    },
+    {
+      "name": "T-07: header BlueSky N80",
+      "status": "ok",
+      "detail": [
+        "lat",
+        "lon",
+        "hMET",
+        "angMET",
+        "vento_resultante"
+      ]
+    },
+    {
+      "name": "T-07 BlueSky N80: lat alinhada e crescente",
+      "status": "ok",
+      "detail": [
+        -28.0,
+        -18.0
+      ]
+    },
+    {
+      "name": "T-07 BlueSky N80: lon alinhada",
+      "status": "ok",
+      "detail": [
+        -56.0,
+        -42.0
+      ]
+    },
+    {
+      "name": "T-07 BlueSky N80: coluna hMET",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-07 BlueSky N80: coluna angMET",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-07 BlueSky N80: coluna vento_resultante",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-07: header preditor N80",
+      "status": "ok",
+      "detail": [
+        "lat",
+        "lon",
+        "vento U",
+        "vento V",
+        "temp"
+      ]
+    },
+    {
+      "name": "T-07 preditor N80: lat alinhada e crescente",
+      "status": "ok",
+      "detail": [
+        -28.0,
+        -18.0
+      ]
+    },
+    {
+      "name": "T-07 preditor N80: lon alinhada",
+      "status": "ok",
+      "detail": [
+        -56.0,
+        -42.0
+      ]
+    },
+    {
+      "name": "T-07 preditor N80: coluna vento U",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-07 preditor N80: coluna vento V",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-07 preditor N80: coluna temp",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-07: preditor N80 usa U e V distintos",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-08: diretório usa a data UTC da referência",
+      "status": "ok",
+      "detail": "20260301"
+    },
+    {
+      "name": "T-08: rollover de mês (28/02 23:50 UTC)",
+      "status": "ok",
+      "detail": "202602282350"
+    },
+    {
+      "name": "T-08: rollover de ano (31/12 23:50 UTC)",
+      "status": "ok",
+      "detail": "202512312350"
+    },
+    {
+      "name": "T-08: data no mesmo mês",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-08: referência UTC vem do ambiente",
+      "status": "ok",
+      "detail": "2026-03-01T00:10:00+00:00"
+    },
+    {
+      "name": "T-08: execução METAR retorna 0",
+      "status": "ok",
+      "detail": 0
+    },
+    {
+      "name": "T-08: um JSON por estação",
+      "status": "ok",
+      "detail": 9
+    },
+    {
+      "name": "T-08: nenhum arquivo temporário permanece",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-08: JSON bruto preserva as chaves históricas",
+      "status": "ok",
+      "detail": {
+        "data": [
+          {
+            "id_localidade ": "SBGR",
+            "data ": "202602282350",
+            "mensagem_metar ": "SBGR 282350Z 08003KT 9000 NSC 13/10 Q1023"
+          }
+        ]
+      }
+    },
+    {
+      "name": "T-08: reexecução sobrescreve sem concatenar",
+      "status": "ok",
+      "detail": {
+        "codigo": 0,
+        "igual": true
+      }
+    },
+    {
+      "name": "T-08: JSON traduzido mantém o schema",
+      "status": "ok",
+      "detail": {
+        "estacao": "SBGR",
+        "data": "202602282350",
+        "mensagem_metar": "SBGR 282350Z 08003KT 9000 NSC 13/10 Q1023",
+        "temperatura [C]": 13,
+        "temperatura_pto_orvalho [C]": 10,
+        "visibilidade [m]": "10000",
+        "pressao_atmosferica [mb]": 1023,
+        "condicao_nuvem": "informacao ausente",
+        "vento": {
+          "vento [KT]": 3,
+          "rajada [KT]": "informacao ausente",
+          "direcao_do_vento [graus]": 80,
+          "coordenada_da_direcao_do_vento": "E",
+          "variacao_do_vento": "informacao ausente"
+        }
+      }
+    },
+    {
+      "name": "T-08: script METAR executa sem erro",
+      "status": "ok",
+      "detail": ""
+    },
+    {
+      "name": "T-08: script METAR cria o diretório da data UTC",
+      "status": "ok",
+      "detail": "/tmp/opencode/validar-fase2.tb3gnd23/METARpy/20260301"
+    },
+    {
+      "name": "T-08: script METAR chama bruto e traduzido",
+      "status": "ok",
+      "detail": [
+        "../METARpy.py",
+        "../METARpy_traduzido.py"
+      ]
+    },
+    {
+      "name": "T-08: script METAR usa set -euo pipefail",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-08: script METAR usa uma única referência UTC",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-09: 200->500 produz a lista esperada",
+      "status": "ok",
+      "detail": [
+        200,
+        250,
+        300,
+        350,
+        400,
+        450,
+        500
+      ]
+    },
+    {
+      "name": "T-09: 500->200 produz a mesma lista",
+      "status": "ok",
+      "detail": [
+        200,
+        250,
+        300,
+        350,
+        400,
+        450,
+        500
+      ]
+    },
+    {
+      "name": "T-09: níveis iguais produzem um elemento",
+      "status": "ok",
+      "detail": [
+        500
+      ]
+    },
+    {
+      "name": "T-09: intervalo 149..500 falha claramente",
+      "status": "ok",
+      "detail": {
+        "codigo": 2,
+        "stderr": "                      [-altminfeet ALTMINFEET] [-altmaxfeet ALTMAXFEET]\n                       -datetime DATETIME -out OUT\nreqs_MAN_MET.sh: error: nivel fora da faixa suportada (150 a 1000 hPa): 149.0"
+      }
+    },
+    {
+      "name": "T-09: intervalo 200..1001 falha claramente",
+      "status": "ok",
+      "detail": {
+        "codigo": 2,
+        "stderr": "                     [-altminfeet ALTMINFEET] [-altmaxfeet ALTMAXFEET]\n                       -datetime DATETIME -out OUT\nreqs_MAN_MET.sh: error: nivel fora da faixa suportada (150 a 1000 hPa): 1001.0"
+      }
+    },
+    {
+      "name": "T-09: intervalo -10..300 falha claramente",
+      "status": "ok",
+      "detail": {
+        "codigo": 2,
+        "stderr": "                      [-altminfeet ALTMINFEET] [-altmaxfeet ALTMAXFEET]\n                       -datetime DATETIME -out OUT\nreqs_MAN_MET.sh: error: nivel fora da faixa suportada (150 a 1000 hPa): -10.0"
+      }
+    },
+    {
+      "name": "T-09: execução 200->500 retorna 0",
+      "status": "ok",
+      "detail": {
+        "codigo": 0,
+        "chamadas": 1
+      }
+    },
+    {
+      "name": "T-09: execução 200->500 usa níveis crescentes",
+      "status": "ok",
+      "detail": {
+        "modo": "interval",
+        "niveis": [
+          200,
+          250,
+          300,
+          350,
+          400,
+          450,
+          500
+        ]
+      }
+    },
+    {
+      "name": "T-09: execução 500->200 retorna 0",
+      "status": "ok",
+      "detail": {
+        "codigo": 0,
+        "chamadas": 1
+      }
+    },
+    {
+      "name": "T-09: execução 500->200 usa níveis crescentes",
+      "status": "ok",
+      "detail": {
+        "modo": "interval",
+        "niveis": [
+          200,
+          250,
+          300,
+          350,
+          400,
+          450,
+          500
+        ]
+      }
+    },
+    {
+      "name": "T-10: limpeza de 20260301 retorna 0",
+      "status": "ok",
+      "detail": ""
+    },
+    {
+      "name": "T-10: 20260301 remove 0p25, 1p00 e legados do dia alvo",
+      "status": "ok",
+      "detail": [
+        "06/outro.txt"
+      ]
+    },
+    {
+      "name": "T-10: 20260301 preserva outra data",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-10: 20260301 remove produtos de mapasGrib",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-10: 20260301 preserva mapasGrib de outra data",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-10: 20260301 remove produtos de matrizGrib",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-10: 20260301 preserva matrizGrib de outra data",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-10: 20260301 remove produtos de matrizGrib/bluesky",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-10: 20260301 preserva matrizGrib/bluesky de outra data",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-10: 20260301 remove produtos de matrizGrib/predi",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-10: 20260301 preserva matrizGrib/predi de outra data",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-10: limpeza de 20260302 retorna 0",
+      "status": "ok",
+      "detail": ""
+    },
+    {
+      "name": "T-10: 20260302 remove 0p25, 1p00 e legados do dia alvo",
+      "status": "ok",
+      "detail": [
+        "06/outro.txt"
+      ]
+    },
+    {
+      "name": "T-10: 20260302 preserva outra data",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-10: 20260302 remove produtos de mapasGrib",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-10: 20260302 preserva mapasGrib de outra data",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-10: 20260302 remove produtos de matrizGrib",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-10: 20260302 preserva matrizGrib de outra data",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-10: 20260302 remove produtos de matrizGrib/bluesky",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-10: 20260302 preserva matrizGrib/bluesky de outra data",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-10: 20260302 remove produtos de matrizGrib/predi",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-10: 20260302 preserva matrizGrib/predi de outra data",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-10: limpeza de 20260315 retorna 0",
+      "status": "ok",
+      "detail": ""
+    },
+    {
+      "name": "T-10: 20260315 remove 0p25, 1p00 e legados do dia alvo",
+      "status": "ok",
+      "detail": [
+        "06/outro.txt"
+      ]
+    },
+    {
+      "name": "T-10: 20260315 preserva outra data",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-10: 20260315 remove produtos de mapasGrib",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-10: 20260315 preserva mapasGrib de outra data",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-10: 20260315 remove produtos de matrizGrib",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-10: 20260315 preserva matrizGrib de outra data",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-10: 20260315 remove produtos de matrizGrib/bluesky",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-10: 20260315 preserva matrizGrib/bluesky de outra data",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-10: 20260315 remove produtos de matrizGrib/predi",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-10: 20260315 preserva matrizGrib/predi de outra data",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-10: data alvo inválida retorna 2",
+      "status": "ok",
+      "detail": {
+        "codigo": 2,
+        "stderr": "erro: data alvo invalida: '2026-03-01' (use AAAAMMDD)"
+      }
+    },
+    {
+      "name": "T-10: data alvo 20260231 fora do calendário retorna 2",
+      "status": "ok",
+      "detail": {
+        "codigo": 2,
+        "stderr": "erro: data alvo invalida: '20260231' (data de calendario inexistente)"
+      }
+    },
+    {
+      "name": "T-10: data alvo 20260229 fora do calendário retorna 2",
+      "status": "ok",
+      "detail": {
+        "codigo": 2,
+        "stderr": "erro: data alvo invalida: '20260229' (data de calendario inexistente)"
+      }
+    },
+    {
+      "name": "T-10: data de referência fora do calendário retorna 2",
+      "status": "ok",
+      "detail": {
+        "codigo": 2,
+        "stderr": "erro: data de referencia invalida: '20260231' (data de calendario inexistente)"
+      }
+    },
+    {
+      "name": "T-10: limpeza calcula a data com date -d -2 days",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-10: limpeza cobre 0p25 e 1p00",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-11: wrapper MAN executa sem erro",
+      "status": "ok",
+      "detail": ""
+    },
+    {
+      "name": "T-11: wrapper MAN não duplica argumentos",
+      "status": "ok",
+      "detail": [
+        "/home/paulo/Documentos/meus_codigos/METamorfose/bash/../classes_MET/executa_reqs_param.py -v temp -nhpa 500 -lonmin -56 -lonmax -42 -latmin -28 -latmax -18 -datetime 202111020006 -out /tmp/opencode/validar-fase2.tb3gnd23"
+      ]
+    },
+    {
+      "name": "T-11: wrapper MAN é fino e validado",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-11: wrapper AUT rejeita 'chuva' com mensagem clara",
+      "status": "ok",
+      "detail": {
+        "codigo": 2,
+        "stderr": "erro: variavel 'chuva' nao existe; use 'chuvaConvec' ou 'chuvaNaoConvec'\nuse -h para ver o menu de ajuda"
+      }
+    },
+    {
+      "name": "T-11: CLI MAN rejeita 'chuva' com mensagem clara",
+      "status": "ok",
+      "detail": {
+        "codigo": 2,
+        "stderr": "         [-altminfeet ALTMINFEET] [-altmaxfeet ALTMAXFEET]\n                       -datetime DATETIME -out OUT\nreqs_MAN_MET.sh: error: variavel 'chuva' nao existe; use 'chuvaConvec' ou 'chuvaNaoConvec'"
+      }
+    },
+    {
+      "name": "T-11: região MN falha indicando AM",
+      "status": "ok",
+      "detail": {
+        "codigo": 2,
+        "stderr": "erro: regiao 'MN' nao existe; para Manaus use 'AM'\nuse -h para ver o menu de ajuda"
+      }
+    },
+    {
+      "name": "T-11: automatiza_MET.sh rejeita nível abaixo de 150 hPa",
+      "status": "ok",
+      "detail": {
+        "codigo": 2,
+        "stderr": "erro: nivel deve estar entre 150 e 1000 hPa\nuse -h para ver o menu de ajuda",
+        "chamadas": []
+      }
+    },
+    {
+      "name": "T-11: automatiza_vento_MET.sh rejeita nível abaixo de 150 hPa",
+      "status": "ok",
+      "detail": {
+        "codigo": 2,
+        "stderr": "erro: nivel deve estar entre 150 e 1000 hPa\nuse -h para ver o menu de ajuda",
+        "chamadas": []
+      }
+    },
+    {
+      "name": "T-11: limite inferior de 150 hPa é aceito",
+      "status": "ok",
+      "detail": {
+        "codigo": 0,
+        "stderr": "",
+        "chamadas": [
+          "gera_mapas_MET.py -v temp -n 150 -r SP",
+          "gera_matriz_MET.py -v temp -n 150 -r SP"
+        ]
+      }
+    },
+    {
+      "name": "T-11: help MAN é gerado a partir do catálogo",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-11: CLI MAN aceita flags fora de ordem",
+      "status": "ok",
+      "detail": {
+        "codigo": 0,
+        "chamadas": 1
+      }
+    },
+    {
+      "name": "T-11: flags fora de ordem preservam variável, coordenadas e nível",
+      "status": "ok",
+      "detail": {
+        "variavel": "temp",
+        "coords": [
+          -56.0,
+          -42.0,
+          -28.0,
+          -18.0
+        ],
+        "modo": "single",
+        "nivel": 500
+      }
+    },
+    {
+      "name": "T-12: visibilidade com nuvem=None",
+      "status": "ok",
+      "detail": "10000"
+    },
+    {
+      "name": "T-12: visibilidade com nuvem=[]",
+      "status": "ok",
+      "detail": "superior a 10000"
+    },
+    {
+      "name": "T-12: visibilidade com nuvem=[{'code': 'BKN'}]",
+      "status": "ok",
+      "detail": "superior a 10000"
+    },
+    {
+      "name": "T-12: visibilidade não 9999 é preservada",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-12: estação automática preserva 9999",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-12: JSON traduzido classifica ausência de nuvem",
+      "status": "ok",
+      "detail": {
+        "estacao": "SBGR",
+        "data": "202602282350",
+        "mensagem_metar": "SBGR 282350Z 08003KT 9000 NSC 13/10 Q1023",
+        "temperatura [C]": 13,
+        "temperatura_pto_orvalho [C]": 10,
+        "visibilidade [m]": "10000",
+        "pressao_atmosferica [mb]": 1023,
+        "condicao_nuvem": "informacao ausente",
+        "vento": {
+          "vento [KT]": 3,
+          "rajada [KT]": "informacao ausente",
+          "direcao_do_vento [graus]": 80,
+          "coordenada_da_direcao_do_vento": "E",
+          "variacao_do_vento": "informacao ausente"
+        }
+      }
+    },
+    {
+      "name": "T-12: JSON traduzido classifica presença de nuvem",
+      "status": "ok",
+      "detail": {
+        "estacao": "SBGR",
+        "data": "202602282350",
+        "mensagem_metar": "SBGR 282350Z 08003KT 9000 NSC 13/10 Q1023",
+        "temperatura [C]": 13,
+        "temperatura_pto_orvalho [C]": 10,
+        "visibilidade [m]": "superior a 10000",
+        "pressao_atmosferica [mb]": 1023,
+        "condicao_nuvem": {
+          "nuvem": [
+            {
+              "Tipo de nuvem ": "BKN",
+              "Tipo de nuvem (nome completo) ": "Broken",
+              "Cobertura minima de nuvem [em oitavos]": "5",
+              "Cobertura maxima de nuvem [em oitavos]": "7",
+              "Altitude da nuvem [ft]": "1300"
+            }
+          ]
+        },
+        "vento": {
+          "vento [KT]": 3,
+          "rajada [KT]": "informacao ausente",
+          "direcao_do_vento [graus]": 80,
+          "coordenada_da_direcao_do_vento": "E",
+          "variacao_do_vento": "informacao ausente"
+        }
+      }
+    },
+    {
+      "name": "T-12: código não usa str(nuvem) nas comparações",
+      "status": "ok",
+      "detail": null
+    },
+    {
+      "name": "T-06 a T-12: suíte de aceitação da Fase 2 verde",
+      "status": "ok",
+      "detail": {
+        "codigo": 0,
+        "resumo": "36 passed in 1.14s"
+      }
+    }
+  ]
+}

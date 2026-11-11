@@ -1,6 +1,16 @@
 # 03 — Dados e saídas
 
+
+> **Estado após as Fases 3 e 4:** robustez operacional implementada e Fase 4
+> validada localmente. Consulte [11-fase-3-resultados.md](11-fase-3-resultados.md)
+> e [12-fase-4-resultados.md](12-fase-4-resultados.md) para comportamento atual,
+> testes, overrides e limites; descrições abaixo preservam o histórico.
+
 Este documento descreve os dados de entrada, as variáveis suportadas, os níveis, as regiões, os padrões de nomes e os schemas de saída.
+
+> **Estado:** este documento descreve o código original em `main`, **antes** da
+> Fase 1. As correções C-05, C-03, C-01, C-02 e C-04 e os valores reprocessados
+> estão em [09-fase-1-resultados.md](09-fase-1-resultados.md).
 
 > Os diretórios `gribs/`, `mapasGrib/` e `matrizGrib/` deste checkout estão vazios. Os dados METAR históricos estão presentes e foram inventariados. As informações de GRIB e de produtos foram extraídas do código e validadas com uma amostra real de GFS 0.25° do NOMADS.
 
@@ -117,11 +127,11 @@ O código seleciona por `name` + `typeOfLevel`. Isso significa que ele ignora `i
 | `ps` | `Surface pressure` | `surface` | Superfície | Pa → hPa nos mapas/matrizes | Presente no dicionário; comentado no controlador |
 | `prnm` | `Pressure reduced to MSL` | `meanSea` | Superfície | Pa → hPa | Usado no controlador |
 | `temp` | `Temperature` | `isobaricInhPa` | 150–1000 hPa (snap) | K → °C | Usado no controlador |
-| `temps` | `Temperature` | `surface` | Superfície | K → °C | Usado no controlador |
+| `temps` | `Temperature` | `surface` | Superfície | K → °C | **Temperatura de pele (skin)**, não a do ar a 2 m |
 | `nuvem` | `Total Cloud Cover` | `isobaricInhPa` | 150–1000 hPa (snap) | — | Usado no controlador |
 | `chuvaNaoConvec` | `Total Precipitation` | `surface` | Superfície | kg m⁻² ≈ mm | **É precipitação total**, apesar do nome |
 | `chuvaConvec` | `Convective precipitation (water)` | `surface` | Superfície | kg m⁻² ≈ mm | Precipitação convectiva |
-| `umidadeRel` | `Relative humidity` | `isobaricInhPa` | 150–1000 hPa | — | **Não funciona em superfície** |
+| `umidadeRel` | `Relative humidity` | `isobaricInhPa` | 150–1000 hPa | — | Apenas em pressão; `-ns` é rejeitado com erro claro |
 | `u` | `U component of wind` | `isobaricInhPa` | 150–1000 hPa | — | Componente zonal (m/s) |
 | `v` | `V component of wind` | `isobaricInhPa` | 150–1000 hPa | — | Componente meridional (m/s) |
 | `uSupe` | `U component of wind` | `heightAboveGround` | 20, 30, 40, 50, 80 m | — | Usado por `winds` |
@@ -129,9 +139,12 @@ O código seleciona por `name` + `typeOfLevel`. Isso significa que ele ignora `i
 
 Observações:
 
-- A chave `chuva` citada no help do `reqs_MAN_MET.sh:27` **não existe** no dicionário. Use `chuvaConvec` ou `chuvaNaoConvec`.
+- `chuvaNaoConvec` continua sendo o nome do produto, mas o valor é **precipitação total** (convectiva + estratiforme). Não subtraia `chuvaConvec` para obter a parcela não convectiva; o resultado não é a chuva estratiforme (D-13).
+- Para chuva, o sufixo `<ff>` do nome do arquivo é `forecastTime + 6`; o valor gravado é o campo de precipitação do GRIB naquele passo. Em `f000` o produto é rotulado `_06` mesmo sem intervalo acumulado. A janela é apenas rotulada; o seletor e o nome da variável não mudam (D-24).
+- `temps` é a temperatura de pele (`Temperature` em `surface`), não a temperatura do ar a 2 m (`2 metre temperature` em `heightAboveGround`). O nome e o seletor foram preservados (D-27).
+- A chave `chuva`, citada no help antigo, **não existe**. O CLI e os wrappers atuais respondem com uma mensagem que indica `chuvaConvec` e `chuvaNaoConvec`.
 - O dicionário também não tem `wind`/`winds`; esses nomes são tratados pelas classes de vento, que internamente usam `u`/`v` e `uSupe`/`vSupe`.
-- `umidadeRel` só tem mensagens em `isobaricInhPa` no mapeamento atual; no GFS 0.25° o campo de 2 m é `2 metre relative humidity` em `heightAboveGround` (nível 2), mas o código não o mapeia (D-06). Alternativa: calcular a partir de temperatura e ponto de orvalho.
+- `umidadeRel` só existe em `isobaricInhPa`. No GFS 0.25° o campo de 2 m é `2 metre relative humidity` em `heightAboveGround` (nível 2), mas ele não é mapeado. `umidadeRel -ns` falha com mensagem clara; use, por exemplo, `-n 850` (D-06). O mapa resultante é gravado como `..._N850_umidadeRel_...`, sem `Nsuperficie`.
 
 ### 2.4 Níveis de pressão aceitos
 
@@ -146,8 +159,9 @@ Regras de arredondamento:
 
 - O nível é aproximado para o nível GFS mais próximo.
 - Se o ponto médio entre dois níveis for atingido ou ultrapassado, o nível superior é escolhido.
-- Valores abaixo de 150 hPa são fixados em 150; valores acima de 1000 hPa são fixados em 1000.
+- O CLI manual valida a faixa **150–1000 hPa** e rejeita valores fora dela com código 2 e mensagem clara; não há mais fixação silenciosa.
 - O AUT usa listas de níveis reais do GRIB, filtradas para `>= 150`, e faz o mesmo tipo de “snap”.
+- No MAN, os dois extremos de um intervalo passam pelo mesmo snap e o resultado é sempre uma lista crescente.
 
 ### 2.5 Níveis de altura usados para vento superficial
 
@@ -203,7 +217,7 @@ mapasGrib/AAAAMMDD/HH/GFS_<res>_<REGIAO>_N<nivel>_<var>_<ana>_<dataDate>_<ff>.pn
 
 Atenção ao rótulo de superfície:
 
-- Mapas de `temps`, `ps`, `prnm` e `umidadeRel` usam `Nsuperficie` (`gera_mapas_MET.py:158`).
+- Mapas de `temps`, `ps` e `prnm` usam `Nsuperficie` (`gera_mapas_MET.py:161`). `umidadeRel` só é gerado em pressão e o mapa preserva o nível pedido, por exemplo `N850`; `Nsuperficie` não é aplicado a essa variável.
 - Mapas de `chuvaConvec`/`chuvaNaoConvec` usam `Nsurface`.
 - Matrizes de `temps`, `ps` e `prnm` usam `Nsurface`, não `Nsuperficie`, porque `gera_matriz_MET.py` não faz a mesma substituição.
 - Assim, para a mesma variável, o mapa e a matriz podem ter nomes de nível diferentes.
@@ -247,8 +261,8 @@ lat,lon,hMET,angMET,vento_resultante
 |---|---|---|
 | `lat` | graus | Latitude |
 | `lon` | graus | Longitude |
-| `hMET` | pés | Para `wind`, altitude de pressão; para `winds`, deveria ser a altura em metros convertida para pés, mas o código usa a fórmula de pressão (D-03) |
-| `angMET` | graus | Direção meteorológica; pode sair negativa, sem normalização para 0–360 (D-12) |
+| `hMET` | pés | Para `wind`, altitude de pressão; para `winds`, altura em metros × 3,28084 desde a Fase 1 (antes usava a fórmula de pressão — D-03) |
+| `angMET` | graus | Direção meteorológica normalizada para `[0, 360)` desde a Fase 1 (antes podia ser negativa — D-12) |
 | `vento_resultante` | nós | `sqrt(U² + V²) * 1.943` |
 
 ### 4.4 Matrizes do preditor
@@ -278,7 +292,7 @@ Os dois scripts de vento têm papéis separados:
 - `gera_mapas_vento_MET.py` gera apenas os mapas. Para `wind` (pressão), usa `u` e `v` no nível hPa; para `winds` (quase-superfície), percorre 20/30/40/50/80 m. Os arquivos saem como `..._CampoVento_...png` em `mapasGrib/...`.
 - `gera_matriz_vento_MET.py` gera as matrizes BlueSky em `matrizGrib/bluesky/...` e as matrizes do preditor em `matrizGrib/predi/...`.
 
-O controlador gera `wind` em 1000/200 hPa (linhas 20-24), mas as chamadas de `winds` (linhas 17-18) e o bloco duplicado de 1000/200 (linhas 62-65) são no-op (D-05). Portanto, os produtos de vento superficial só aparecem se o wrapper for executado manualmente com `-v winds -ns`; e, mesmo assim, os mapas e a matriz do preditor usam V=U (D-02) e a matriz BlueSky tem altitude errada (D-03).
+Desde a Fase 2, o controlador gera `winds -ns` para SP e RJ, além de `wind` em 1000/200 hPa. O bloco duplicado de `wind` foi removido, e os wrappers rejeitam chamadas sem `-v` ou sem `-n`/`-ns`. Os produtos de `winds` saem como mapas para 20/30/40/50/80 m e como matrizes BlueSky e do preditor para os mesmos níveis; U/V, `hMET` e `angMET` seguem as correções da Fase 1.
 
 ## 5. Saídas do fluxo manual (MAN)
 
@@ -306,7 +320,7 @@ Colunas:
 lat,lon,<var>
 ```
 
-O código chama `gera_matriz` duas vezes (`gera_matriz_MAN_MET.py:123-124`), sobrescrevendo o mesmo arquivo. O resultado final é igual, mas o trabalho é duplicado (D-15).
+A matriz é gerada uma única vez. A chamada duplicada de `gera_matriz` foi removida na Fase 2 (D-15); o schema e o nome do arquivo não mudaram.
 
 ### 5.3 Mapas de vento
 
@@ -328,20 +342,20 @@ Schemas:
 
 | Arquivo | Colunas | Unidades |
 |---|---|---|
-| `matriz_vento_...csv` | `lat,lon,nivel<hPa>,halt<feet>,angMET<grau>,vento U<ms**-1>,vento V<ms**-1>,vento_resultante<ms**-1>` | O header diz `nivel<hPa>`, mas para `winds` o valor é metros; `halt` usa a conversão errada para `winds`; resultado em m/s |
-| `matriz_vento_bluesky_...csv` | `lat,lon,hMET<feet>,angMET<grau>,vento_resultante<knot>` | `hMET` errado para `winds`; direção pode ser negativa |
+| `matriz_vento_...csv` | `lat,lon,nivel<hPa>,halt<feet>,angMET<grau>,vento U<ms**-1>,vento V<ms**-1>,vento_resultante<ms**-1>` | O header diz `nivel<hPa>`, mas para `winds` o valor é metros; `halt` usa a conversão correta desde a Fase 1; resultado em m/s |
+| `matriz_vento_bluesky_...csv` | `lat,lon,hMET<feet>,angMET<grau>,vento_resultante<knot>` | `hMET` correto para `winds` desde a Fase 1; direção em `[0, 360)` |
 | `matriz_vento_predi_...csv` | `lat,lon,vento U,vento V,temperatura K` | U/V em m/s; temperatura conforme o nível |
 
 Para `wind` (pressão), o MAN usa `u`/`v` do nível hPa e `temp` do mesmo nível. Para `winds` (superfície), usa `uSupe`/`vSupe` e `temps` de superfície.
 
 ### 5.5 Requisição MAN com intervalo
 
-No flag 3:
+No modo de intervalo:
 
 - variáveis escalares: mapas e matrizes para cada nível do intervalo;
-- vento: **somente mapas** (`executa_reqs_param.py:168` tem a chamada de matriz comentada).
+- vento: **somente mapas**; o fluxo histórico não gera matrizes para intervalos de vento.
 
-O intervalo atual exige `min > max`; a ordem natural `min < max` causa `UnboundLocalError` (D-09).
+O intervalo aceita as duas ordens (`200→500` e `500→200`), sempre devolve níveis crescentes e rejeita extremos fora de 150–1000 hPa com código 2. Níveis iguais produzem um único elemento (D-09).
 
 ## 6. Dados METAR
 
@@ -464,32 +478,33 @@ A chave `condicao_nuvem` pode ser um objeto `{"nuvem":[...]}` ou a string `"info
 
 ### 6.4 Limitações dos dados METAR
 
-- O diretório usa a data local de execução, enquanto o timestamp do arquivo usa a observação. Em execuções perto da meia-noite, o diretório e o timestamp podem ter dias diferentes.
+- O diretório usa a data UTC da referência de execução (`METAR_REFERENCIA_UTC`, ou `date -u`), e o timestamp do arquivo é resolvido contra a mesma referência, inclusive na virada de mês/ano (D-08).
+- A gravação sobrescreve o arquivo daquela estação + timestamp de forma atômica (`.tmp` + `os.replace`); reexecuções não concatenam JSON. Arquivos históricos inválidos anteriores à correção continuam no acervo (D-07).
 - Não há índice, banco ou catálogo; a descoberta é por varredura de diretórios.
 - Não há garantia de que todas as estações tenham arquivo a cada hora.
 - O nome da chave bruta tem espaços, o que quebra consumidores que usam `obj["id_localidade"]`.
-- O JSON traduzido pode ter observação diferente do bruto, porque cada script consulta a NOAA separadamente.
+- O JSON traduzido ainda pode ter observação diferente do bruto, porque cada script consulta a NOAA separadamente.
 
 ## 7. Volumes e retenção
 
 - GRIB: cada arquivo `0p25` do GFS completo tem centenas de MB; quatro previsões × quatro ciclos por dia podem consumir dezenas de GB.
 - Produtos: PNGs e CSVs por variável, nível, região, análise e previsão.
 - METAR: arquivos pequenos (alguns KB), mas milhares por ano.
-- A retenção planejada é de 2 dias, implementada com bugs na virada do mês (D-10) e sem remover todas as resoluções/legados.
+- A retenção planejada é de 2 dias. Desde a Fase 2, `remove_GRIBS_antigos.sh` calcula `hoje - 2 dias` com `date -d "-2 days" +"%Y%m%d"` e remove `0p25`, `1p00` e legados do dia alvo, além dos diretórios de produtos da mesma data (D-10).
 - Não há quota, alerta de disco ou rotação.
 
 ## 8. Qualidade dos dados
 
 | Verificação | Resultado |
 |---|---|
-| JSONs METAR válidos | 16.032 de 16.044 (12 inválidos) |
+| JSONs METAR válidos | 16.032 de 16.044 no acervo histórico; os 12 inválidos são anteriores à escrita atômica (D-07) |
 | Bruto e traduzido pareados | 7.958 pares prováveis; 127 brutos sem tradução; 1 tradução sem bruto |
-| Orientação das grades GFS | Invertida nos produtos: `lat` é revertida sem reverter `data` (D-01) |
-| Vento superficial AUT | Mapas e matriz do preditor usam V=U; matriz BlueSky usa V correto, mas altitude errada (D-02/D-03) |
-| Direção do vento | Não normalizada para 0–360 (D-12) |
-| Ciclo GFS | Pode estar um ciclo atrasado na primeira hora (D-04) |
-| Umidade superficial | Não há produto (D-06) |
-| Precipitação “não convectiva” | É precipitação total (D-13) |
+| Orientação das grades GFS | Corrigida na Fase 1: `data` e `lat` são invertidos juntos (D-01) |
+| Vento superficial AUT | Corrigido na Fase 1: V real no mapa e no preditor; `hMET` em metros × 3,28084 (D-02/D-03) |
+| Direção do vento | Normalizada para `[0, 360)` (D-12) |
+| Ciclo GFS | Intervalo semiaberto e caminho absoluto; sem ciclo atrasado na primeira hora (D-04) |
+| Umidade superficial | `umidadeRel -ns` é rejeitado com mensagem clara; `-n 850` funciona (D-06) |
+| Precipitação “não convectiva” | É precipitação total; nome preservado e documentado, inclusive o rótulo `+6` (D-13/D-24) |
 
 Recomenda-se executar uma validação de sanidade após qualquer correção:
 
@@ -498,3 +513,9 @@ Recomenda-se executar uma validação de sanidade após qualquer correção:
 3. Conferir `hMET` para 20/30/40/50/80 m.
 4. Validar todos os JSONs com `json.load`.
 5. Conferir o ciclo usado no início de cada janela de 6 horas.
+
+## Estado da Fase 4
+
+A implementacao e a validacao local estao em [12-fase-4-resultados.md](12-fase-4-resultados.md).
+O rollout real e o aceite dos consumidores externos ainda estao pendentes.
+Os nomes, headers, unidades e o downloader permanecem preservados.

@@ -1,6 +1,17 @@
 # 05 — Diagnóstico de bugs e recomendações
 
-> **Aviso de uso**: os produtos GFS gerados pelo código atual não devem ser usados como referência geográfica sem antes corrigir **D-01**. Os produtos de vento superficial não devem ser usados sem corrigir **D-02** e **D-03**. Os JSONs METAR marcados como inválidos em **D-07** não devem ser consumidos por parsers estritos.
+
+> **Estado após as Fases 3 e 4:** robustez e correções da auditoria implementadas.
+> Consulte [11-fase-3-resultados.md](11-fase-3-resultados.md) para comportamento
+> operacional e [12-fase-4-resultados.md](12-fase-4-resultados.md) para a
+> validação local, release/rollback e pendências externas; as descrições abaixo
+> preservam o histórico.
+
+> **Aviso de uso**: os produtos GFS gerados pelo código **original** (`main`) não devem ser usados como referência geográfica sem antes corrigir **D-01**. Os produtos de vento superficial não devem ser usados sem corrigir **D-02** e **D-03**. Os JSONs METAR históricos marcados como inválidos em **D-07** não devem ser consumidos por parsers estritos; novas execuções já gravam atomicamente.
+>
+> **Fase 1:** na branch `execucao`, **D-01, D-02, D-03, D-04 e D-12** foram corrigidos e validados com a amostra real. O resultado, os testes T-01–T-05 e o reprocessamento estão em [09-fase-1-resultados.md](09-fase-1-resultados.md).
+>
+> **Fase 2:** na mesma branch, foram corrigidos **D-05, D-06, D-07, D-08, D-09, D-10, D-13, D-14, D-15, D-17, D-24, D-25, D-27 e D-28** (C-06, C-07 e itens de produtos/CLI/METAR). Os testes T-06–T-12 estão verdes e a validação independente tem 177 verificações. O resultado está em [10-fase-2-resultados.md](10-fase-2-resultados.md). Na sequência, a Fase 3 implementou D-16, D-18–D-23 e D-26 (documento 11); D-11 permanece congelado.
 
 ## 1. Sumário executivo
 
@@ -15,22 +26,22 @@ A auditoria encontrou **20 achados principais** e **8 achados secundários**:
 
 ### Top 5 riscos
 
-| ID | Risco | Efeito prático |
-|---|---|---|
-| D-01 | Todas as grades GFS são invertidas no eixo norte-sul | Valores do norte são gravados no sul e vice-versa em PNG e CSV |
-| D-02 | Mapas de vento superficial e matriz do preditor usam U no lugar de V | Vetores e componente V errados; a matriz BlueSky usa o V correto |
-| D-03 | Altura do vento superficial é calculada com a fórmula de pressão | Ventos de 20–80 m viram 55.696–76.487 ft no BlueSky |
-| D-04 | Ciclo GFS errado na primeira hora de 06/12/18 | Produto rotulado `06` pode conter dados de `00`; idem `12`/`06` e `18`/`12` |
-| D-07 | JSONs METAR concatenados sem separador | 12 arquivos do checkout são JSON inválido |
+| ID | Risco | Efeito prático | Estado |
+|---|---|---|---|
+| D-01 | Todas as grades GFS são invertidas no eixo norte-sul | Valores do norte são gravados no sul e vice-versa em PNG e CSV | Corrigido na Fase 1 |
+| D-02 | Mapas de vento superficial e matriz do preditor usam U no lugar de V | Vetores e componente V errados; a matriz BlueSky usa o V correto | Corrigido na Fase 1 |
+| D-03 | Altura do vento superficial é calculada com a fórmula de pressão | Ventos de 20–80 m viram 55.696–76.487 ft no BlueSky | Corrigido na Fase 1 |
+| D-04 | Ciclo GFS errado na primeira hora de 06/12/18 | Produto rotulado `06` pode conter dados de `00`; idem `12`/`06` e `18`/`12` | Corrigido na Fase 1 |
+| D-07 | JSONs METAR concatenados sem separador | 12 arquivos do checkout são JSON inválido | Corrigido em novas execuções (Fase 2); acervo antigo permanece |
 
 ### Ordem mínima de correção
 
-1. **D-01** antes de qualquer reprocessamento, porque contamina todos os produtos.
-2. **D-02 e D-03** antes de gerar ou consumir vento superficial.
-3. **D-04** antes de comparar produtos entre ciclos ou reprocessar datas.
-4. **D-07 e D-08** antes de ampliar a série METAR.
-5. **D-05 e D-06** para completar os produtos automáticos.
-6. Demais achados conforme o plano da seção 9.
+1. **D-01** antes de qualquer reprocessamento, porque contamina todos os produtos. *(corrigido na Fase 1)*
+2. **D-02 e D-03** antes de gerar ou consumir vento superficial. *(corrigidos na Fase 1)*
+3. **D-04** antes de comparar produtos entre ciclos ou reprocessar datas. *(corrigido na Fase 1)*
+4. **D-07 e D-08** antes de ampliar a série METAR. *(corrigidos na Fase 2)*
+5. **D-05 e D-06** para completar os produtos automáticos. *(corrigidos na Fase 2)*
+6. **D-09, D-10, D-13, D-14, D-15, D-17, D-24, D-25, D-27 e D-28** também foram tratados na Fase 2; **D-12** foi corrigido junto da Fase 1.
 
 ## 2. Método e escopo
 
@@ -86,7 +97,7 @@ As referências usam `arquivo:linha`. Quando a evidência é empírica, o comand
 ### D-01 — Orientação vertical das grades GFS está invertida
 
 **Severidade**: Crítica  
-**Status**: Confirmado empiricamente  
+**Status**: Corrigido na Fase 1. `data` e `lat` são invertidos juntos em mapas e matrizes; a primeira linha do CSV é a menor latitude. A validação independente compara os 13 CSVs com `pygrib`.
 **Afeta**: mapas e matrizes AUT e MAN, escalares e vento.
 
 #### Evidência
@@ -166,7 +177,7 @@ Não basta “deixar o Basemap resolver”: os CSVs também estão errados e sã
 ### D-02 — Componente V do vento superficial recebe U
 
 **Severidade**: Crítica  
-**Status**: Confirmado por código  
+**Status**: Corrigido na Fase 1. O mapa superficial AUT e o preditor usam `vSupe`; a matriz BlueSky já usava o V correto. A resultante e o `angMET` foram validados.
 **Afeta**: mapas de vento superficial AUT e matriz do preditor AUT; a matriz BlueSky AUT e o fluxo MAN usam V corretamente.
 
 #### Evidência
@@ -231,7 +242,7 @@ Adicionar um teste com `U=10, V=0` e verificar que a coluna V é zero e que a re
 ### D-03 — Altura do vento superficial é calculada como pressão
 
 **Severidade**: Crítica  
-**Status**: Confirmado por código e por cálculo  
+**Status**: Corrigido na Fase 1. `hMET`/`halt` de `winds` usa `metros × 3,28084`; 20 m → 65,6168 ft e 80 m → 262,4672 ft. A fórmula de pressão continua apenas para `wind`.
 **Afeta**: matriz BlueSky AUT e MAN; matriz simples MAN.
 
 #### Evidência
@@ -303,7 +314,7 @@ E documentar que `halt` de `wind` é uma altitude aproximada derivada da pressã
 ### D-04 — Ciclo GFS anterior é usado na primeira hora de cada ciclo
 
 **Severidade**: Alta  
-**Status**: Confirmado pela leitura e pela simulação do algoritmo.
+**Status**: Corrigido na Fase 1. A seleção usa intervalo semiaberto e caminho absoluto; 06:00 usa o ciclo 06, 12:00 usa 12 e 18:00 usa 18.
 
 #### Evidência
 
@@ -361,7 +372,7 @@ Parametrizar a função de seleção para 00:00, 05:59, 06:00, 06:59, 07:00, 11:
 ### D-05 — Vento superficial e bloco duplicado do controlador são no-op
 
 **Severidade**: Alta  
-**Status**: Confirmado pela leitura do wrapper.
+**Status**: Corrigido na Fase 2 (C-07). O controlador chama `winds -ns` para SP/RJ, o bloco duplicado de 1000/200 foi removido e os wrappers validam `-v`/`-n`/`-ns`.
 
 #### Evidência
 
@@ -427,7 +438,7 @@ Executar o controlador em ambiente de teste e verificar que existem arquivos `Ca
 ### D-06 — Umidade relativa superficial não gera saída e quebra no MAN
 
 **Severidade**: Alta  
-**Status**: Confirmado por código.
+**Status**: Corrigido na Fase 2 (C-06). O controlador usa `umidadeRel -n 850`; o AUT/MAN validam o tipo de nível e `-ns` retorna erro claro com sugestão de `-n 850`, sem `AttributeError`. O mapa preserva o nível `N850` no nome do produto; o gerador não força mais `Nsuperficie` para `umidadeRel`.
 
 #### Evidência
 
@@ -477,7 +488,7 @@ raise ValueError("umidadeRel não possui campo em superfície; use -n <hPa> ou u
 ### D-07 — JSONs METAR são concatenados sem separador
 
 **Severidade**: Alta  
-**Status**: Confirmado por inventário.
+**Status**: Corrigido na Fase 2. A escrita usa `"w"` em arquivo `.tmp`, `flush`/`fsync` e `os.replace`; reexecuções sobrescrevem a mesma estação + timestamp. Os 12 arquivos históricos inválidos permanecem no acervo e precisam de reparo/descarte conforme o consumidor.
 
 #### Evidência
 
@@ -537,7 +548,7 @@ METARpy/20211219/SBBE202112190300_traduzido.json
 ### D-08 — Timestamp METAR usa ano/mês correntes
 
 **Severidade**: Alta  
-**Status**: Confirmado por código.
+**Status**: Corrigido na Fase 2. `resolve_data_metar` usa uma referência UTC única (`METAR_REFERENCIA_UTC`, ou `date -u`) e resolve o rollover de mês/ano; o diretório usa a mesma referência.
 
 #### Evidência
 
@@ -599,7 +610,7 @@ Idealmente, usar o timestamp completo fornecido pela biblioteca, se disponível,
 ### D-09 — Intervalo MAN exige mínimo maior que máximo
 
 **Severidade**: Média  
-**Status**: Confirmado por código.
+**Status**: Corrigido na Fase 2. `cria_intervalo_niveis` ordena os índices, aceita `200→500` e `500→200`, devolve sempre níveis crescentes e rejeita extremos fora de 150–1000 hPa com código 2.
 
 #### Evidência
 
@@ -646,7 +657,7 @@ Aceitar as duas ordens e documentar que o resultado é sempre crescente.
 ### D-10 — Limpeza calcula a data errada e não remove todas as resoluções
 
 **Severidade**: Média  
-**Status**: Confirmado por aritmética de datas.
+**Status**: Corrigido na Fase 2. A data alvo é `date -d "-2 days" +"%Y%m%d"`; o script remove `0p25`, `1p00`, legados e os diretórios de produtos do dia, com validação de formato e de calendário (`20260231` e `20260229` retornam 2) e retorno 0. Overrides `MET_BASE_DIR`/`MET_HOJE`/`MET_DATA_ALVO` permitem teste seguro.
 
 #### Evidência
 
@@ -697,7 +708,7 @@ Remover também `1p00` e o padrão legado, com `find` e `-maxdepth`. Usar `set -
 ### D-12 — Direção do vento não é normalizada para 0–360
 
 **Severidade**: Média  
-**Status**: Confirmado por código.
+**Status**: Corrigido na Fase 1. `angMET` é normalizado para `[0, 360)` em mapas e matrizes, incluindo os quadrantes negativos.
 
 #### Evidência
 
@@ -739,7 +750,7 @@ Documentar a convenção (direção de onde o vento vem) e testar os quatro quad
 ### D-13 — `chuvaNaoConvec` mapeia precipitação total
 
 **Severidade**: Média  
-**Status**: Confirmado por código.
+**Status**: Documentado na Fase 2 sem renomear. `chuvaNaoConvec` continua sendo precipitação total (convectiva + estratiforme); o nome, o seletor e os produtos foram preservados. A semântica está em `docs/03` e `docs/08`.
 
 #### Evidência
 
@@ -773,7 +784,7 @@ O mesmo em `:181` no dicionário MAN.
 ### D-14 — CLI manual é posicional, duplica argumento e falha silenciosamente
 
 **Severidade**: Média  
-**Status**: Confirmado por código.
+**Status**: Corrigido na Fase 2. O shell virou um wrapper fino e o Python usa `argparse`: flags em qualquer ordem, sem `${4}` duplicado, validação de variável/coordenadas/data/nível/saída e código 2 para chamadas inválidas.
 
 #### Evidência
 
@@ -865,7 +876,9 @@ O help também é inconsistente:
 
 ### D-15 — Matriz MAN escalar é gerada duas vezes
 
-**Evidência**: `gera_matriz_MAN_MET.py:123-124` chama `self.gera_matriz(...)` duas vezes consecutivas.
+**Status**: Corrigido na Fase 2. A chamada duplicada foi removida; o schema e o nome do arquivo não mudaram.
+
+**Evidência**: `gera_matriz_MAN_MET.py:123-124` chamava `self.gera_matriz(...)` duas vezes consecutivas.
 
 **Impacto**: I/O duplicado, tempo de execução maior e possibilidade de confusão em logs. O resultado final é o mesmo porque o segundo `open(..., 'w')` sobrescreve.
 
@@ -887,6 +900,8 @@ O help também é inconsistente:
 ---
 
 ### D-17 — Checagem `str(nuvem) is not None` é sempre verdadeira
+
+**Status**: Corrigido na Fase 2. A classificação usa `nuvem is not None`/`nuvem is None`; `9999` sem nuvem vira `"10000"` e com nuvem vira `"superior a 10000"`.
 
 **Evidência**:
 
@@ -942,18 +957,18 @@ elif str(autoOunao) == "False" and str(nuvem) is None and str(visibilidade) == "
 | D-21 | Baixa | `ponto_regiao` usa latitude em condições de longitude e faz wrap incompleto | `ponto_regiao_MET.py:27,33,36-37` | Caixas erradas perto de 0°/180° | Validar faixa e usar aritmética modular |
 | D-22 | Baixa | `gera_mapas_MET.py` usa `varMET` global no ramo de chuva | `gera_mapas_MET.py:102` | Funciona hoje, mas quebra se a função for chamada com outro nome | Usar `variavelMET` |
 | D-23 | Baixa | `controla_env` usa `os.mkdir` e `os.chdir` global | `controla_env.py:35,64-82,89-107` | Não é thread-safe; falha se o diretório pai não existir | `pathlib`, `mkdir(parents=True, exist_ok=True)` |
-| D-24 | Baixa | Precipitação `f000` é rotulada como `06` | `gera_mapas_MET.py:102-109`; `gera_matriz_MET.py:67-74` | Confusão entre análise e previsão | Documentar a janela de acumulação ou usar `ft` real |
-| D-25 | Baixa | `automatizaMetar.sh` usa variáveis indefinidas | `automatizaMetar.sh:7` (`data_hora`, `data_min`) | Diretório só com data; execuções do dia compartilham pasta | Definir hora/minuto ou remover do nome |
-| D-26 | Baixa | Figuras e GRIBs não são fechados explicitamente | `gera_mapas_MET.py:216`; `leitura_dados_grib_MET.py:113` | Consumo de memória/file descriptors em lote | `plt.close(fig)` e `with pygrib.open(...)` |
-| D-27 | Baixa | `temps` usa `Temperature`/`surface` (skin), não `2 metre temperature` | `processamento_dados_MET.py:22`; GFS tem `2 metre temperature` em `heightAboveGround` 2 | Temperatura de “superfície” pode não ser a do ar a 2 m | Decidir a semântica e documentar/mapear |
-| D-28 | Baixa | Shell sem `set -euo pipefail` e help inconsistente | `automatiza_MET.sh:28`; `reqs_MAN_MET.sh:14-27` | Falhas silenciosas; `-v chuva` e `MN` não existem | Robustez e help gerado do código |
+| D-24 | Baixa | Precipitação `f000` é rotulada como `06` | `gera_mapas_MET.py:102-109`; `gera_matriz_MET.py:67-74` | Confusão entre análise e previsão | **Fase 2:** documentado; sufixo `+6` mantido, sem renomear |
+| D-25 | Baixa | `automatizaMetar.sh` usa variáveis indefinidas | `automatizaMetar.sh:7` (`data_hora`, `data_min`) | Diretório só com data; execuções do dia compartilham pasta | **Fase 2:** referência UTC única; variáveis indefinidas removidas |
+| D-26 | Baixa | Figuras e GRIBs não são fechados explicitamente | `gera_mapas_MET.py:216`; `leitura_dados_grib_MET.py:113` | Consumo de memória/file descriptors em lote | `plt.close(fig)` e `with pygrib.open(...)` (Fase 3) |
+| D-27 | Baixa | `temps` usa `Temperature`/`surface` (skin), não `2 metre temperature` | `processamento_dados_MET.py:22`; GFS tem `2 metre temperature` em `heightAboveGround` 2 | Temperatura de “superfície” pode não ser a do ar a 2 m | **Fase 2:** documentado como pele; seletor e nome mantidos |
+| D-28 | Baixa | Shell sem `set -euo pipefail` e help inconsistente | `automatiza_MET.sh:28`; `reqs_MAN_MET.sh:14-27` | Falhas silenciosas; `-v chuva` e `MN` não existem | **Fase 2:** `set -euo pipefail`, validação, faixa 150–1000, help e erros claros; `chuva`/`MN` rejeitados |
 
 ### Notas sobre os secundários
 
 - **D-21**: em `verifica_longitude`, as condições usam `self.latitude` (`:27` e `:33`), mas deveriam validar apenas a longitude. Para as caixas do Brasil o resultado coincide, mas a lógica está errada. O wrap de 180° também não cobre todos os casos.
 - **D-23**: `imprime_dirMapas` e `imprime_dirMatrizes` fazem `chdir` para o diretório de saída. Isso muda o diretório de trabalho do processo inteiro; dois produtos no mesmo processo podem interferir.
-- **D-24**: o acréscimo de 6 em `forecastTime` pode representar a janela de acumulação da precipitação, mas o nome `f000` recebe `_06`. Se a intenção é “acumulado em 6 h”, documente; se não, corrija.
-- **D-27**: em GFS, `Temperature` em `surface` é a temperatura da superfície (skin), enquanto `2 metre temperature` é a temperatura do ar a 2 m. O código chama a variável de `temps`, o que é ambíguo.
+- **D-24**: o acréscimo de 6 em `forecastTime` é um rótulo histórico do produto de chuva. A Fase 2 manteve o nome e documentou que `f000` aparece como `_06`; o valor continua sendo o campo de precipitação do GRIB naquele passo.
+- **D-27**: em GFS, `Temperature` em `surface` é a temperatura de pele, enquanto `2 metre temperature` é a do ar a 2 m. A Fase 2 manteve o nome `temps` e o seletor, documentando explicitamente a semântica.
 
 ## 9. Plano de correção
 
@@ -975,19 +990,25 @@ elif str(autoOunao) == "False" and str(nuvem) is None and str(visibilidade) == "
 
 Gerar um conjunto de referência (“golden case”) com um GFS conhecido e comparar pontos antes/depois.
 
-### Fase 2 — Altos (3–5 dias)
+### Fase 2 — Produtos, CLI e METAR (concluída em 27/10/2026)
 
-| Ordem | Achado | Ação |
-|---:|---|---|
-| 1 | D-04 | Seleção de ciclo por intervalos semiabertos e caminhos absolutos |
-| 2 | D-05 | Corrigir controlador; gerar `winds` |
-| 3 | D-06 | Implementar umidade superficial |
-| 4 | D-07 | Escrita atômica/JSONL e deduplicação |
-| 5 | D-08 | Timestamp UTC com rollover |
+| Ordem | Achado | Ação | Estado |
+|---:|---|---|---|
+| 1 | D-04 | Seleção de ciclo por intervalos semiabertos e caminhos absolutos | Antecipado e concluído na Fase 1 |
+| 2 | D-05 | Corrigir controlador; gerar `winds` | Concluído (C-07) |
+| 3 | D-06 | Corrigir uso de `umidadeRel -ns` | Concluído: `-n 850` e erro claro (C-06) |
+| 4 | D-07 | Escrita atômica e sobrescrita | Concluído |
+| 5 | D-08 | Timestamp UTC com rollover | Concluído |
+| 6 | D-09/D-10/D-13/D-14/D-15/D-17/D-24/D-25/D-27/D-28 | Intervalo, limpeza, semântica, CLI, METAR e robustez | Concluídos |
 
-D-05 deve vir depois de D-02/D-03 para não produzir vento superficial errado em escala.
+D-05 veio depois de D-02/D-03 (Fase 1), evitando gerar vento superficial errado em escala. O detalhamento está em [10-fase-2-resultados.md](10-fase-2-resultados.md).
 
 ### Fase 3 — Médios (3–5 dias)
+
+> **Planejamento histórico:** a divisão abaixo é a proposta original do
+> diagnóstico e não corresponde à execução final. O escopo executado está em
+> [06-plano-de-melhorias-e-variaveis.md](06-plano-de-melhorias-e-variaveis.md) e
+> [11-fase-3-resultados.md](11-fase-3-resultados.md).
 
 | Ordem | Achado | Ação |
 |---:|---|---|
@@ -1028,6 +1049,18 @@ D-11, D-15, D-16, D-17, D-18, D-19, D-21 a D-28.
 | T-12 | CLI MAN | Chamadas válidas geram arquivos; inválidas retornam erro claro |
 | T-13 | Idempotência | Duas execuções iguais não corrompem nem duplicam arquivos |
 | T-14 | Regressão | Conjunto de produtos de referência permanece estável após correções |
+| T-15 | Recursos | Figuras e GRIBs fechados; memória estável em lote |
+
+**Estado após a Fase 3:** T-01 a T-05 estão em
+`tests/test_phase1_acceptance.py`; T-06 a T-12 foram implementados em
+`tests/test_phase2_acceptance.py`; T-13 a T-15 estão em
+`tests/test_phase3_acceptance.py`, todos verdes. O reprocessamento da Fase 1 e
+os produtos de `winds` foram validados de forma independente com `pygrib`.
+A Fase 4 foi implementada e validada localmente, com aceite externo e promoção
+em produção pendentes. Ver [09-fase-1-resultados.md](09-fase-1-resultados.md),
+[10-fase-2-resultados.md](10-fase-2-resultados.md),
+[11-fase-3-resultados.md](11-fase-3-resultados.md) e
+[12-fase-4-resultados.md](12-fase-4-resultados.md).
 
 ### Exemplo de verificação de orientação
 
@@ -1057,7 +1090,7 @@ with open("GFS_0.25_SP_Nsurface_temps_00_..._00.csv") as f:
 ### Definição de pronto
 
 - Nenhum achado Crítico ou Alto em aberto.
-- Todos os testes T-01 a T-14 passando.
+- Todos os testes T-01 a T-15 passando.
 - Produtos de referência regenerados e comparados.
 - 7 dias de execução em paralelo sem divergência.
 - Documentação e help atualizados.
@@ -1069,9 +1102,68 @@ with open("GFS_0.25_SP_Nsurface_temps_00_..._00.csv") as f:
 - **Basemap**: dependência antiga e sensível ao ambiente; pode falhar em Python/NumPy novos.
 - **NOAA/METAR**: disponibilidade e formato podem variar; não há retry.
 - **Fuso**: a operação assume hora local; qualquer mudança de `TZ` altera ciclo e diretório.
-- **Volume**: sem quota, a retenção com bug pode encher o disco.
-- **Validação numérica**: não houve comparação com fonte independente; recomenda-se fazer antes de uso crítico.
+- **Volume**: sem quota, a retenção pode encher o disco mesmo com a data corrigida; monitore o espaço.
+- **Validação numérica**: os produtos GFS foram comparados com leitura independente via `pygrib`; ainda falta validação com observações/METAR e com os consumidores externos.
 
 ### O que não foi alterado
 
-Nenhum arquivo de código-fonte foi modificado durante esta auditoria. As correções propostas são recomendações; a implementação deve ser feita em branch separado, com os testes acima.
+A auditoria original não modificou código; as correções foram implementadas depois, em branch separado, com testes. `goGribV2.sh` permanece congelado.
+
+## 12. Estado após a Fase 1
+
+A Fase 1 foi executada na branch `execucao` e cobriu os cinco achados de
+cálculo priorizados:
+
+| Achado | Correção | Evidência |
+|---|---|---|
+| D-01 | Dados invertidos junto com `lat` em todos os geradores AUT/MAN, escalares e vento, inclusive no ramo `flag == 3` | Primeira linha do CSV de `temp` 850 hPa passou de 26,0934 °C (valor do norte) para 15,7734 °C (valor do sul), conferindo com `pygrib` |
+| D-02 | Preditor AUT passou a receber `v_comp_supe`; mapa superficial AUT passou a ler `vSupe` | `vento U` e `vento V` deixaram de ser idênticos nos níveis 20/30/40/50/80 m; valores conferem com o GRIB |
+| D-03 | Níveis de altura `20/30/40/50/80` usam `metros × 3,28084`; níveis de pressão mantêm a fórmula barométrica | `hMET` de 20 m passou de 76.487,0118 ft para 65,6168 ft; 850 hPa permaneceu em 4.779,1936 ft |
+| D-04 | Intervalo semiaberto `[ciclo, próximo)`, caminhos absolutos e erro explícito quando o ciclo não existe | 00:00–05:59 → ciclo `00` do mesmo dia; 06:00 → `06`; 12:00 → `12`; 18:00 → `18` |
+| D-12 | `angMET = ((180/π)·arctan2(-u,-v) + 360) mod 360` | Todos os ângulos ficaram em `[0, 360)`; o mínimo do baseline era -179,2747° |
+
+Nenhum nome de variável, produto, arquivo, header ou unidade foi alterado. O
+baseline da Fase 0 permanece intacto em `baseline/reports/20261022-00/`; o
+reprocessamento está em `reprocessamento/reports/20261022-00/`. O detalhamento
+completo está em [09-fase-1-resultados.md](09-fase-1-resultados.md).
+
+## 13. Estado após a Fase 2
+
+A Fase 2 foi executada no worktree `METamorfose`, branch `execucao`, sobre o
+commit `9288c1f`. Ela cobriu os itens de produto, CLI, METAR e documentação:
+
+| Achado | Correção aplicada | Evidência |
+|---|---|---|
+| D-05 | Controlador gera `winds -ns` para SP/RJ; bloco duplicado de 1000/200 removido; wrappers validam as flags | `automatizacao_controle_MET.sh`, `automatiza_vento_MET.sh`; T-07 |
+| D-06 | Controlador usa `umidadeRel -n 850`; `-ns` falha com mensagem que indica `-n 850` | `processamento_dados_MET.py`, `executa_reqs_param.py`; T-06 |
+| D-07 | JSON METAR gravado com `"w"` em `.tmp`, `fsync` e `os.replace`; reexecução sobrescreve | `METARpy/metar_common.py`; T-08 |
+| D-08 | Timestamp resolvido contra referência UTC com rollover de mês/ano; diretório usa a mesma referência | `metar_common.py`, `automatizaMetar.sh`; T-08 |
+| D-09 | Intervalo MAN aceita as duas ordens, devolve níveis crescentes e rejeita fora de 150–1000 hPa | `executa_reqs_param.py`; T-09 |
+| D-10 | Limpeza usa `date -d "-2 days"`; remove `0p25`, `1p00`, legados e produtos do dia; valida data | `remove_GRIBS_antigos.sh`; T-10 |
+| D-13 | `chuvaNaoConvec` documentado como precipitação total; nome/seletor preservados | `docs/03`, `docs/08` |
+| D-14 | CLI MAN migrado para `argparse`; wrapper fino; flags em qualquer ordem; erros com código 2 | `executa_reqs_param.py`, `reqs_MAN_MET.sh`; T-11 |
+| D-15 | Chamada duplicada de `gera_matriz` removida | `gera_matriz_MAN_MET.py` |
+| D-17 | Comparações de nuvem usam `is None`/`is not None` | `metar_common.py`; T-12 |
+| D-24 | Janela/rótulo `+6` da chuva documentado; nome preservado | `docs/03` |
+| D-25 | Variáveis indefinidas removidas; referência UTC única no shell | `automatizaMetar.sh`; T-08 |
+| D-27 | `temps` documentado como temperatura de pele; seletor preservado | `docs/03`, `docs/08` |
+| D-28 | Wrappers com `set -euo pipefail`, validação, faixa 150–1000 e help; `chuva`/`MN` rejeitados | `automatiza_MET.sh`, `automatiza_vento_MET.sh`, `reqs_MAN_MET.sh`; T-11 |
+
+Resultados verificáveis:
+
+- `tests/test_phase2_acceptance.py`: **36 testes** T-06–T-12, todos verdes;
+- suíte completa: **162 passed**;
+- validação independente `reprocessamento/validar_fase2.py`: **177 verificações, 0 falhas**;
+- 20 produtos da Fase 1 preservados e `goGribV2.sh` continua com o SHA-256 congelado;
+- relatório em `reprocessamento/reports/fase-2/validation.json` e
+  [10-fase-2-resultados.md](10-fase-2-resultados.md).
+
+Na sequência, a Fase 3 implementou **D-16** (retorno real do controlador),
+**D-18** (sanitização de caminho/região), **D-19** (artefatos e empacotamento),
+**D-20** (logging, lock, escrita atômica e idempotência), **D-21/D-22/D-23**
+(robustez de `ponto_regiao`/`controla_env`) e **D-26** (fechamento de
+figuras/GRIB); T-13–T-15 estão verdes. A Fase 4 foi implementada e validada
+localmente; o aceite dos consumidores e a promoção em produção permanecem
+pendentes. Ver [11-fase-3-resultados.md](11-fase-3-resultados.md) e
+[12-fase-4-resultados.md](12-fase-4-resultados.md). **D-11** permanece fora de
+escopo porque `goGribV2.sh` está congelado.
