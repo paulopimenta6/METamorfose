@@ -8,6 +8,10 @@ caminho /media/MET/servidor_MET não existe neste ambiente e os códigos externo
 BlueSky/preditor não foram disponibilizados. O relatório não substitui esse
 aceite e o critério integral da Fase 4 ainda não está satisfeito.
 
+O roteiro operacional para montar o ambiente, executar os três consumidores,
+registrar evidências, assinar, promover e reverter está em
+[14-ambiente-de-producao-e-aceitacao.md](14-ambiente-de-producao-e-aceitacao.md).
+
 ## Janela e método
 
 Campanha de três datas com METAR de referência: 15, 16 e 17/12/2022, ciclo 00 UTC,

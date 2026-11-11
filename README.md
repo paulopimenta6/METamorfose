@@ -46,7 +46,9 @@ Resumo das fases:
 Fases 0–4 implementadas no worktree METamorfose. A Fase 4 foi validada
 localmente; o aceite dos consumidores e a promoção em produção permanecem
 pendentes. Resultados: [Fase 3](docs/11-fase-3-resultados.md) e
-[Fase 4](docs/12-fase-4-resultados.md).
+[Fase 4](docs/12-fase-4-resultados.md). O ambiente de aceitação e o roteiro
+operacional estão em
+[Ambiente de produção e aceite](docs/14-ambiente-de-producao-e-aceitacao.md).
 
 > Repositório público. Não publique dados, credenciais ou produtos operacionais sem revisão.
 
@@ -54,4 +56,5 @@ pendentes. Resultados: [Fase 3](docs/11-fase-3-resultados.md) e
 
 Reprocessamento historico real, validacao de contratos e ferramentas de release/rollback
 implementados. O aceite dos consumidores e a promocao de producao continuam pendentes.
-Ver [resultados e procedimento](docs/12-fase-4-resultados.md).
+Ver [resultados e procedimento](docs/12-fase-4-resultados.md) e o
+[ambiente de producao e aceitacao](docs/14-ambiente-de-producao-e-aceitacao.md).

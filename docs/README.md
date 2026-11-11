@@ -4,7 +4,9 @@
 > **Estado após as Fases 3 e 4:** robustez operacional implementada e Fase 4
 > validada localmente. Consulte [11-fase-3-resultados.md](11-fase-3-resultados.md)
 > e [12-fase-4-resultados.md](12-fase-4-resultados.md) para comportamento atual,
-> testes, overrides e limites; descrições abaixo preservam o histórico.
+> testes, overrides e limites; o roteiro de aceite e promoção está em
+> [14-ambiente-de-producao-e-aceitacao.md](14-ambiente-de-producao-e-aceitacao.md).
+> Descrições abaixo preservam o histórico.
 
 Documentação do sistema batch `servidor_MET`, produzida a partir do código e dos dados presentes neste diretório em **19/10/2026** e atualizada após as Fases 0, 1 e 2.
 
@@ -14,7 +16,7 @@ Documentação do sistema batch `servidor_MET`, produzida a partir do código e 
 > - Os documentos 01–08 descrevem o código original em `main`, **antes** das correções da Fase 1. As seções de estado e os documentos 09/10 registram o que mudou na branch `execucao`.
 > - A Fase 1 foi executada no worktree `METamorfose`, branch `execucao`; o resultado está em [09-fase-1-resultados.md](09-fase-1-resultados.md). A Fase 2 está em [10-fase-2-resultados.md](10-fase-2-resultados.md). O checkout principal e `/media/MET` permanecem sem as correções.
 > - O diagnóstico descreve o comportamento original, inclusive os defeitos. As correções das Fases 1 e 2 já foram implementadas e validadas na branch `execucao`; a Fase 3 está no documento 11 e a Fase 4, validada localmente, no documento 12.
-> - O aceite dos consumidores externos (BlueSky, preditor e planilhas) e a promoção em produção ainda não foram realizados.
+> - O aceite dos consumidores externos (BlueSky, preditor e planilhas) e a promoção em produção ainda não foram realizados. O ambiente de aceitação, os comandos e o registro de evidências estão no documento 14.
 > - O diretório `gribs/`, `mapasGrib/` e `matrizGrib/` deste checkout está vazio; a documentação dos produtos GFS foi feita pelo código, pelos scripts e por uma amostra real de GFS 0.25°. Os dados METAR históricos estão presentes.
 
 ## O que é o sistema
@@ -64,6 +66,7 @@ O sistema **não é** um serviço HTTP/API, não usa banco de dados, fila, cache
 | [11-fase-3-resultados.md](11-fase-3-resultados.md) | Robustez operacional, D-16/D-18–D-23/D-26, testes T-13–T-15 e limites |
 | [12-fase-4-resultados.md](12-fase-4-resultados.md) | Campanha real, validação de contratos, release/rollback e pendências externas |
 | [13-comunicacao-consumidores.md](13-comunicacao-consumidores.md) | Mudanças de contrato para comunicar aos consumidores |
+| [14-ambiente-de-producao-e-aceitacao.md](14-ambiente-de-producao-e-aceitacao.md) | Layout, ativação, testes por consumidor, evidências, assinatura, promoção e rollback |
 
 ## Fase 0 — preparação
 
@@ -122,6 +125,16 @@ A Fase 2 foi executada no mesmo worktree, sobre o commit `9288c1f`:
 - 20 produtos da Fase 1 preservados e `goGribV2.sh` congelado.
 
 Resultado detalhado: [10-fase-2-resultados.md](10-fase-2-resultados.md).
+
+## Fase 4 — ambiente e aceite
+
+O ambiente de aceitação pode ser montado com
+`python3 reprocessamento/setup_production_env.py` (padrão `~/MET/servidor_MET`).
+Ele contém o código e os produtos da release candidata, 12 GRIBs históricos e
+um `acceptance.json` pendente. Os scripts `bin/testar_*` verificam contratos e
+geram uma amostra MAN; o teste nos aplicativos externos e o registro da
+evidência continuam manuais. O roteiro completo, incluindo promoção e rollback,
+está em [14-ambiente-de-producao-e-aceitacao.md](14-ambiente-de-producao-e-aceitacao.md).
 
 ## Diagrama de contexto
 
