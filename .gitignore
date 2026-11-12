@@ -1,6 +1,7 @@
 # Artefatos gerados na Fase 0 e testes locais
 __pycache__/
 .pytest_cache/
+.venv/
 *.py[cod]
 baseline/run/
 baseline/samples/*.grb2

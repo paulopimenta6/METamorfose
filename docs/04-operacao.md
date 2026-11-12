@@ -9,7 +9,54 @@
 
 Este documento é um runbook operacional. Ele descreve pré-requisitos, ordem de execução, comandos, agendamento, validação e diagnóstico de falhas.
 
-> **Atenção**: este checkout não contém `/media/MET/servidor_MET`, e o pacote `PythonMETAR` não está instalado no ambiente auditado. Os comandos abaixo pressupõem o host de produção com os caminhos e as dependências corretas.
+Para a primeira execução, siga a [instalação do zero](17-instalacao-do-zero.md)
+e o [manual de testes MAN](15-manual-testes-de-execucao.md). Este runbook é a
+referência da operação diária, que exige GRIBs atuais e diretórios preparados.
+
+## 0. Usar o layout instalado pelo novo instalador
+
+Ative seu Python com as dependências e carregue `bin/ativar.sh`. Para geração
+automática em um ambiente operacional instalado em `/media/MET/servidor_MET`:
+
+```bash
+export MET_ROOT=/media/MET/servidor_MET
+source "$MET_ROOT/bin/ativar.sh"
+bash "$MET_ACTIVE_CODE/goGribV2.sh"
+bash "$MET_ACTIVE_CODE/bash/automatizacao_controle_MET.sh"
+```
+
+Execute o controlador depois de conferir que os GRIBs do ciclo estão completos.
+O downloader mantém seu destino fixo em `/media/MET/servidor_MET/gribs`.
+`MET_PATH_CONF` configura os leitores/geradores, mas não muda esse destino.
+As amostras históricas instaladas pelo guia do zero são usadas via MAN.
+
+Para coletar METAR com o código ativo e gravar em uma pasta de dados gravável:
+
+```bash
+export METAR_REFERENCIA_UTC="$(date -u +%Y%m%d%H%M)"
+METAR_OUT="$MET_ROOT/observacoes-METAR/${METAR_REFERENCIA_UTC:0:8}"
+mkdir -p "$METAR_OUT"
+(
+  set -e
+  cd "$METAR_OUT"
+  python3 "$MET_ACTIVE_CODE/METARpy/METARpy.py"
+  python3 "$MET_ACTIVE_CODE/METARpy/METARpy_traduzido.py"
+)
+```
+
+O diretório de saída é externo ao pacote imutável em `current/code`. A coleta
+usa a rede NOAA e o PythonMETAR instalado; retorna erro se uma estação falhar.
+Agende uma execução por vez. As seções seguintes descrevem também o layout
+original, em que os scripts ficavam diretamente sob `/media/MET/servidor_MET`.
+
+Em cron/systemd, carregue o Python e `bin/ativar.sh` a cada execução e use
+`$MET_ACTIVE_CODE` para acompanhar promoções e rollback. Um caminho fixo para
+o checkout antigo continuará executando aquele código.
+
+`bin/verificar.sh` confere a **instalação da campanha de aceitação**. Quando a
+operação diária acrescentar ou substituir produtos, as contagens e hashes
+podem divergir dessa campanha. Use a validação específica dos produtos diários;
+o inventário histórico continua sendo a referência da release aceita.
 
 ## 1. Pré-requisitos
 

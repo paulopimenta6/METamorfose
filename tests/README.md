@@ -7,6 +7,19 @@ passaram a exigir o comportamento corrigido.
 
 ## Pré-requisitos
 
+**Primeiro uso ou clone novo:** siga a
+[instalação do zero](../docs/17-instalacao-do-zero.md) para preparar Python e
+execute, da raiz do repositório:
+
+```bash
+python3 -m pytest -q --ignore=tests/test_phase0_acceptance.py -m "not network"
+```
+
+Esse comando executa as regressões portáveis. Testes da amostra real da Fase 0
+podem ser pulados se ela estiver ausente. A suíte completa abaixo também exige
+o backup histórico, essa amostra e os remotos específicos do ambiente original;
+usar apenas `-m "not network"` não remove essas dependências locais.
+
 - Python 3.11 ou compatível.
 - `pytest`, `numpy`, `matplotlib`, `pygrib` e `basemap`.
 - A amostra GFS de `baseline/samples/` para os testes marcados como reais.
@@ -251,3 +264,15 @@ Veja [resultados e limites](../docs/11-fase-3-resultados.md).
 `python -m pytest -q tests/test_phase4_acceptance.py` verifica pacotes, hashes,
 rollback, contratos CSV, metadados e comparacao METAR na virada do dia.
 A campanha real e executada separadamente por reprocessamento/phase4.py.
+
+As regressões de ambiente, instalação e scripts estão em:
+
+```bash
+python3 -m pytest -q tests/test_phase4_environment.py tests/test_phase4_installation.py tests/test_phase4_acceptance.py
+```
+
+Cobrem preflight antes de reinstalação, atualização de ferramentas preservando
+dados e aceite, propagação de falhas nos scripts, hash da candidata, verificação
+do código ativo e rollback. Ensaios usam diretórios temporários e evidências
+sintéticas; o aceite real segue o
+[manual de aceitação](../docs/16-manual-de-aceitacao.md).

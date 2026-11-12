@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import hashlib
 import json
+import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -11,6 +13,8 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "reprocessamento"))
 import acceptance_check as check
+import release_phase4 as release_tools
+import setup_production_env as setup
 
 
 def sha(path):
@@ -184,6 +188,8 @@ def make_environment(tmp_path):
         script = root / "bin" / name
         script.write_text("#!/bin/bash\n", encoding="utf-8")
         script.chmod(0o755)
+    for name in ("acceptance_check.py", "release_phase4.py"):
+        shutil.copy2(ROOT / "reprocessamento" / name, root / "tools" / name)
 
     (root / "app" / "foo.py").write_text("codigo\n", encoding="utf-8")
     write_csv(root / "matrizGrib" / "x.csv", ("lat", "lon", "temp"), [[0, 0, 20.0]])
@@ -191,6 +197,8 @@ def make_environment(tmp_path):
 
     candidate = root / "evidence" / "release" / "candidate"
     candidate.mkdir(parents=True, exist_ok=True)
+    shutil.copytree(root / "app", candidate / "code")
+    shutil.copytree(root / "matrizGrib", candidate / "products" / "matrizGrib")
     (candidate / "validation.json").write_text(
         json.dumps({"status": "ok", "failures": []}), encoding="utf-8"
     )
@@ -263,7 +271,10 @@ def test_environment_ignores_local_path_conf_hash(tmp_path):
     )
     release_path = root / "evidence" / "release" / "candidate" / "release.json"
     release = json.loads(release_path.read_text(encoding="utf-8"))
-    release["files"]["code/environment/path.conf"] = "0" * 64
+    original_config = release_path.parent / "code/environment/path.conf"
+    original_config.parent.mkdir()
+    original_config.write_text("dir_gribs=/origem/gribs\n", encoding="utf-8")
+    release["files"]["code/environment/path.conf"] = sha(original_config)
     release_path.write_text(json.dumps(release), encoding="utf-8")
 
     acceptance_path = root / "acceptance" / "acceptance.json"
@@ -341,3 +352,99 @@ def test_cli_returns_two_for_pending_acceptance(tmp_path, capsys):
     code = check.main(["acceptance", "--root", str(root), "--require-approved"])
     assert code == 2
     assert "pendente" in capsys.readouterr().out
+
+
+def test_candidate_copy_is_verified_even_when_app_is_intact(tmp_path):
+    root = make_environment(tmp_path)
+    (root / "evidence/release/candidate/code/foo.py").write_text("alterado")
+    report = check.check_environment(root, check_dependencies=False)
+    assert report["status"] == "failed"
+    assert any("inventario/hash" in failure for failure in report["failures"])
+
+
+def test_active_release_promotion_and_rollback_are_checked_independently(tmp_path):
+    root = make_environment(tmp_path)
+    candidate = root / "evidence/release/candidate"
+    older = tmp_path / "older"
+    shutil.copytree(candidate, older)
+    (older / "code/foo.py").write_text("versao anterior\n")
+    manifest = json.loads((older / "release.json").read_text())
+    manifest["files"] = release_tools.inventory(older)
+    (older / "release.json").write_text(json.dumps(manifest))
+    original_acceptance = (root / "acceptance/acceptance.json").read_bytes()
+
+    release_tools.promote(older, root, rehearsal=True)
+    release_tools.promote(candidate, root, rehearsal=True)
+    report = check.check_environment(root, check_dependencies=False)
+    assert report["status"] == "ok", report["failures"]
+    assert report["deployment"] == "candidate-active"
+    assert report["active_release_sha256"] == sha(candidate / "release.json")
+
+    setup.install_scripts(root)
+    result = subprocess.run(
+        ["bash", "-c", 'source "$1/bin/ativar.sh"; test "$PYTHONDONTWRITEBYTECODE" = 1; echo "$MET_ACTIVE_CODE"',
+         "bash", str(root)], text=True, capture_output=True, check=True)
+    assert str((root / "current/code").resolve()) in result.stdout
+
+    release_tools.rollback(root)
+    report = check.check_environment(root, check_dependencies=False)
+    assert report["status"] == "ok", report["failures"]
+    assert report["deployment"] == "other-release-active"
+    assert report["active_release_sha256"] == sha(older / "release.json")
+    assert report["release_sha256"] == sha(candidate / "release.json")
+    assert check.check_acceptance(root)["state"] == "pending"
+    assert (root / "acceptance/acceptance.json").read_bytes() == original_acceptance
+
+    (root / "current/code/foo.py").write_text("adulterado")
+    assert check.check_environment(root, check_dependencies=False)["status"] == "failed"
+    assert check.check_acceptance(root)["status"] == "failed"
+
+
+@pytest.mark.parametrize("kind", ["broken", "outside", "directory"])
+def test_invalid_current_is_not_silently_ignored(tmp_path, kind):
+    root = make_environment(tmp_path)
+    current = root / "current"
+    if kind == "directory":
+        current.mkdir()
+    elif kind == "outside":
+        current.symlink_to(root / "evidence/release/candidate", target_is_directory=True)
+    else:
+        current.symlink_to("releases/missing", target_is_directory=True)
+    report = check.check_environment(root, check_dependencies=False)
+    assert report["status"] == "failed"
+    assert any("current" in failure for failure in report["failures"])
+    if kind != "outside":
+        setup.install_scripts(root)
+        result = subprocess.run(["bash", "-c", 'source "$1/bin/ativar.sh"', "bash", str(root)])
+        assert result.returncode != 0
+
+
+def test_register_rejects_wrong_release_without_copying_evidence(tmp_path):
+    root = make_environment(tmp_path)
+    path = root / "acceptance/acceptance.json"
+    data = json.loads(path.read_text())
+    data["release_sha256"] = "0" * 64
+    path.write_text(json.dumps(data))
+    source = tmp_path / "result.log"
+    source.write_text("resultado de teste sintetico")
+    before = path.read_bytes()
+    with pytest.raises(check.CheckError, match="release_sha256"):
+        check.register_evidence(root, "BlueSky", source, "teste")
+    assert path.read_bytes() == before
+    assert not list((root / "acceptance/evidence/BlueSky").iterdir())
+
+
+def test_cli_require_evidence_checks_all_consumers_without_signing(tmp_path, capsys):
+    root = make_environment(tmp_path)
+    command = ["acceptance", "--root", str(root), "--require-evidence", "--json"]
+    assert check.main(command) == 1
+    report = json.loads(capsys.readouterr().out)
+    assert len(report["failures"]) == 3
+    evidence = tmp_path / "synthetic.log"
+    evidence.write_text("teste sintetico")
+    for consumer in check.CONSUMERS:
+        check.register_evidence(root, consumer, evidence, "regressao")
+    assert check.main(command) == 0
+    report = json.loads(capsys.readouterr().out)
+    assert report["state"] == "pending"
+    assert not report["failures"]
