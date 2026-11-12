@@ -1,361 +1,161 @@
-# Ambiente de produção e aceite da Fase 4
+# Referência do ambiente de aceitação
 
-## Objetivo e limite
+Para executar passo a passo, use [instalação](17-instalacao-do-zero.md),
+[testes](15-manual-testes-de-execucao.md) e [aceitação](16-manual-de-aceitacao.md).
+Esta página explica a configuração e as operações de manutenção.
 
-Este documento descreve como montar o ambiente de aceitação, executar os testes
-dos três consumidores externos, registrar as evidências, assinar o aceite,
-promover a release e reverter para a versão anterior.
-
-O ambiente montado **não é uma promoção**. Ele contém o código e os produtos da
-release candidata, mas `acceptance.json` começa com `approved: false` e sem
-evidências. A release só pode ser promovida depois que BlueSky, preditor e
-planilhas forem executados de verdade e as três evidências forem registradas.
-
-Os scripts `bin/testar_*.sh` verificam contratos e geram uma amostra nova a
-partir de um GRIB real, mas **não** executam os aplicativos externos e **não**
-registram evidência automaticamente.
-
-## Release de referência
+## Ambiente de referência
 
 | Item | Valor |
 |---|---|
-| Release | `reprocessamento/releases/phase4-candidate` |
+| Raiz padrão | `~/MET/servidor_MET` |
+| Raiz neste host | `/home/paulo/MET/servidor_MET` |
+| Candidata histórica | `reprocessamento/releases/phase4-candidate` |
 | SHA-256 de `release.json` | `26fa746b3b7017f626c2121ba19bf416e3751280180cdd0424ad2100e908d196` |
-| Arquivos inventariados | 1.141 (39 de código, 1.101 produtos, 1 de validação) |
-| Produtos | 1.098 CSVs e 3 PNGs |
-| GRIBs históricos | 12 amostras (15–17/12/2022, ciclo 00, f000/f006/f012/f018) |
-| Consumidores | BlueSky, preditor, planilhas |
+| Inventário histórico | 1.141 arquivos; 1.140 conferidos nas cópias instaladas |
+| Dados | 12 GRIBs: 15–17/12/2022, ciclo 00, f000/f006/f012/f018 |
+| Produtos | 1.098 CSVs + 3 PNGs |
+| Aceite real | Pendente; nenhuma evidência registrada |
 
-O aceite é vinculado ao SHA-256 de `release.json`. Se a release for reconstruída,
-o hash muda e o aceite anterior deixa de valer.
+As contagens são da campanha padrão. Reconstruir uma release gera outro hash.
+Os dados e pacotes são ignorados pelo Git; o guia de instalação explica como
+obtê-los. `/media/MET/servidor_MET` não foi criado neste host.
 
-**Estado neste host:** ambiente montado em `/home/paulo/MET/servidor_MET`,
-`bin/verificar.sh` com `falhas: 0`, `acceptance.json` pendente e nenhuma
-evidência registrada. `/media/MET/servidor_MET` não foi criado.
+## Layout
 
-## Layout do ambiente
-
-O instalador usa por padrão `~/MET/servidor_MET`. O caminho usado neste
-ambiente foi `/home/paulo/MET/servidor_MET`.
-
-| Caminho | Conteúdo |
+| Caminho relativo a `MET_ROOT` | Conteúdo |
 |---|---|
-| `app/` | cópia do código da release, usada antes da promoção |
-| `environment/path.conf` | configuração de diretórios do ambiente |
-| `gribs/AAAAMMDD/HH/` | GRIBs históricos com os nomes esperados pelo fluxo MAN |
-| `matrizGrib/` | matrizes escalares e as árvores `bluesky/` e `predi/` |
-| `mapasGrib/` | mapas PNG da campanha |
-| `evidence/release/candidate/` | cópia imutável da release e do inventário |
-| `evidence/samples/` | manifesto e metadados das amostras GFS |
-| `acceptance/acceptance.json` | estado do aceite (inicialmente pendente) |
-| `acceptance/evidence/<consumidor>/` | evidências registradas |
-| `logs/` | logs dos scripts `testar_*` |
-| `run/locks/` | locks de promoção e rollback |
-| `backups/` | tar.gz criado antes de cada promoção |
-| `aceitacao-manual/` | saídas MAN geradas durante os testes |
-| `bin/` | scripts operacionais |
-| `releases/`, `current`, `previous` | criados somente depois da promoção |
+| `app/` | Código da candidata usado nos testes |
+| `tools/` | Verificador e ferramenta de release, atualizáveis separadamente |
+| `bin/` | Ativação, verificações, testes, registro, assinatura, promoção e rollback |
+| `docs/`, `LEIA-ME.md` | Manuais copiados do repositório |
+| `environment/path.conf` | Cinco caminhos locais de dados e produtos |
+| `gribs/AAAAMMDD/CC/` | GRIBs com nomes esperados pelo leitor MAN |
+| `matrizGrib/`, `mapasGrib/` | Produtos instalados da candidata |
+| `evidence/release/candidate/` | Pacote imutável, manifesto e validação |
+| `evidence/samples/` | Manifesto e metadados dos GRIBs |
+| `acceptance/acceptance.json` | Estado do aceite da candidata |
+| `acceptance/evidence/<consumidor>/` | Cópias dos registros com hashes |
+| `aceitacao-manual/`, `logs/` | Saídas e logs dos testes técnicos |
+| `run/locks/` | Locks dos geradores e produtos |
+| `backups/` | Backup antes da promoção |
+| `releases/`, `current`, `previous` | Pacotes e ponteiros criados na promoção |
+| `history.jsonl`, `.deployment.lock` | Histórico e lock de promoção/rollback |
 
-`path.conf` aponta para os diretórios de produtos no topo do ambiente. O arquivo
-`code/environment/path.conf` da release é substituído pela versão local; por
-isso ele é excluído da conferência de hash do ambiente instalado.
+Apenas `app/environment/path.conf` é reescrito para os caminhos locais; seu
+hash é excluído da comparação da cópia instalada. O `path.conf` dentro de
+`evidence/release/candidate/` e de `releases/` permanece original e é conferido.
 
-## Instalação
+## Instalar uma release existente
 
-A partir do repositório `METamorfose`:
-
-```bash
-python3 reprocessamento/setup_production_env.py
-```
-
-Opções:
+Na raiz do repositório, com Python ativado:
 
 ```bash
+export MET_ROOT="$HOME/MET/servidor_MET"
 python3 reprocessamento/setup_production_env.py \
-  --root ~/MET/servidor_MET \
+  --root "$MET_ROOT" \
   --candidate reprocessamento/releases/phase4-candidate \
   --samples reprocessamento/phase4-data
-
-# reinstala código, GRIBs e produtos, preservando aceite e evidências
-python3 reprocessamento/setup_production_env.py --force
 ```
 
-Para instalar em `/media/MET/servidor_MET`, crie o diretório com a conta
-operacional. Se for necessário usar `sudo`, garanta que o dono do ambiente seja
-a conta que executará os testes:
+O preflight verifica pacote, vínculo do aceite existente, layout das fontes,
+manifesto de amostras, datas, ciclos, previsões, duplicatas, hashes e assinatura
+GRIB antes de substituir arquivos. Destino e fontes não podem se sobrepor.
+
+Para uma release construída por você, use seu caminho em `--candidate`.
+
+### Atualizar somente ferramentas e manuais
 
 ```bash
-sudo mkdir -p /media/MET
-sudo chown "$USER":"$(id -gn)" /media/MET
-python3 reprocessamento/setup_production_env.py --root /media/MET/servidor_MET
+python3 reprocessamento/setup_production_env.py --root "$MET_ROOT" --update-tools
 ```
 
-O instalador verifica a release antes de copiar, recusa um destino que já
-contenha um ambiente sem `--force` e não grava aceite aprovado. Com `--force`,
-`acceptance.json` e as evidências existentes são preservados; código, GRIBs e
-produtos são substituídos pela release indicada.
+Usa o pacote já instalado em `evidence/release/candidate/`. Não exige as fontes
+originais em `reprocessamento/releases/` ou `phase4-data/`. Atualiza `tools/`,
+`bin/`, `docs/`, `LEIA-ME.md` e os READMEs do projeto e dos testes;
+preserva `app/`, dados, configuração e aceite.
 
-O verificador instalado é copiado do repositório para
-`app/reprocessamento/acceptance_check.py`. Depois de alterar o verificador,
-reinstale com `--force` para atualizar a cópia usada pelos scripts.
+### Reinstalar a mesma release
+
+`--force` substitui `app/`, GRIBs e produtos com as fontes indicadas. Use para
+repor uma instalação da **mesma** candidata, após identificar os arquivos que
+precisam ser recuperados:
+
+```bash
+python3 reprocessamento/setup_production_env.py --root "$MET_ROOT" \
+  --candidate reprocessamento/releases/phase4-candidate \
+  --samples reprocessamento/phase4-data --force
+```
+
+Aceite e evidências são preservados. Outra release é recusada quando o aceite
+existente tem hash diferente: instale-a em outro `--root`.
+`--force` e `--update-tools` são mutuamente exclusivos.
 
 ## Ativação
 
 ```bash
-source ~/MET/servidor_MET/bin/ativar.sh
+source "$MET_ROOT/bin/ativar.sh"
 ```
 
-O script deve ser carregado com `source` (ou `.`), não executado com `bash`,
-porque as variáveis precisam permanecer no shell atual. Ele define:
-
-| Variável | Valor |
+| Variável | Finalidade |
 |---|---|
-| `MET_PROD_ROOT` | raiz do ambiente |
-| `MET_ACTIVE_CODE` | `current/code` depois da promoção; `app` antes dela |
-| `MET_PATH_CONF` | `environment/path.conf` |
-| `MET_LOCK_DIR` | `run/locks` |
+| `MET_PROD_ROOT` | Raiz instalada |
+| `MET_ACTIVE_CODE` | `app/` ou caminho físico de `current/code` |
+| `MET_PATH_CONF` | Configuração local, inclusive ao usar release promovida |
+| `MET_LOCK_DIR` | Locks compartilhados pelos processos |
+| `PYTHONDONTWRITEBYTECODE=1` | Evita criar `.pyc` nas releases imutáveis |
+| `MPLBACKEND=Agg` | Gera PNG sem janela gráfica |
 
-O `PATH` recebe `$MET_ACTIVE_CODE/bash` e `$MET_PROD_ROOT/bin`.
+O Python virtual é ativado separadamente. Recarregue `ativar.sh` depois de
+promoção/rollback. Um `current` quebrado é tratado como erro.
 
-## Verificação inicial
+## Estados exibidos
 
-```bash
-~/MET/servidor_MET/bin/verificar.sh
-```
+`verificar.sh` verifica ambiente, contratos e aceite. `status.sh` mostra o
+aceite e confere a release ativa quando houver.
 
-O comando confere, em sequência:
-
-1. diretórios e scripts obrigatórios;
-2. `path.conf` e os cinco diretórios de dados;
-3. vínculo entre `acceptance.json` e o SHA-256 da release instalada;
-4. hashes de 1.140 arquivos (o `path.conf` local é excluído);
-5. contagens de 12 GRIBs, 1.098 CSVs e 3 PNGs;
-6. dependências Python (`numpy`, `pygrib`, `matplotlib`, Basemap);
-7. contrato das matrizes do BlueSky, do preditor e das planilhas;
-8. estado do aceite.
-
-Resultado esperado antes do aceite:
-
-```text
-state: pending
-falhas: 0
-status: ok
-```
-
-`state: pending` é o estado correto nesta etapa. O código de saída só é `2`
-quando `acceptance --require-approved` é usado, como faz `promover.sh`.
-
-Contagens dos contratos neste ambiente:
-
-| Consumidor | Arquivos | Linhas | Variante |
-|---|---:|---:|---|
-| BlueSky | 324 | 686.340 | headers AUT da release |
-| preditor | 324 | 686.340 | headers AUT da release |
-| planilhas | 450 | 953.250 | escalares |
-
-As saídas MAN têm headers com unidade e são aceitas pelo verificador:
-
-- BlueSky: `lat,lon,hMET<feet>,angMET<grau>,vento_resultante<knot>`;
-- preditor: `lat,lon,vento U,vento V,temperatura K`;
-- escalares: `lat,lon,<variavel>`.
-
-## Teste de cada consumidor
-
-O roteiro é o mesmo para os três. O exemplo usa BlueSky; troque o nome do
-consumidor e confira a amostra indicada no log.
-
-### 1. Gerar o material de teste
-
-```bash
-~/MET/servidor_MET/bin/testar_bluesky.sh
-```
-
-O script:
-
-- ativa o ambiente;
-- valida os produtos da release com `acceptance_check.py`;
-- gera uma matriz MAN nova com GRIB real em `aceitacao-manual/bluesky-<UTC>/`;
-- grava o log em `logs/bluesky-<UTC>.log`;
-- termina com o caminho da amostra da release e o comando de registro.
-
-Amostras geradas:
-
-| Script | Geração MAN | Amostra da release |
-|---|---|---|
-| `testar_bluesky.sh` | vento, f000, 200 hPa | `matrizGrib/bluesky/20221215/00/` |
-| `testar_preditor.sh` | vento, f000, 500 hPa | `matrizGrib/predi/20221215/00/` |
-| `testar_planilhas.sh` | temperatura, f000, 850 hPa | `matrizGrib/20221215/00/` |
-
-### 2. Executar o aplicativo real
-
-Abra no consumidor real:
-
-- pelo menos uma matriz da amostra da release indicada no log;
-- a matriz MAN recém-gerada em `aceitacao-manual/<consumidor>-<UTC>/`.
-
-Confirme o que o consumidor realmente usa:
-
-| Consumidor | Confira |
+| Campo/valor | Significado |
 |---|---|
-| BlueSky | orientação lat/lon, `hMET` em pés, `angMET` em graus entre 0 e 360, `vento_resultante` em nós |
-| preditor | orientação, `vento U`/`vento V` em m/s, `temp`/`temperatura K` em Kelvin |
-| planilhas | orientação, temperatura em °C, nuvem/umidade em %, chuva em mm, pressão em hPa |
+| `release_sha256` | Hash da candidata instalada, ao qual o aceite deve corresponder |
+| `active_release_sha256` | Hash da release apontada por `current`, quando existir |
+| `deployment: candidate-only` | Sem `current`; ativação usa `app/` |
+| `deployment: candidate-active` | `current` aponta à candidata íntegra |
+| `deployment: other-release-active` | Outra release íntegra está ativa, por exemplo após rollback |
+| `deployment: invalid` | Verificação do ambiente detectou release ativa inválida |
+| `rehearsal: True` | Destino de ensaio, não de promoção real |
+| `state: pending` | Aceite ainda não assinado |
+| `state: approved` | Aceite assinado e evidências conferidas |
 
-Neste aceite, os produtos escalares usam temperatura em Celsius; o preditor usa
-Kelvin. `chuvaNaoConvec` continua sendo a precipitação total e `temps` continua
-sendo temperatura de pele. Não renomeie nem inverta as linhas no consumidor.
+O inventário completo da candidata é verificado, além das cópias de código e
+produtos instaladas. Na release ativa, arquivos alterados, extras, symlinks
+internos ou relatório inválido provocam falha. Um hash ativo diferente após
+rollback é informado, sem transferir o aceite da candidata para ele.
 
-### 3. Salvar uma evidência
+Códigos do verificador: `0` para verificação bem-sucedida; `1` para falhas;
+`2` para aceite pendente quando se exige `--require-approved`.
 
-A evidência pode ser o log do próprio aplicativo, um recorte de tela, um CSV
-exportado ou uma nota de execução. Ela precisa ser um arquivo não vazio que
-permita reconstruir o que foi testado. Evite credenciais e dados sensíveis.
+## Promoção e rollback
 
-### 4. Registrar a evidência
+`promover.sh` verifica ambiente e aceite, cria backup de `environment`,
+`acceptance`, `app`, `matrizGrib` e `mapasGrib`, copia o pacote para
+`releases/<20 primeiros caracteres do hash>` e troca `current` atomicamente.
 
-```bash
-~/MET/servidor_MET/bin/registrar_evidencia.sh BlueSky ARQUIVO "nota do teste"
-```
+`rollback.sh` verifica e reativa `previous`. Troca os ponteiros e registra
+o evento em `history.jsonl`. Produtos de topo e aceite não são restaurados
+automaticamente. A sequência de uso está no [manual de aceitação](16-manual-de-aceitacao.md).
 
-Nomes aceitos: `BlueSky`, `preditor`, `planilhas`. O script copia o arquivo para
-`acceptance/evidence/<consumidor>/` com carimbo UTC, calcula o SHA-256 e grava
-em `acceptance.json`:
+## Caminho operacional `/media/MET`
 
-```json
-{
-  "path": "acceptance/evidence/BlueSky/20261111T000000Z-log.txt",
-  "sha256": "...",
-  "notes": "nota do teste",
-  "registered_at_utc": "..."
-}
-```
+O downloader preservado usa `/media/MET/servidor_MET/gribs`. Para operar nesse
+caminho, a conta operacional precisa ter permissão de escrita. A criação desse
+diretório pode exigir administração do sistema. A instalação em `$HOME` atende
+ao reprocessamento e aos testes MAN descritos nos guias.
 
-Há um único registro por consumidor. Registrar novamente antes da assinatura
-substitui a evidência anterior. Depois de `approved: true`, o comando recusa a
-troca; para refazer um aceite já assinado, restaure o `acceptance.json` do
-backup ou edite o arquivo de forma consciente e assine novamente.
+`verificar.sh` é a verificação da campanha instalada. A geração diária pode
+acrescentar ou substituir produtos de topo; nesse caso, suas contagens e hashes
+divergem da campanha. Mantenha a instalação de aceitação identificável e use
+a verificação dos produtos correspondentes à operação diária.
 
-Repita o ciclo para os três consumidores. O log do `testar_*` sozinho não é
-evidência do consumidor: ele comprova a verificação local e a geração MAN, não a
-execução do aplicativo externo.
-
-## Estado e assinatura
-
-```bash
-~/MET/servidor_MET/bin/status.sh
-```
-
-Enquanto faltar evidência, o estado continua `pending`. Para assinar:
-
-```bash
-~/MET/servidor_MET/bin/assinar.sh "Nome do responsável"
-```
-
-A assinatura exige:
-
-- `release_sha256` igual ao SHA-256 da release instalada;
-- exatamente os consumidores `BlueSky`, `preditor` e `planilhas`;
-- três evidências existentes, não vazias e com hash válido;
-- `approved_by` não vazio.
-
-Campos gravados em `acceptance.json`:
-
-```json
-{
-  "approved": true,
-  "approved_by": "Nome do responsável",
-  "accepted_at_utc": "2026-11-11T00:00:00+00:00"
-}
-```
-
-O aceite é uma declaração sobre esta release e este ambiente. Ele não é
-transferível para outra release nem para outro conjunto de produtos.
-
-## Promoção
-
-```bash
-~/MET/servidor_MET/bin/promover.sh
-```
-
-O script:
-
-1. executa `acceptance --require-approved` e aborta se o aceite estiver pendente;
-2. cria `backups/pre-promocao-<UTC>.tar.gz` com `environment`, `acceptance`,
-   `app`, `matrizGrib` e `mapasGrib`;
-3. copia a release candidata para `releases/<20 primeiros hex do SHA-256>`;
-4. verifica a cópia e troca `current` atomicamente;
-5. registra o evento em `history.jsonl`.
-
-Depois da promoção, ative novamente:
-
-```bash
-source ~/MET/servidor_MET/bin/ativar.sh
-```
-
-Agora `MET_ACTIVE_CODE` aponta para `current/code`. Os produtos permanecem nas
-árvores de topo (`matrizGrib/` e `mapasGrib/`) e o `path.conf` não muda. Neste
-ambiente, os produtos instalados já são exatamente os da release; o inventário
-é conferido por `verificar.sh`. Ao promover uma release diferente em uma
-instalação real, instale/atualize os produtos e confirme os hashes antes de
-apontar os consumidores para o novo diretório.
-
-`verificar.sh` depois da promoção também confere se `current` aponta para uma
-release dentro de `releases/` e se o `release.json` dessa release é o aceito.
-
-## Rollback
-
-O rollback exige que exista uma release anterior, ou seja, pelo menos duas
-promoções. Em um ambiente com apenas uma promoção, `previous` não existe.
-
-```bash
-~/MET/servidor_MET/bin/rollback.sh
-source ~/MET/servidor_MET/bin/ativar.sh
-```
-
-O comando verifica a release anterior, troca `current`/`previous` e registra
-`action: rollback` em `history.jsonl`. Ele restaura o código, não os produtos:
-os CSVs e PNGs de topo não são versionados por release. Para recuperar também
-os produtos, use o backup criado antes da promoção.
-
-## Ensaio local já executado
-
-O fluxo foi validado em diretórios temporários, sem tocar em produção:
-
-- `register`/`sign` com três evidências sintéticas;
-- detecção de evidência adulterada por hash;
-- promoção com troca atômica de `current`;
-- `ativar.sh` apontando para `current/code`;
-- rollback com duas releases e registro em `history.jsonl`.
-
-Esses ensaios comprovam o mecanismo, não o aceite. O ambiente real permanece
-com `approved: false` até a execução dos três consumidores.
-
-## Problemas comuns
-
-| Sintoma | Causa e ação |
-|---|---|
-| `ambiente já existe` | O destino já tem `app`, `gribs` ou `matrizGrib`. Use `--force` para reinstalar. |
-| `sem permissão` em `/media` | Crie o diretório com a conta operacional ou ajuste o dono após usar `sudo`. |
-| `aceite pendente` com código 2 | Esperado em `acceptance --require-approved` antes da assinatura. |
-| `evidencia ausente para ...` | Falta registrar o arquivo daquele consumidor. |
-| `hash da evidencia diverge` | O arquivo foi alterado depois do registro. Registre uma cópia nova. |
-| `sem release anterior` | Só há uma promoção; o rollback precisa de duas. |
-| `current invalido` | O symlink foi alterado ou aponta para fora de `releases/`. |
-| `modulo Python ausente` | Instale as dependências no mesmo Python usado pelos scripts. |
-
-Não edite arquivos em `evidence/release/candidate/` nem em `matrizGrib/` para
-“fazer a verificação passar”. O verificador deve falhar se o conteúdo não for o
-da release aceita.
-
-## Checklist de aceite
-
-- [ ] Release com SHA-256 `26fa746...` instalada.
-- [ ] `bin/verificar.sh` com `falhas: 0`.
-- [ ] BlueSky executado com a amostra da release e a saída MAN.
-- [ ] Preditor executado com a amostra da release e a saída MAN.
-- [ ] Planilhas executadas com a amostra da release e a saída MAN.
-- [ ] Três evidências registradas com hashes válidos.
-- [ ] `bin/assinar.sh "Nome"` concluído.
-- [ ] `bin/status.sh` mostrando `state: approved`.
-- [ ] Backup e janela de manutenção confirmados antes de `promover.sh`.
-- [ ] Consumidores apontados para o diretório de produtos correto.
+Veja [04-operacao.md](04-operacao.md) para aquisição diária, AUT e METAR,
+e [18-validacao-da-continuidade.md](18-validacao-da-continuidade.md) para os
+resultados mais recentes de validação.

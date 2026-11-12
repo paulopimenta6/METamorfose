@@ -30,6 +30,8 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+import release_phase4
+
 CONSUMERS = ("BlueSky", "preditor", "planilhas")
 GRIB_NAME = re.compile(r"^gfs\.t\d{2}z\.pgrb2\.0p25\.f\d{3}$")
 N_LEVEL = re.compile(r"_N(\d+)_")
@@ -65,6 +67,7 @@ REQUIRED_SCRIPTS = (
     "testar_bluesky.sh",
     "testar_preditor.sh",
     "testar_planilhas.sh",
+    "testar_todos.sh",
 )
 REQUIRED_DIRS = (
     "app",
@@ -84,6 +87,7 @@ REQUIRED_DIRS = (
     "backups",
     "aceitacao-manual",
     "bin",
+    "tools",
 )
 
 
@@ -391,6 +395,37 @@ def check_products(root, kind, directories):
     return report
 
 
+def active_release(root: Path, candidate_hash: str | None) -> dict:
+    """Confere a release ativa sem confundir rollback com aceite da candidata."""
+    current = root / "current"
+    if not current.exists() and not current.is_symlink():
+        return {
+            "deployment": "candidate-only",
+            "active_code": str(root / "app"),
+            "active_release_sha256": None,
+        }
+    try:
+        if not current.is_symlink():
+            raise CheckError("current deve ser um symlink")
+        target = current.resolve(strict=True)
+        if not target.is_relative_to((root / "releases").resolve()):
+            raise CheckError("current aponta para fora de releases/")
+        if not (target / "code").is_dir():
+            raise CheckError("release ativa sem code/")
+        release_phase4.verify(target)
+        active_hash = sha256_file(target / "release.json")
+        if target.name != active_hash[:20]:
+            raise CheckError("diretorio da release ativa diverge do hash")
+    except (OSError, ValueError, KeyError, TypeError, AttributeError, RuntimeError) as exc:
+        raise CheckError("current/release ativa invalida: %s" % exc) from exc
+    return {
+        "deployment": "candidate-active" if active_hash == candidate_hash else "other-release-active",
+        "active_code": str(target / "code"),
+        "active_release_sha256": active_hash,
+        "rehearsal": (root / "REHEARSAL").exists(),
+    }
+
+
 def check_environment(root, check_dependencies=True):
     root = Path(root)
     failures = []
@@ -412,7 +447,8 @@ def check_environment(root, check_dependencies=True):
     for relative in REQUIRED_DIRS:
         if not (root / relative).is_dir():
             failure("diretorio ausente: %s" % relative)
-    for relative in ("LEIA-ME.md", "environment/path.conf", "acceptance/acceptance.json"):
+    for relative in ("LEIA-ME.md", "environment/path.conf", "acceptance/acceptance.json",
+                     "tools/acceptance_check.py", "tools/release_phase4.py"):
         if not (root / relative).is_file():
             failure("arquivo ausente: %s" % relative)
     for name in REQUIRED_SCRIPTS:
@@ -460,9 +496,8 @@ def check_environment(root, check_dependencies=True):
                 "acceptance.release_sha256 nao corresponde a release instalada "
                 "(%s != %s)" % (acceptance.get("release_sha256"), release_hash)
             )
-        release = read_json(candidate / "release.json")
-        if release.get("validation_sha256") != sha256_file(candidate / "validation.json"):
-            failure("validation.json nao corresponde a release.json")
+        release = release_phase4.verify(candidate)
+        report["candidate_files_verified"] = len(release["files"])
         files = release.get("files")
         if not isinstance(files, dict) or not files:
             failure("release.json sem inventario de arquivos")
@@ -498,8 +533,8 @@ def check_environment(root, check_dependencies=True):
             failure("matrizGrib tem %d CSVs; release tem %d" % (actual_csv, expected_csv))
         if actual_png != expected_png:
             failure("mapasGrib tem %d PNGs; release tem %d" % (actual_png, expected_png))
-    except (CheckError, OSError) as exc:
-        failure(str(exc))
+    except (OSError, ValueError, KeyError, TypeError, AttributeError) as exc:
+        failure("candidata/instalacao invalida: %s" % exc)
 
     try:
         manifest = read_json(root / "evidence" / "samples" / "manifest.json")
@@ -553,17 +588,11 @@ def check_environment(root, check_dependencies=True):
         except (ImportError, AttributeError):
             failure("modulo Python ausente: mpl_toolkits.basemap")
 
-    current = root / "current"
-    if current.exists():
-        try:
-            target = current.resolve()
-            releases = (root / "releases").resolve()
-            if not target.is_relative_to(releases):
-                failure("current aponta para fora de releases/")
-            elif release_hash and sha256_file(target / "release.json") != release_hash:
-                failure("current nao corresponde a release aceita")
-        except (OSError, CheckError) as exc:
-            failure("current invalido: %s" % exc)
+    try:
+        report.update(active_release(root, release_hash))
+    except CheckError as exc:
+        failure(str(exc))
+        report["deployment"] = "invalid"
 
     report["status"] = "ok" if not failures else "failed"
     return report
@@ -622,6 +651,7 @@ def check_acceptance(root, require_approved=False, require_evidence=False):
         data = load_acceptance(root)
         actual_hash = installed_release_hash(root)
         report["release_sha256"] = actual_hash
+        report.update(active_release(root, actual_hash))
         if data.get("release_sha256") != actual_hash:
             failures.append(
                 "release_sha256 do aceite nao corresponde a release instalada"
@@ -677,6 +707,8 @@ def register_evidence(root, consumer, source, notes):
     if consumer not in CONSUMERS:
         raise CheckError("consumidor invalido: %s" % consumer)
     data = load_acceptance(root)
+    if data.get("release_sha256") != installed_release_hash(root):
+        raise CheckError("release_sha256 do aceite nao corresponde a release instalada")
     if data.get("approved") is True:
         raise CheckError("aceite ja aprovado; edite acceptance.json manualmente para trocar evidencias")
     source = Path(source).expanduser().resolve()
@@ -735,7 +767,8 @@ def print_report(report, as_json, limit):
     if as_json:
         print(json.dumps(report, indent=2, ensure_ascii=False))
         return
-    for key in ("kind", "state", "root", "release_sha256", "acceptance"):
+    for key in ("kind", "state", "root", "release_sha256", "acceptance",
+                "deployment", "active_release_sha256", "active_code", "rehearsal"):
         if key in report and report[key] is not None:
             print("%s: %s" % (key, report[key]))
     if "gribs" in report:
@@ -800,7 +833,7 @@ def build_parser():
         sub.add_argument(
             "--root",
             default=default_root(),
-            help="raiz do ambiente (padrao: MET_PROD_ROOT ou ~/MET/servidor_mt)",
+            help="raiz do ambiente (padrao: MET_PROD_ROOT ou ~/MET/servidor_MET)",
         )
         sub.add_argument("--json", action="store_true", help="saida em JSON")
 
@@ -825,6 +858,10 @@ def build_parser():
         "--require-approved",
         action="store_true",
         help="falha com codigo 2 enquanto o aceite estiver pendente",
+    )
+    acceptance.add_argument(
+        "--require-evidence", action="store_true",
+        help="exige as tres evidencias sem assinar o aceite",
     )
     acceptance.add_argument(
         "--limit", type=int, default=5, help="maximo de falhas exibidas"
@@ -862,7 +899,8 @@ def main(argv=None):
             return 0 if report["status"] == "ok" else 1
         if args.command == "acceptance":
             report = check_acceptance(
-                root, require_approved=args.require_approved
+                root, require_approved=args.require_approved,
+                require_evidence=args.require_evidence,
             )
             print_report(report, args.json, args.limit)
             if report["status"] == "ok":
